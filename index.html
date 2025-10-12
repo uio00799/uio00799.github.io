@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIOS File Selector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #aaa;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .bios-container {
+            width: 100%;
+            max-width: 800px;
+            border: 2px solid #00f;
+            background: #000;
+            box-shadow: 0 0 20px rgba(0, 0, 255, 0.3);
+        }
+
+        .bios-header {
+            background: #00f;
+            color: #fff;
+            padding: 5px 10px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .bios-title {
+            text-align: center;
+            padding: 10px;
+            border-bottom: 2px solid #00f;
+            color: #0ff;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+
+        .bios-content {
+            padding: 20px;
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #444;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            color: #aaa;
+        }
+
+        .info-label {
+            color: #0ff;
+        }
+
+        .file-list {
+            border: 2px solid #00f;
+            padding: 10px;
+            background: #111;
+            min-height: 200px;
+            margin: 20px 0;
+        }
+
+        .file-list-header {
+            color: #fff;
+            background: #00f;
+            padding: 5px 10px;
+            margin: -10px -10px 10px -10px;
+        }
+
+        .file-item {
+            padding: 8px 10px;
+            cursor: pointer;
+            color: #aaa;
+            transition: all 0.1s;
+        }
+
+        .file-item:hover {
+            background: #222;
+            color: #fff;
+        }
+
+        .file-item.selected {
+            background: #00f;
+            color: #fff;
+        }
+
+        .file-item::before {
+            content: "[ ] ";
+            color: #0ff;
+        }
+
+        .file-item.selected::before {
+            content: "[●] ";
+            color: #ff0;
+        }
+
+        .button-section {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            padding: 20px;
+            border-top: 2px solid #00f;
+        }
+
+        .bios-button {
+            background: #444;
+            color: #fff;
+            border: 2px solid #00f;
+            padding: 10px 30px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .bios-button:hover {
+            background: #00f;
+            box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
+        }
+
+        .bios-button:active {
+            background: #0088ff;
+        }
+
+        .status-bar {
+            background: #00f;
+            color: #fff;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .selected-info {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #0f0;
+            color: #0f0;
+            display: none;
+        }
+
+        .selected-info.show {
+            display: block;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="bios-container">
+        <div class="bios-header">
+            <span>BIOS SETUP UTILITY</span>
+            <span>Ver 2.0</span>
+        </div>
+
+        <div class="bios-title">
+            ═══ HTML FILE SELECTOR ═══
+        </div>
+
+        <div class="bios-content">
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">System Date:</span>
+                    <span id="currentDate"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">System Time:</span>
+                    <span id="currentTime"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Files Loaded:</span>
+                    <span id="fileCount">0</span>
+                </div>
+            </div>
+
+            <div class="file-list">
+                <div class="file-list-header">
+                    ► SELECT HTML FILE TO LOAD
+                </div>
+                <div id="fileListContent">
+                    <div style="color: #888; text-align: center; padding: 40px;">
+                        No files loaded. Click "BROWSE FILES" to select HTML files.
+                    </div>
+                </div>
+            </div>
+
+            <div class="selected-info" id="selectedInfo">
+                <div><span class="info-label">Selected File:</span> <span id="selectedFileName"></span></div>
+                <div><span class="info-label">File Size:</span> <span id="selectedFileSize"></span></div>
+                <div><span class="info-label">Last Modified:</span> <span id="selectedFileDate"></span></div>
+            </div>
+
+            <div class="button-section">
+                <button class="bios-button" onclick="document.getElementById('fileInput').click()">
+                    BROWSE FILES
+                </button>
+                <button class="bios-button" id="loadBtn" onclick="loadFile()">
+                    LOAD FILE
+                </button>
+                <button class="bios-button" onclick="resetSelection()">
+                    CLEAR
+                </button>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <span>F1: Help | F10: Save & Exit | ESC: Exit</span>
+            <span class="blink">●</span>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" accept=".html,.htm" multiple onchange="handleFiles(this.files)">
+
+    <script>
+        let selectedFiles = [];
+        let selectedIndex = -1;
+
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('th-TH');
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('th-TH');
+        }
+
+        function handleFiles(files) {
+            selectedFiles = Array.from(files);
+            document.getElementById('fileCount').textContent = selectedFiles.length;
+            
+            const listContent = document.getElementById('fileListContent');
+            listContent.innerHTML = '';
+
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.textContent = file.name;
+                fileItem.onclick = () => selectFile(index);
+                listContent.appendChild(fileItem);
+            });
+
+            if (selectedFiles.length > 0) {
+                selectFile(0);
+            }
+        }
+
+        function selectFile(index) {
+            const items = document.querySelectorAll('.file-item');
+            items.forEach((item, i) => {
+                item.classList.toggle('selected', i === index);
+            });
+
+            selectedIndex = index;
+            const file = selectedFiles[index];
+
+            document.getElementById('selectedFileName').textContent = file.name;
+            document.getElementById('selectedFileSize').textContent = formatFileSize(file.size);
+            document.getElementById('selectedFileDate').textContent = new Date(file.lastModified).toLocaleString('th-TH');
+            document.getElementById('selectedInfo').classList.add('show');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function loadFile() {
+            if (selectedIndex === -1) {
+                alert('กรุณาเลือกไฟล์ก่อน');
+                return;
+            }
+
+            const file = selectedFiles[selectedIndex];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const content = e.target.result;
+                
+                // เปิดหน้าต่างใหม่และแสดง HTML
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(content);
+                newWindow.document.close();
+                
+                console.log('Loaded:', file.name);
+            };
+
+            reader.readAsText(file);
+        }
+
+        function resetSelection() {
+            selectedFiles = [];
+            selectedIndex = -1;
+            document.getElementById('fileCount').textContent = '0';
+            document.getElementById('fileListContent').innerHTML = `
+                <div style="color: #888; text-align: center; padding: 40px;">
+                    No files loaded. Click "BROWSE FILES" to select HTML files.
+                </div>
+            `;
+            document.getElementById('selectedInfo').classList.remove('show');
+        }
+
+        // Update time every second
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (selectedFiles.length === 0) return;
+
+            if (e.key === 'ArrowUp' && selectedIndex > 0) {
+                selectFile(selectedIndex - 1);
+                e.preventDefault();
+            } else if (e.key === 'ArrowDown' && selectedIndex < selectedFiles.length - 1) {
+                selectFile(selectedIndex + 1);
+                e.preventDefault();
+            } else if (e.key === 'Enter') {
+                loadFile();
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
