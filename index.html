@@ -1,153 +1,504 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Directory Scanner · GitHub Pages</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIOS Directory Scanner</title>
 <style>
-  :root { color-scheme: dark; }
-  body{font-family:system-ui,Segoe UI,Arial; background:#0e1116; color:#e6e6e6; margin:0; padding:24px}
-  h1{margin:0 0 6px}
-  .sub{color:#a8b0bb;margin:0 0 16px}
-  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:6px 0 14px}
-  input,select,button{
-    background:#141922; color:#e6e6e6; border:1px solid #2a3040; border-radius:10px; padding:8px 12px
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
-  button{cursor:pointer}
-  table{width:100%; border-collapse:collapse; margin-top:6px}
-  th,td{padding:10px; border-bottom:1px solid #1f2633; text-align:left; vertical-align:top}
-  tr:hover{background:#121724}
-  a{color:#9ec5ff; text-decoration:none} a:hover{text-decoration:underline}
-  .badge{font-size:12px; padding:4px 8px; border:1px solid #2a3040; border-radius:999px; color:#b7bec9}
-  .muted{color:#95a0af}
-  .ok{color:#7ee787}
-  .err{color:#ff7b72}
+
+  body {
+    background: #000;
+    color: #aaa;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .bios-container {
+    width: 100%;
+    max-width: 900px;
+    border: 2px solid #00f;
+    background: #000;
+    box-shadow: 0 0 20px rgba(0, 0, 255, 0.3);
+  }
+
+  .bios-header {
+    background: #00f;
+    color: #fff;
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+  }
+
+  .bios-title {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 2px solid #00f;
+    color: #0ff;
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  .bios-content {
+    padding: 20px;
+  }
+
+  .info-section {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #444;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    color: #aaa;
+  }
+
+  .info-label {
+    color: #0ff;
+  }
+
+  .control-section {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #444;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .bios-select, .bios-input {
+    background: #111;
+    color: #0f0;
+    border: 1px solid #00f;
+    padding: 6px 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+  }
+
+  .bios-input {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .file-list {
+    border: 2px solid #00f;
+    padding: 0;
+    background: #111;
+    min-height: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 20px 0;
+  }
+
+  .file-list-header {
+    color: #fff;
+    background: #00f;
+    padding: 8px 10px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 80px;
+    gap: 10px;
+    font-weight: bold;
+  }
+
+  .file-row {
+    padding: 8px 10px;
+    cursor: pointer;
+    color: #aaa;
+    transition: all 0.1s;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 80px;
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #222;
+  }
+
+  .file-row:hover {
+    background: #222;
+    color: #fff;
+  }
+
+  .file-row.selected {
+    background: #00f;
+    color: #fff;
+  }
+
+  .file-name::before {
+    content: "📄 ";
+    margin-right: 5px;
+  }
+
+  .file-name.index::before {
+    content: "🏠 ";
+  }
+
+  .file-link {
+    color: #0ff;
+    text-decoration: none;
+    font-size: 11px;
+  }
+
+  .file-link:hover {
+    color: #ff0;
+    text-decoration: underline;
+  }
+
+  .button-section {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 20px;
+    border-top: 2px solid #00f;
+    flex-wrap: wrap;
+  }
+
+  .bios-button {
+    background: #444;
+    color: #fff;
+    border: 2px solid #00f;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .bios-button:hover {
+    background: #00f;
+    box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
+  }
+
+  .bios-button:active {
+    background: #0088ff;
+  }
+
+  .status-bar {
+    background: #00f;
+    color: #fff;
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+
+  .blink {
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  .empty-state {
+    color: #888;
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #222;
+    border: 1px solid #00f;
+    color: #0f0;
+    font-size: 11px;
+    margin-left: 10px;
+  }
+
+  .hint {
+    color: #888;
+    font-size: 11px;
+    margin-top: 10px;
+    padding: 8px;
+    border: 1px solid #333;
+  }
 </style>
 </head>
 <body>
-<h1>🔍 Directory Scanner</h1>
-<p class="sub">สแกนไฟล์ใน repo GitHub ของ GitHub Pages แล้วลิงก์ไปที่หน้าเว็บ/ไฟล์จริง</p>
+<div class="bios-container">
+  <div class="bios-header">
+    <span>BIOS SETUP UTILITY</span>
+    <span>Ver 3.0</span>
+  </div>
 
-<!-- ====== Config (แก้ได้) ====== -->
-<div class="row">
-  <label class="badge">Owner</label><input id="owner" value="uio00799">
-  <label class="badge">Repo</label><input id="repo" value="uio00799.github.io">
-  <label class="badge">Branch</label><input id="branch" value="main">
-  <button id="scanBtn">สแกนตอนนี้</button>
-  <span id="status" class="badge">พร้อมทำงาน</span>
+  <div class="bios-title">
+    ═══ DIRECTORY SCANNER ═══
+  </div>
+
+  <div class="bios-content">
+    <div class="info-section">
+      <div class="info-row">
+        <span class="info-label">System Date:</span>
+        <span id="currentDate"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">System Time:</span>
+        <span id="currentTime"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Files Found:</span>
+        <span id="fileCount">0</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Status:</span>
+        <span id="statusText" style="color: #0f0;">READY</span>
+      </div>
+    </div>
+
+    <div class="control-section">
+      <label style="color: #0ff;">FILTER:</label>
+      <select id="extFilter" class="bios-select">
+        <option value="">ALL FILES</option>
+        <option>.html</option><option>.htm</option>
+        <option>.php</option><option>.txt</option>
+        <option>.js</option><option>.css</option>
+        <option>.json</option><option>.png</option>
+        <option>.jpg</option><option>.pdf</option>
+      </select>
+
+      <label style="color: #0ff;">SEARCH:</label>
+      <input id="searchBox" type="text" class="bios-input" placeholder="TYPE FILENAME...">
+    </div>
+
+    <div class="file-list">
+      <div class="file-list-header">
+        <div>FILENAME / PATH</div>
+        <div>SIZE</div>
+        <div>TYPE</div>
+        <div>ACTION</div>
+      </div>
+      <div id="fileListContent">
+        <div class="empty-state">
+          NO FILES LOADED<br>
+          <span style="color: #666; font-size: 11px;">SELECT MODE A OR MODE B TO BEGIN</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint">
+      <span style="color: #0ff;">TIP:</span> MODE A requires Apache AutoIndex (Options +Indexes). MODE B uses local folder picker (Chrome/Edge on HTTPS/localhost).
+    </div>
+
+    <div class="button-section">
+      <button class="bios-button" id="scanServerBtn">MODE A: SCAN SERVER</button>
+      <button class="bios-button" id="pickDirBtn">MODE B: PICK LOCAL FOLDER</button>
+      <button class="bios-button" onclick="resetData()">CLEAR ALL</button>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span>↑↓: Navigate | ENTER: Open File | F1: Help | ESC: Exit</span>
+    <span class="blink">●</span>
+  </div>
 </div>
-
-<div class="row">
-  <label class="badge">กรองนามสกุล</label>
-  <select id="extFilter">
-    <option value="">ทั้งหมด</option>
-    <option>.html</option><option>.htm</option>
-    <option>.md</option><option>.txt</option>
-    <option>.js</option><option>.css</option><option>.json</option>
-    <option>.png</option><option>.jpg</option><option>.jpeg</option><option>.gif</option>
-    <option>.pdf</option>
-  </select>
-
-  <label class="badge">ค้นหา</label>
-  <input id="q" placeholder="พิมพ์คำค้น เช่น logic, index, readme">
-</div>
-
-<table id="tbl">
-  <thead>
-    <tr>
-      <th>พาธ</th>
-      <th>ขนาด</th>
-      <th>ชนิด</th>
-      <th>เปิด (เว็บ)</th>
-      <th>RAW</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
 
 <script>
-const ownerEl  = document.getElementById('owner');
-const repoEl   = document.getElementById('repo');
-const branchEl = document.getElementById('branch');
-const statusEl = document.getElementById('status');
-const scanBtn  = document.getElementById('scanBtn');
-const tbody    = document.querySelector('#tbl tbody');
-const qEl      = document.getElementById('q');
-const extEl    = document.getElementById('extFilter');
+const statusText = document.getElementById('statusText');
+const fileCount = document.getElementById('fileCount');
+const fileListContent = document.getElementById('fileListContent');
+const extFilter = document.getElementById('extFilter');
+const searchBox = document.getElementById('searchBox');
+const scanServerBtn = document.getElementById('scanServerBtn');
+const pickDirBtn = document.getElementById('pickDirBtn');
 
-let allEntries = []; // จาก Git Tree API
+let entries = [];
+let selectedIndex = -1;
 
-function formatBytes(bytes){
-  if (bytes == null) return '-';
+function updateDateTime() {
+  const now = new Date();
+  document.getElementById('currentDate').textContent = now.toLocaleDateString('th-TH');
+  document.getElementById('currentTime').textContent = now.toLocaleTimeString('th-TH');
+}
+
+function formatBytes(bytes) {
+  if (bytes == null) return '---';
   if (bytes === 0) return '0 B';
-  const k = 1024, units = ['B','KB','MB','GB','TB'];
-  const i = Math.floor(Math.log(bytes)/Math.log(k));
-  return (bytes/Math.pow(k,i)).toFixed(2)+' '+units[i];
+  const k = 1024, sizes = ['B','KB','MB','GB','TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-function render(){
-  const q   = qEl.value.trim().toLowerCase();
-  const ext = extEl.value.toLowerCase();
+function render() {
+  const ext = extFilter.value.toLowerCase();
+  const q = searchBox.value.trim().toLowerCase();
+  fileListContent.innerHTML = '';
 
-  const filtered = allEntries
-    .filter(x => x.type === 'blob')                    // เฉพาะไฟล์
-    .filter(x => !ext || x.path.toLowerCase().endsWith(ext))
-    .filter(x => !q   || x.path.toLowerCase().includes(q))
-    .sort((a,b)=> a.path.localeCompare(b.path));
+  const filtered = entries
+    .filter(f => !ext || f.name.toLowerCase().endsWith(ext))
+    .filter(f => !q || f.name.toLowerCase().includes(q))
+    .sort((a,b) => a.name.localeCompare(b.name));
 
-  tbody.innerHTML = '';
-  for (const f of filtered){
-    const tr = document.createElement('tr');
-    const webUrl = `https://${ownerEl.value}.github.io/${encodeURI(f.path)}`;
-    const rawUrl = `https://raw.githubusercontent.com/${ownerEl.value}/${repoEl.value}/${branchEl.value}/${encodeURI(f.path)}`;
-    const ext = f.path.includes('.') ? f.path.split('.').pop() : '-';
-    tr.innerHTML = `
-      <td>${f.path}</td>
-      <td>${formatBytes(f.size)}</td>
-      <td>${ext}</td>
-      <td><a href="${webUrl}" target="_blank" rel="noopener">เปิด</a></td>
-      <td><a href="${rawUrl}" target="_blank" rel="noopener">RAW</a></td>
+  if (filtered.length === 0) {
+    fileListContent.innerHTML = '<div class="empty-state">NO MATCHING FILES</div>';
+    return;
+  }
+
+  filtered.forEach((file, index) => {
+    const row = document.createElement('div');
+    row.className = 'file-row';
+    
+    const isIndex = file.name.toLowerCase() === 'index.html';
+    const nameClass = isIndex ? 'file-name index' : 'file-name';
+    
+    row.innerHTML = `
+      <div class="${nameClass}">${file.path || file.name}</div>
+      <div>${formatBytes(file.size)}</div>
+      <div>${file.type || '---'}</div>
+      <div>${file.href ? `<a href="${file.href}" target="_blank" rel="noopener" class="file-link">OPEN</a>` : '<span style="color:#555">---</span>'}</div>
     `;
-    tbody.appendChild(tr);
-  }
-  statusEl.textContent = `พบไฟล์: ${filtered.length}/${allEntries.filter(x=>x.type==='blob').length}`;
+    
+    row.onclick = (e) => {
+      if (e.target.tagName !== 'A') {
+        selectFile(index, filtered);
+      }
+    };
+    
+    fileListContent.appendChild(row);
+  });
+
+  fileCount.textContent = filtered.length;
 }
 
-async function scan(){
-  const owner  = ownerEl.value.trim();
-  const repo   = repoEl.value.trim();
-  const branch = branchEl.value.trim() || 'main';
+function selectFile(index, filteredList) {
+  const rows = fileListContent.querySelectorAll('.file-row');
+  rows.forEach((row, i) => {
+    row.classList.toggle('selected', i === index);
+  });
+  selectedIndex = index;
+}
 
-  statusEl.textContent = 'กำลังสแกน…';
-  try{
-    // ใช้ Git Trees API (recursive=1) เรียกครั้งเดียวได้ทั้ง repo
-    const api = `https://api.github.com/repos/${owner}/${repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
-    const res = await fetch(api);
-    if (!res.ok){
-      const text = await res.text();
-      throw new Error(`HTTP ${res.status}: ${text}`);
+async function scanFromServer() {
+  statusText.textContent = 'SCANNING SERVER...';
+  statusText.style.color = '#ff0';
+  try {
+    const res = await fetch('./', { method: 'GET' });
+    const html = await res.text();
+
+    const dom = new DOMParser().parseFromString(html, 'text/html');
+    const links = [...dom.querySelectorAll('a')];
+
+    const items = links
+      .map(a => a.getAttribute('href') || '')
+      .filter(h => h && h !== '../' && !h.endsWith('/'));
+
+    if (!items.length) {
+      statusText.textContent = 'NO FILES FOUND';
+      statusText.style.color = '#f00';
+      entries = [];
+      render();
+      return;
     }
-    const data = await res.json();
-    // data.tree: [{path, mode, type: 'blob'|'tree', size?, sha, url}, ...]
-    allEntries = data.tree.map(x => ({
-      path: x.path, type: x.type, size: x.size ?? null
-    }));
-    statusEl.textContent = 'สแกนสำเร็จ ✅';
+
+    entries = items.map(h => {
+      const name = decodeURIComponent(h).split('/').pop();
+      const ext = name.includes('.') ? name.split('.').pop() : '';
+      return {
+        name, size: null, type: ext, href: h, path: name
+      };
+    });
+
+    statusText.textContent = 'SERVER SCAN COMPLETE';
+    statusText.style.color = '#0f0';
     render();
-  }catch(err){
-    console.error(err);
-    statusEl.textContent = 'สแกนไม่สำเร็จ ❌';
-    tbody.innerHTML = `<tr><td colspan="5" class="err">เกิดข้อผิดพลาด: ${err.message}</td></tr>`;
+  } catch (e) {
+    console.error(e);
+    statusText.textContent = 'SCAN FAILED';
+    statusText.style.color = '#f00';
+    entries = [];
+    render();
   }
 }
 
-// events
-scanBtn.addEventListener('click', scan);
-qEl.addEventListener('input', render);
-extEl.addEventListener('change', render);
+async function pickDirectory() {
+  if (!('showDirectoryPicker' in window)) {
+    alert('BROWSER NOT SUPPORTED\nUse Chrome/Edge on HTTPS or localhost');
+    return;
+  }
+  statusText.textContent = 'READING LOCAL FOLDER...';
+  statusText.style.color = '#ff0';
+  try {
+    const dirHandle = await window.showDirectoryPicker();
+    entries = [];
+    for await (const [name, handle] of dirHandle.entries()) {
+      if (handle.kind === 'file') {
+        const file = await handle.getFile();
+        const ext = name.includes('.') ? name.split('.').pop() : '';
+        entries.push({
+          name, size: file.size, type: ext, href: URL.createObjectURL(file), path: name
+        });
+      }
+    }
+    statusText.textContent = 'LOCAL SCAN COMPLETE';
+    statusText.style.color = '#0f0';
+    render();
+  } catch (e) {
+    if (e && e.name === 'AbortError') {
+      statusText.textContent = 'SCAN CANCELLED';
+      statusText.style.color = '#888';
+    } else {
+      console.error(e);
+      statusText.textContent = 'SCAN FAILED';
+      statusText.style.color = '#f00';
+    }
+  }
+}
 
-// เริ่มต้นสแกนอัตโนมัติด้วยค่าที่ตั้งไว้
-scan();
+function resetData() {
+  entries = [];
+  selectedIndex = -1;
+  fileCount.textContent = '0';
+  statusText.textContent = 'READY';
+  statusText.style.color = '#0f0';
+  searchBox.value = '';
+  extFilter.value = '';
+  fileListContent.innerHTML = '<div class="empty-state">NO FILES LOADED<br><span style="color: #666; font-size: 11px;">SELECT MODE A OR MODE B TO BEGIN</span></div>';
+}
+
+scanServerBtn.addEventListener('click', scanFromServer);
+pickDirBtn.addEventListener('click', pickDirectory);
+extFilter.addEventListener('change', render);
+searchBox.addEventListener('input', render);
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  const rows = fileListContent.querySelectorAll('.file-row');
+  if (rows.length === 0) return;
+
+  if (e.key === 'ArrowUp' && selectedIndex > 0) {
+    selectFile(selectedIndex - 1, entries);
+    rows[selectedIndex].scrollIntoView({ block: 'nearest' });
+    e.preventDefault();
+  } else if (e.key === 'ArrowDown' && selectedIndex < rows.length - 1) {
+    selectFile(selectedIndex + 1, entries);
+    rows[selectedIndex].scrollIntoView({ block: 'nearest' });
+    e.preventDefault();
+  } else if (e.key === 'Enter' && selectedIndex >= 0) {
+    const link = rows[selectedIndex].querySelector('.file-link');
+    if (link) link.click();
+    e.preventDefault();
+  }
+});
+
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
+// Auto-scan on load
+scanFromServer();
 </script>
 </body>
 </html>
