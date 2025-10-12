@@ -1,461 +1,134 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIOS File Selector</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #000;
-            color: #aaa;
-            font-family: 'Courier New', monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .bios-container {
-            width: 100%;
-            max-width: 800px;
-            border: 2px solid #00f;
-            background: #000;
-            box-shadow: 0 0 20px rgba(0, 0, 255, 0.3);
-        }
-
-        .bios-header {
-            background: #00f;
-            color: #fff;
-            padding: 5px 10px;
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-        }
-
-        .bios-title {
-            text-align: center;
-            padding: 10px;
-            border-bottom: 2px solid #00f;
-            color: #0ff;
-            font-size: 18px;
-            letter-spacing: 2px;
-        }
-
-        .bios-content {
-            padding: 20px;
-        }
-
-        .info-section {
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #444;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            color: #aaa;
-        }
-
-        .info-label {
-            color: #0ff;
-        }
-
-        .file-list {
-            border: 2px solid #00f;
-            padding: 10px;
-            background: #111;
-            min-height: 300px;
-            max-height: 400px;
-            overflow-y: auto;
-            margin: 20px 0;
-        }
-
-        .file-list-header {
-            color: #fff;
-            background: #00f;
-            padding: 5px 10px;
-            margin: -10px -10px 10px -10px;
-        }
-
-        .file-item {
-            padding: 8px 10px;
-            cursor: pointer;
-            color: #aaa;
-            transition: all 0.1s;
-            display: flex;
-            align-items: center;
-        }
-
-        .file-item:hover {
-            background: #222;
-            color: #fff;
-        }
-
-        .file-item.selected {
-            background: #00f;
-            color: #fff;
-        }
-
-        .file-item.folder::before {
-            content: "📁 ";
-            margin-right: 5px;
-        }
-
-        .file-item.html-file::before {
-            content: "📄 ";
-            margin-right: 5px;
-        }
-
-        .file-item.index-file::before {
-            content: "🏠 ";
-            margin-right: 5px;
-        }
-
-        .file-path {
-            color: #0f0;
-            font-size: 12px;
-            margin-left: 25px;
-        }
-
-        .selected-info {
-            margin-top: 15px;
-            padding: 10px;
-            border: 1px solid #0f0;
-            color: #0f0;
-            display: none;
-        }
-
-        .selected-info.show {
-            display: block;
-        }
-
-        .button-section {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-            padding: 20px;
-            border-top: 2px solid #00f;
-        }
-
-        .bios-button {
-            background: #444;
-            color: #fff;
-            border: 2px solid #00f;
-            padding: 10px 30px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .bios-button:hover {
-            background: #00f;
-            box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
-        }
-
-        .bios-button:active {
-            background: #0088ff;
-        }
-
-        .bios-button:disabled {
-            background: #222;
-            color: #555;
-            cursor: not-allowed;
-            border-color: #333;
-        }
-
-        .status-bar {
-            background: #00f;
-            color: #fff;
-            padding: 8px 10px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-        }
-
-        .blink {
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .empty-state {
-            color: #888;
-            text-align: center;
-            padding: 40px;
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Directory Browser</title>
+<style>
+  :root { --bg:#0b0b12; --panel:#141422; --text:#e6e6f0; --muted:#9aa0a6; --accent:#6aa8ff; --ok:#98e08b; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .wrap{width:min(980px,100%);background:var(--panel);border:1px solid #22243a;border-radius:16px;box-shadow:0 10px 32px rgba(0,0,0,.35)}
+  .header{padding:18px 20px;border-bottom:1px solid #232544;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .header h1{font-size:18px;margin:0;letter-spacing:.3px}
+  .tools{margin-left:auto;display:flex;gap:8px}
+  .search{padding:10px 12px;border-radius:10px;border:1px solid #2b2e55;background:#0f1020;color:var(--text);min-width:220px}
+  .btn{padding:10px 12px;border-radius:10px;border:1px solid #2b2e55;background:#10122a;color:var(--text);cursor:pointer}
+  .btn:hover{border-color:#39407a}
+  .content{padding:6px 6px 14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media (max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{display:flex;align-items:center;gap:12px;background:#0f1024;border:1px solid #1d2042;border-radius:12px;padding:12px}
+  .icon{width:28px;height:28px;border-radius:8px;display:inline-grid;place-items:center;font-weight:700}
+  .dir{background:#14284d;color:#a6c6ff}
+  .fil{background:#213818;color:#bde7a8}
+  .meta{margin-left:auto;text-align:right;color:var(--muted);font-size:12px}
+  a.name{color:var(--text);text-decoration:none}
+  a.name:hover{color:var(--accent)}
+  .empty{color:var(--muted);padding:20px;text-align:center}
+  .section-title{margin:14px 8px 4px;color:#b9c0ff;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
+  .ft{padding:10px 14px;border-top:1px solid #232544;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+</style>
 </head>
 <body>
-    <div class="bios-container">
-        <div class="bios-header">
-            <span>BIOS SETUP UTILITY</span>
-            <span>Ver 2.1</span>
-        </div>
-
-        <div class="bios-title">
-            ═══ DIRECTORY & HTML FILE SELECTOR ═══
-        </div>
-
-        <div class="bios-content">
-            <div class="info-section">
-                <div class="info-row">
-                    <span class="info-label">System Date:</span>
-                    <span id="currentDate"></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">System Time:</span>
-                    <span id="currentTime"></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Files Found:</span>
-                    <span id="fileCount">0</span>
-                </div>
-            </div>
-
-            <div class="file-list">
-                <div class="file-list-header">
-                    ► SELECT DIRECTORY (with index.html)
-                </div>
-                <div id="fileListContent">
-                    <div class="empty-state">
-                        No directory loaded. Click "BROWSE FOLDER" to select a directory.
-                    </div>
-                </div>
-            </div>
-
-            <div class="selected-info" id="selectedInfo">
-                <div><span class="info-label">Selected:</span> <span id="selectedFileName"></span></div>
-                <div><span class="info-label">Type:</span> <span id="selectedFileType"></span></div>
-                <div><span class="info-label">Path:</span> <span id="selectedFilePath"></span></div>
-            </div>
-
-            <div class="button-section">
-                <button class="bios-button" onclick="document.getElementById('folderInput').click()">
-                    BROWSE FOLDER
-                </button>
-                <button class="bios-button" id="loadBtn" onclick="loadFile()" disabled>
-                    LOAD FILE
-                </button>
-                <button class="bios-button" onclick="resetSelection()">
-                    CLEAR
-                </button>
-            </div>
-        </div>
-
-        <div class="status-bar">
-            <span>↑↓: Navigate | ENTER: Load | F1: Help | ESC: Exit</span>
-            <span class="blink">●</span>
-        </div>
+  <div class="wrap">
+    <div class="header">
+      <h1>📂 ไฟล์ในโฟลเดอร์นี้</h1>
+      <div class="tools">
+        <input id="q" class="search" placeholder="พิมพ์เพื่อค้นหา เช่น .html, data, ภาพ" />
+        <button id="refresh" class="btn">รีเฟรช</button>
+      </div>
     </div>
+    <div class="content">
+      <div id="dirsTitle" class="section-title" style="display:none">Directories</div>
+      <div id="dirs" class="grid"></div>
+      <div id="filesTitle" class="section-title" style="display:none">Files</div>
+      <div id="files" class="grid"></div>
+      <div id="empty" class="empty" style="display:none">ไม่มีไฟล์/โฟลเดอร์ที่ตรงกับการค้นหา</div>
+    </div>
+    <div class="ft">
+      <div>เคล็ดลับ: ค้นหาด้วยนามสกุล เช่น <code>.html</code>, <code>.png</code>, หรือคำขึ้นต้นไฟล์</div>
+      <div>อัปเดตแบบเรียลไทม์จากโฟลเดอร์เดียวกับ <code>index.html</code></div>
+    </div>
+  </div>
 
-    <input type="file" id="folderInput" webkitdirectory directory multiple>
+<script>
+const elDirs  = document.getElementById('dirs');
+const elFiles = document.getElementById('files');
+const elDirsTitle  = document.getElementById('dirsTitle');
+const elFilesTitle = document.getElementById('filesTitle');
+const elEmpty = document.getElementById('empty');
+const q = document.getElementById('q');
 
-    <script>
-        let fileList = [];
-        let selectedIndex = -1;
+let DATA = { dirs: [], files: [] };
 
-        function updateDateTime() {
-            const now = new Date();
-            document.getElementById('currentDate').textContent = now.toLocaleDateString('th-TH');
-            document.getElementById('currentTime').textContent = now.toLocaleTimeString('th-TH');
-        }
+function humanSize(n){
+  if (n == null) return '';
+  const u = ['B','KB','MB','GB','TB'];
+  let i=0, s=n;
+  while (s>=1024 && i<u.length-1){ s/=1024; i++; }
+  return s.toFixed(s<10 && i>0 ? 1 : 0) + ' ' + u[i];
+}
+function humanDate(ms){
+  if (!ms) return '';
+  const d = new Date(ms);
+  return d.toLocaleString();
+}
 
-        document.getElementById('folderInput').addEventListener('change', function(e) {
-            handleFiles(e.target.files);
-        });
+function row(item){
+  const wrap = document.createElement('div');
+  wrap.className = 'card';
 
-        function handleFiles(files) {
-            fileList = [];
-            const filesArray = Array.from(files);
-            
-            // สร้าง structure ของไฟล์
-            const structure = {};
-            
-            filesArray.forEach(file => {
-                const pathParts = file.webkitRelativePath.split('/');
-                const fileName = pathParts[pathParts.length - 1];
-                const folderPath = pathParts.slice(0, -1).join('/');
-                
-                if (!structure[folderPath]) {
-                    structure[folderPath] = [];
-                }
-                
-                structure[folderPath].push({
-                    name: fileName,
-                    fullPath: file.webkitRelativePath,
-                    file: file,
-                    isIndex: fileName.toLowerCase() === 'index.html'
-                });
-            });
+  const icon = document.createElement('div');
+  icon.className = 'icon ' + (item.isDir ? 'dir' : 'fil');
+  icon.textContent = item.isDir ? 'D' : 'F';
 
-            // แปลง structure เป็น list
-            Object.keys(structure).sort().forEach(folderPath => {
-                const folderFiles = structure[folderPath];
-                const hasIndex = folderFiles.some(f => f.isIndex);
-                
-                // เพิ่ม folder
-                if (folderPath) {
-                    fileList.push({
-                        name: folderPath,
-                        type: 'folder',
-                        hasIndex: hasIndex,
-                        files: folderFiles
-                    });
-                }
-                
-                // เพิ่ม HTML files
-                folderFiles.forEach(fileInfo => {
-                    if (fileInfo.name.toLowerCase().endsWith('.html') || fileInfo.name.toLowerCase().endsWith('.htm')) {
-                        fileList.push({
-                            name: fileInfo.name,
-                            fullPath: fileInfo.fullPath,
-                            type: 'file',
-                            isIndex: fileInfo.isIndex,
-                            file: fileInfo.file,
-                            folder: folderPath
-                        });
-                    }
-                });
-            });
+  const link = document.createElement('a');
+  link.className = 'name';
+  link.textContent = item.name;
+  link.title = item.name;
+  // ถ้าเป็นโฟลเดอร์ ให้ลิงก์ไปยังเส้นทางโฟลเดอร์ (เว็บเซิร์ฟเวอร์จะเสิร์ฟ index หรือ list เอง)
+  // ถ้าเป็นไฟล์ ให้ลิงก์ไปยังไฟล์โดยตรง
+  link.href = encodeURIComponent(item.name) + (item.isDir ? '/' : '');
 
-            displayFiles();
-            document.getElementById('fileCount').textContent = fileList.length;
-            
-            if (fileList.length > 0) {
-                selectFile(0);
-            }
-        }
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  meta.innerHTML = [
+    item.isDir ? 'โฟลเดอร์' : humanSize(item.size),
+    humanDate(item.mtime)
+  ].filter(Boolean).join('<br>');
 
-        function displayFiles() {
-            const listContent = document.getElementById('fileListContent');
-            listContent.innerHTML = '';
+  wrap.append(icon, link, meta);
+  return wrap;
+}
 
-            if (fileList.length === 0) {
-                listContent.innerHTML = '<div class="empty-state">No HTML files found in the selected directory.</div>';
-                return;
-            }
+function render(filter=''){
+  const f = filter.trim().toLowerCase();
+  const dirs  = DATA.dirs.filter(x => x.name.toLowerCase().includes(f));
+  const files = DATA.files.filter(x => x.name.toLowerCase().includes(f));
 
-            fileList.forEach((item, index) => {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                
-                if (item.type === 'folder') {
-                    fileItem.classList.add('folder');
-                    fileItem.innerHTML = `
-                        <div>${item.name}</div>
-                        ${item.hasIndex ? '<div class="file-path">Contains index.html</div>' : ''}
-                    `;
-                } else {
-                    if (item.isIndex) {
-                        fileItem.classList.add('index-file');
-                    } else {
-                        fileItem.classList.add('html-file');
-                    }
-                    fileItem.innerHTML = `
-                        <div>${item.name}</div>
-                        <div class="file-path">${item.fullPath}</div>
-                    `;
-                }
-                
-                fileItem.onclick = () => selectFile(index);
-                listContent.appendChild(fileItem);
-            });
-        }
+  elDirs.innerHTML  = '';
+  elFiles.innerHTML = '';
 
-        function selectFile(index) {
-            const items = document.querySelectorAll('.file-item');
-            items.forEach((item, i) => {
-                item.classList.toggle('selected', i === index);
-            });
+  dirs.forEach(it => elDirs.appendChild(row(it)));
+  files.forEach(it => elFiles.appendChild(row(it)));
 
-            selectedIndex = index;
-            const item = fileList[index];
+  elDirsTitle.style.display  = dirs.length  ? '' : 'none';
+  elFilesTitle.style.display = files.length ? '' : 'none';
+  elEmpty.style.display = (!dirs.length && !files.length) ? '' : 'none';
+}
 
-            if (item.type === 'folder') {
-                document.getElementById('selectedFileName').textContent = item.name;
-                document.getElementById('selectedFileType').textContent = 'Directory';
-                document.getElementById('selectedFilePath').textContent = item.name;
-                document.getElementById('loadBtn').disabled = true;
-            } else {
-                document.getElementById('selectedFileName').textContent = item.name;
-                document.getElementById('selectedFileType').textContent = item.isIndex ? 'Index HTML File' : 'HTML File';
-                document.getElementById('selectedFilePath').textContent = item.fullPath;
-                document.getElementById('loadBtn').disabled = false;
-            }
-            
-            document.getElementById('selectedInfo').classList.add('show');
-        }
+async function load(){
+  const res = await fetch('/api/list');
+  if (!res.ok){ alert('โหลดรายชื่อไฟล์ไม่ได้'); return; }
+  DATA = await res.json();
+  render(q.value);
+}
 
-        function loadFile() {
-            if (selectedIndex === -1 || fileList[selectedIndex].type === 'folder') {
-                alert('กรุณาเลือกไฟล์ HTML');
-                return;
-            }
+document.getElementById('refresh').addEventListener('click', load);
+q.addEventListener('input', () => render(q.value));
 
-            const item = fileList[selectedIndex];
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                const content = e.target.result;
-                
-                // เปิดหน้าต่างใหม่และแสดง HTML
-                const newWindow = window.open('', '_blank');
-                newWindow.document.write(content);
-                newWindow.document.close();
-                
-                console.log('Loaded:', item.name);
-            };
-
-            reader.readAsText(item.file);
-        }
-
-        function resetSelection() {
-            fileList = [];
-            selectedIndex = -1;
-            document.getElementById('fileCount').textContent = '0';
-            document.getElementById('fileListContent').innerHTML = '<div class="empty-state">No directory loaded. Click "BROWSE FOLDER" to select a directory.</div>';
-            document.getElementById('selectedInfo').classList.remove('show');
-            document.getElementById('loadBtn').disabled = true;
-            document.getElementById('folderInput').value = '';
-        }
-
-        // Update time every second
-        setInterval(updateDateTime, 1000);
-        updateDateTime();
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (fileList.length === 0) return;
-
-            if (e.key === 'ArrowUp' && selectedIndex > 0) {
-                selectFile(selectedIndex - 1);
-                e.preventDefault();
-            } else if (e.key === 'ArrowDown' && selectedIndex < fileList.length - 1) {
-                selectFile(selectedIndex + 1);
-                e.preventDefault();
-            } else if (e.key === 'Enter' && !document.getElementById('loadBtn').disabled) {
-                loadFile();
-                e.preventDefault();
-            }
-        });
-    </script>
+load();
+</script>
 </body>
 </html>
