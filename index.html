@@ -1,134 +1,190 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Directory Browser</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Directory Scanner (HTML-only)</title>
 <style>
-  :root { --bg:#0b0b12; --panel:#141422; --text:#e6e6f0; --muted:#9aa0a6; --accent:#6aa8ff; --ok:#98e08b; }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-  .wrap{width:min(980px,100%);background:var(--panel);border:1px solid #22243a;border-radius:16px;box-shadow:0 10px 32px rgba(0,0,0,.35)}
-  .header{padding:18px 20px;border-bottom:1px solid #232544;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .header h1{font-size:18px;margin:0;letter-spacing:.3px}
-  .tools{margin-left:auto;display:flex;gap:8px}
-  .search{padding:10px 12px;border-radius:10px;border:1px solid #2b2e55;background:#0f1020;color:var(--text);min-width:220px}
-  .btn{padding:10px 12px;border-radius:10px;border:1px solid #2b2e55;background:#10122a;color:var(--text);cursor:pointer}
-  .btn:hover{border-color:#39407a}
-  .content{padding:6px 6px 14px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  @media (max-width:720px){.grid{grid-template-columns:1fr}}
-  .card{display:flex;align-items:center;gap:12px;background:#0f1024;border:1px solid #1d2042;border-radius:12px;padding:12px}
-  .icon{width:28px;height:28px;border-radius:8px;display:inline-grid;place-items:center;font-weight:700}
-  .dir{background:#14284d;color:#a6c6ff}
-  .fil{background:#213818;color:#bde7a8}
-  .meta{margin-left:auto;text-align:right;color:var(--muted);font-size:12px}
-  a.name{color:var(--text);text-decoration:none}
-  a.name:hover{color:var(--accent)}
-  .empty{color:var(--muted);padding:20px;text-align:center}
-  .section-title{margin:14px 8px 4px;color:#b9c0ff;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
-  .ft{padding:10px 14px;border-top:1px solid #232544;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, sans-serif; background:#0d0f12; color:#e6e6e6; margin:0; padding:24px; }
+  h1 { margin:0 0 6px; }
+  .sub { color:#a8b0bb; margin:0 0 16px; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  button, select, input[type="text"] {
+    background:#13161b; color:#e6e6e6; border:1px solid #2a2f38; border-radius:10px; padding:8px 12px;
+  }
+  table { width:100%; border-collapse:collapse; margin-top:12px; }
+  th, td { padding:10px; border-bottom:1px solid #1c2129; text-align:left; }
+  tr:hover { background:#12161c; }
+  a { color:#9ec5ff; text-decoration:none; } a:hover{text-decoration:underline;}
+  .badge { font-size:12px; padding:4px 8px; border:1px solid #2a2f38; border-radius:999px; color:#b7bec9; }
+  .hint { font-size:13px; color:#9aa3ad; }
+  .muted { color:#9aa3ad; }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="header">
-      <h1>📂 ไฟล์ในโฟลเดอร์นี้</h1>
-      <div class="tools">
-        <input id="q" class="search" placeholder="พิมพ์เพื่อค้นหา เช่น .html, data, ภาพ" />
-        <button id="refresh" class="btn">รีเฟรช</button>
-      </div>
-    </div>
-    <div class="content">
-      <div id="dirsTitle" class="section-title" style="display:none">Directories</div>
-      <div id="dirs" class="grid"></div>
-      <div id="filesTitle" class="section-title" style="display:none">Files</div>
-      <div id="files" class="grid"></div>
-      <div id="empty" class="empty" style="display:none">ไม่มีไฟล์/โฟลเดอร์ที่ตรงกับการค้นหา</div>
-    </div>
-    <div class="ft">
-      <div>เคล็ดลับ: ค้นหาด้วยนามสกุล เช่น <code>.html</code>, <code>.png</code>, หรือคำขึ้นต้นไฟล์</div>
-      <div>อัปเดตแบบเรียลไทม์จากโฟลเดอร์เดียวกับ <code>index.html</code></div>
-    </div>
-  </div>
+<h1>🔍 Directory Scanner (HTML-only)</h1>
+<p class="sub">โหมด A: อ่านรายชื่อไฟล์จาก “เซิร์ฟเวอร์ (Apache AutoIndex)” • โหมด B: เลือกโฟลเดอร์จากเครื่องคุณ</p>
+
+<div class="row">
+  <button id="scanServerBtn">โหมด A: สแกนจากเซิร์ฟเวอร์</button>
+  <button id="pickDirBtn">โหมด B: เลือกโฟลเดอร์บนเครื่อง</button>
+  <span class="badge" id="status">พร้อมทำงาน</span>
+</div>
+
+<div class="row">
+  <label class="badge">กรองนามสกุล</label>
+  <select id="extFilter">
+    <option value="">ทั้งหมด</option>
+    <option>.html</option><option>.htm</option>
+    <option>.php</option><option>.txt</option>
+    <option>.js</option><option>.css</option>
+    <option>.json</option><option>.png</option>
+    <option>.jpg</option><option>.jpeg</option><option>.gif</option>
+    <option>.pdf</option>
+  </select>
+
+  <label class="badge">ค้นหาชื่อไฟล์</label>
+  <input id="searchBox" type="text" placeholder="พิมพ์ค้นหา เช่น index, about, data">
+</div>
+
+<table id="fileTable">
+  <thead>
+    <tr>
+      <th>ชื่อไฟล์ / เส้นทาง</th>
+      <th>ขนาด</th>
+      <th>ชนิด</th>
+      <th>เปิด</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<p class="hint">
+  เคล็ดลับ: โหมด A ต้องเปิด <code>Options +Indexes</code> (Apache AutoIndex) ในโฟลเดอร์นี้ก่อน
+  หากยังไม่ได้เปิด ปุ่ม “สแกนจากเซิร์ฟเวอร์” อาจไม่พบรายการไฟล์
+</p>
 
 <script>
-const elDirs  = document.getElementById('dirs');
-const elFiles = document.getElementById('files');
-const elDirsTitle  = document.getElementById('dirsTitle');
-const elFilesTitle = document.getElementById('filesTitle');
-const elEmpty = document.getElementById('empty');
-const q = document.getElementById('q');
+const statusEl = document.getElementById('status');
+const tableBody = document.querySelector('#fileTable tbody');
+const extFilter = document.getElementById('extFilter');
+const searchBox = document.getElementById('searchBox');
+const scanServerBtn = document.getElementById('scanServerBtn');
+const pickDirBtn = document.getElementById('pickDirBtn');
 
-let DATA = { dirs: [], files: [] };
+let entries = []; // {name, size, type, href}
 
-function humanSize(n){
-  if (n == null) return '';
-  const u = ['B','KB','MB','GB','TB'];
-  let i=0, s=n;
-  while (s>=1024 && i<u.length-1){ s/=1024; i++; }
-  return s.toFixed(s<10 && i>0 ? 1 : 0) + ' ' + u[i];
-}
-function humanDate(ms){
-  if (!ms) return '';
-  const d = new Date(ms);
-  return d.toLocaleString();
+function formatBytes(bytes) {
+  if (bytes == null) return '-';
+  if (bytes === 0) return '0 B';
+  const k = 1024, sizes = ['B','KB','MB','GB','TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-function row(item){
-  const wrap = document.createElement('div');
-  wrap.className = 'card';
+function render() {
+  const ext = extFilter.value.toLowerCase();
+  const q = searchBox.value.trim().toLowerCase();
+  tableBody.innerHTML = '';
 
-  const icon = document.createElement('div');
-  icon.className = 'icon ' + (item.isDir ? 'dir' : 'fil');
-  icon.textContent = item.isDir ? 'D' : 'F';
-
-  const link = document.createElement('a');
-  link.className = 'name';
-  link.textContent = item.name;
-  link.title = item.name;
-  // ถ้าเป็นโฟลเดอร์ ให้ลิงก์ไปยังเส้นทางโฟลเดอร์ (เว็บเซิร์ฟเวอร์จะเสิร์ฟ index หรือ list เอง)
-  // ถ้าเป็นไฟล์ ให้ลิงก์ไปยังไฟล์โดยตรง
-  link.href = encodeURIComponent(item.name) + (item.isDir ? '/' : '');
-
-  const meta = document.createElement('div');
-  meta.className = 'meta';
-  meta.innerHTML = [
-    item.isDir ? 'โฟลเดอร์' : humanSize(item.size),
-    humanDate(item.mtime)
-  ].filter(Boolean).join('<br>');
-
-  wrap.append(icon, link, meta);
-  return wrap;
+  entries
+    .filter(f => !ext || f.name.toLowerCase().endsWith(ext))
+    .filter(f => !q || f.name.toLowerCase().includes(q))
+    .sort((a,b) => a.name.localeCompare(b.name))
+    .forEach(file => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${file.path || file.name}</td>
+        <td>${formatBytes(file.size)}</td>
+        <td>${file.type || '-'}</td>
+        <td>${file.href ? `<a href="${file.href}" target="_blank" rel="noopener">เปิด</a>` : '<span class="muted">—</span>'}</td>
+      `;
+      tableBody.appendChild(tr);
+    });
 }
 
-function render(filter=''){
-  const f = filter.trim().toLowerCase();
-  const dirs  = DATA.dirs.filter(x => x.name.toLowerCase().includes(f));
-  const files = DATA.files.filter(x => x.name.toLowerCase().includes(f));
+// โหมด A: พยายามอ่าน “หน้า directory listing” ที่ Apache สร้างให้ (AutoIndex)
+async function scanFromServer() {
+  statusEl.textContent = 'กำลังอ่านจากเซิร์ฟเวอร์…';
+  try {
+    // ขอ HTML ของไดเรคทอรีปัจจุบัน (ต้องเปิด Options +Indexes)
+    const res = await fetch('./', { method: 'GET' });
+    const html = await res.text();
 
-  elDirs.innerHTML  = '';
-  elFiles.innerHTML = '';
+    // สร้าง DOM แล้วดึงลิงก์ออกมา
+    const dom = new DOMParser().parseFromString(html, 'text/html');
+    const links = [...dom.querySelectorAll('a')];
 
-  dirs.forEach(it => elDirs.appendChild(row(it)));
-  files.forEach(it => elFiles.appendChild(row(it)));
+    // กรองเฉพาะลิงก์ไฟล์ (ตัดลิงก์ ../ และโฟลเดอร์ ถ้า Apache ทำเป็น /)
+    const items = links
+      .map(a => a.getAttribute('href') || '')
+      .filter(h => h && h !== '../' && !h.endsWith('/'));
 
-  elDirsTitle.style.display  = dirs.length  ? '' : 'none';
-  elFilesTitle.style.display = files.length ? '' : 'none';
-  elEmpty.style.display = (!dirs.length && !files.length) ? '' : 'none';
+    if (!items.length) {
+      statusEl.textContent = 'ไม่พบรายชื่อไฟล์จาก AutoIndex (ยังไม่ได้เปิด Options +Indexes?)';
+      entries = [];
+      render();
+      return;
+    }
+
+    // สร้างรายการ (ไม่รู้ขนาดไฟล์จากหน้า index HTML จึงปล่อย size ว่าง)
+    entries = items.map(h => {
+      const name = decodeURIComponent(h).split('/').pop();
+      const ext = name.includes('.') ? name.split('.').pop() : '';
+      return {
+        name, size: null, type: ext, href: h, path: name
+      };
+    });
+
+    statusEl.textContent = `พบไฟล์จากเซิร์ฟเวอร์: ${entries.length} รายการ`;
+    render();
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = 'อ่านจากเซิร์ฟเวอร์ไม่สำเร็จ';
+    entries = [];
+    render();
+  }
 }
 
-async function load(){
-  const res = await fetch('/api/list');
-  if (!res.ok){ alert('โหลดรายชื่อไฟล์ไม่ได้'); return; }
-  DATA = await res.json();
-  render(q.value);
+// โหมด B: ให้ผู้ใช้เลือกโฟลเดอร์บนเครื่อง (Chromium-based + HTTPS/localhost)
+async function pickDirectory() {
+  if (!('showDirectoryPicker' in window)) {
+    alert('เบราว์เซอร์นี้ไม่รองรับ showDirectoryPicker (ใช้ Chrome/Edge บน HTTPS หรือ localhost)');
+    return;
+  }
+  statusEl.textContent = 'กำลังอ่านโฟลเดอร์จากเครื่องคุณ…';
+  try {
+    const dirHandle = await window.showDirectoryPicker();
+    entries = [];
+    for await (const [name, handle] of dirHandle.entries()) {
+      if (handle.kind === 'file') {
+        const file = await handle.getFile();
+        const ext = name.includes('.') ? name.split('.').pop() : '';
+        entries.push({
+          name, size: file.size, type: ext, href: URL.createObjectURL(file), path: name
+        });
+      }
+    }
+    statusEl.textContent = `พบไฟล์ในโฟลเดอร์: ${entries.length} รายการ`;
+    render();
+  } catch (e) {
+    if (e && e.name === 'AbortError') {
+      statusEl.textContent = 'ยกเลิกการเลือกโฟลเดอร์';
+    } else {
+      console.error(e);
+      statusEl.textContent = 'ไม่สามารถอ่านโฟลเดอร์ได้';
+    }
+  }
 }
 
-document.getElementById('refresh').addEventListener('click', load);
-q.addEventListener('input', () => render(q.value));
+scanServerBtn.addEventListener('click', scanFromServer);
+pickDirBtn.addEventListener('click', pickDirectory);
+extFilter.addEventListener('change', render);
+searchBox.addEventListener('input', render);
 
-load();
+// เริ่มด้วยการลองโหมด A อัตโนมัติ (ถ้าไม่สำเร็จ ผู้ใช้กดปุ่มได้)
+scanFromServer();
 </script>
 </body>
 </html>
