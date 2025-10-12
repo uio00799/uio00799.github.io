@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วงจร Logic Gate ปริศนา</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .trophy {
+            background: rgba(34, 197, 94, 0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #22c55e;
+            font-size: 1.2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .instructions {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.5);
+        }
+
+        .instructions h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #60a5fa;
+        }
+
+        .instructions ol {
+            margin-left: 25px;
+            line-height: 1.8;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .input-btn {
+            padding: 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #374151;
+            color: #9ca3af;
+        }
+
+        .input-btn.active {
+            background: #22c55e;
+            color: white;
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
+            transform: scale(1.05);
+        }
+
+        .input-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .reset-btn {
+            display: block;
+            margin: 0 auto 30px;
+            padding: 15px 40px;
+            background: #ef4444;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .circuit-diagram {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .gate-layer {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .gate {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .gate-box {
+            width: 80px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            background: #374151;
+            color: #9ca3af;
+        }
+
+        .gate-box.active {
+            background: #22c55e;
+            color: white;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+        }
+
+        .signal {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #4b5563;
+            transition: all 0.3s;
+        }
+
+        .signal.active {
+            background: #22c55e;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.8);
+        }
+
+        .output-display {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid #06b6d4;
+            margin-bottom: 30px;
+        }
+
+        .output-display h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+
+        .binary-output {
+            padding: 30px;
+            border-radius: 12px;
+            background: rgba(31, 41, 55, 0.5);
+            border: 2px solid #4b5563;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .binary-output.correct {
+            background: rgba(22, 163, 74, 0.3);
+            border-color: #22c55e;
+        }
+
+        .binary-value {
+            font-size: 3rem;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            letter-spacing: 8px;
+            margin: 20px 0;
+        }
+
+        .ascii-char {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #06b6d4;
+        }
+
+        .status-message {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .status-correct {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid #22c55e;
+            color: #22c55e;
+        }
+
+        .status-incorrect {
+            background: rgba(234, 179, 8, 0.2);
+            border: 2px solid #eab308;
+            color: #eab308;
+        }
+
+        .logic-outputs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #374151;
+        }
+
+        .logic-output {
+            text-align: center;
+        }
+
+        .progress-tracker {
+            background: rgba(147, 51, 234, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(147, 51, 234, 0.5);
+        }
+
+        .progress-tracker h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #c084fc;
+        }
+
+        .progress-count {
+            font-size: 1.5rem;
+            color: #06b6d4;
+            font-weight: bold;
+        }
+
+        .success-message {
+            background: rgba(22, 163, 74, 0.3);
+            border: 2px solid #22c55e;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            animation: celebration 1s ease-in-out;
+        }
+
+        @keyframes celebration {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .success-title {
+            font-size: 2rem;
+            text-align: center;
+            color: #22c55e;
+            margin-bottom: 20px;
+        }
+
+        .answer-reveal {
+            font-size: 1.8rem;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .binary-list {
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+        }
+
+        .binary-item {
+            color: #22c55e;
+            font-weight: bold;
+            text-align: center;
+            padding: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .input-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .binary-value {
+                font-size: 2rem;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>⚡</span>
+                วงจร Logic Gate ปริศนา
+            </h1>
+            <div id="trophy" class="trophy" style="display: none;">
+                🏆 ถูกต้อง!
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📖 วิธีเล่น</h3>
+            <p><strong>เป้าหมาย:</strong> หาค่า Input (A-H) ที่ทำให้ได้ Binary Code ที่ถูกต้อง</p>
+            <p style="margin-top: 10px;"><strong>กติกา:</strong></p>
+            <ol>
+                <li>กดปุ่ม INPUT A-H เพื่อสลับสถานะ ON(1)/OFF(0)</li>
+                <li>Output จะแสดง Binary 8 bits จาก Input ของคุณ</li>
+                <li>หาค่า Input ที่ทำให้ได้ Binary ที่ตรงกับคำตอบ</li>
+                <li>มี <strong style="color: #eab308;">9 Binary codes</strong> ที่ถูกต้อง ซึ่งแปลงเป็นตัวอักษรได้คำหนึ่ง</li>
+            </ol>
+        </div>
+
+        <div class="input-grid" id="inputGrid"></div>
+
+        <button class="reset-btn" onclick="resetInputs()">🔄 รีเซ็ต</button>
+
+        <div class="circuit-diagram">
+            <h2 style="margin-bottom: 30px;">🔌 วงจรตรรกศาสตร์ (ซับซ้อน)</h2>
+            
+            <div class="gate-layer" id="layer1"></div>
+            <div class="gate-layer" id="layer2"></div>
+            <div class="gate-layer" id="layer3"></div>
+            
+            <div style="text-align: center; color: #6b7280; margin-top: 20px;">
+                ⚠️ วงจรมีความซับซ้อนหลายชั้น แต่ Output ขึ้นกับ Input โดยตรง
+            </div>
+        </div>
+
+        <div class="output-display">
+            <h2>📊 OUTPUT ของวงจร</h2>
+            
+            <div id="binaryOutput" class="binary-output">
+                <div style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px;">BINARY OUTPUT (8 bits):</div>
+                <div class="binary-value" id="binaryValue">00000000</div>
+                <div class="ascii-char">
+                    ASCII Character: <span style="font-size: 2rem; color: #06b6d4;" id="asciiChar">'@'</span>
+                </div>
+            </div>
+
+            <div id="statusMessage" class="status-message status-incorrect">
+                ❌ Binary นี้ไม่ถูกต้อง ลองปรับ Input ใหม่
+            </div>
+
+            <div class="logic-outputs">
+                <div class="logic-output">
+                    <div style="color: #6b7280; font-size: 0.9rem; margin-bottom: 10px;">Logic OUT 1</div>
+                    <div class="signal" id="out1"></div>
+                    <div style="color: #4b5563; font-size: 0.8rem; margin-top: 5px;" id="out1Text">0</div>
+                </div>
+                <div class="logic-output">
+                    <div style="color: #6b7280; font-size: 0.9rem; margin-bottom: 10px;">Logic OUT 2</div>
+                    <div class="signal" id="out2"></div>
+                    <div style="color: #4b5563; font-size: 0.8rem; margin-top: 5px;" id="out2Text">0</div>
+                </div>
+                <div class="logic-output">
+                    <div style="color: #6b7280; font-size: 0.9rem; margin-bottom: 10px;">Logic OUT 3</div>
+                    <div class="signal" id="out3"></div>
+                    <div style="color: #4b5563; font-size: 0.8rem; margin-top: 5px;" id="out3Text">0</div>
+                </div>
+            </div>
+            <div style="text-align: center; color: #4b5563; font-size: 0.8rem; margin-top: 15px;">
+                (Logic Outputs เป็นส่วนของวงจรภายใน - ไม่ใช่คำตอบหลัก)
+            </div>
+        </div>
+
+        <div class="progress-tracker">
+            <h3>🎯 ความคืบหน้า</h3>
+            <p>Binary ที่คุณค้นพบแล้ว: <span class="progress-count" id="progressCount">0/9</span></p>
+            
+            <div id="progressMessage" style="margin-top: 15px; color: #9ca3af;">
+                ยังไม่ได้เริ่มค้นหา... ลองปรับค่า Input ดูสิ!
+            </div>
+
+            <div id="successMessage" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const inputs = { A: false, B: false, C: false, D: false, E: false, F: false, G: false, H: false };
+        const correctBinary = [
+            "01001011", "01101110", "01101111", "01110111",
+            "01101100", "01100101", "01100100", "01100111", "01100101"
+        ];
+        const correctWord = "Knowledge";
+        let foundBinaries = [];
+
+        function initInputs() {
+            const grid = document.getElementById('inputGrid');
+            Object.keys(inputs).forEach(key => {
+                const btn = document.createElement('button');
+                btn.className = 'input-btn';
+                btn.innerHTML = `
+                    <div style="font-size: 1.5rem;">⚡ INPUT ${key}</div>
+                    <div style="margin-top: 10px;">OFF (0)</div>
+                `;
+                btn.onclick = () => toggleInput(key, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function initGates() {
+            const layer1 = document.getElementById('layer1');
+            const layer2 = document.getElementById('layer2');
+            const layer3 = document.getElementById('layer3');
+
+            ['AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'].forEach((type, i) => {
+                layer1.innerHTML += `
+                    <div class="gate">
+                        <div class="gate-box" id="gate1_${i}">${type}</div>
+                        <div class="signal" id="signal1_${i}"></div>
+                    </div>
+                `;
+            });
+
+            ['CPX1', 'CPX2', 'CPX3', 'CPX4', 'CPX5'].forEach((type, i) => {
+                layer2.innerHTML += `
+                    <div class="gate">
+                        <div class="gate-box" id="gate2_${i}">${type}</div>
+                        <div class="signal" id="signal2_${i}"></div>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleInput(key, btn) {
+            inputs[key] = !inputs[key];
+            btn.className = inputs[key] ? 'input-btn active' : 'input-btn';
+            btn.innerHTML = `
+                <div style="font-size: 1.5rem;">⚡ INPUT ${key}</div>
+                <div style="margin-top: 10px;">${inputs[key] ? 'ON (1)' : 'OFF (0)'}</div>
+            `;
+            updateCircuit();
+        }
+
+        function resetInputs() {
+            Object.keys(inputs).forEach(key => {
+                inputs[key] = false;
+            });
+            document.querySelectorAll('.input-btn').forEach((btn, i) => {
+                btn.className = 'input-btn';
+                const key = Object.keys(inputs)[i];
+                btn.innerHTML = `
+                    <div style="font-size: 1.5rem;">⚡ INPUT ${key}</div>
+                    <div style="margin-top: 10px;">OFF (0)</div>
+                `;
+            });
+            updateCircuit();
+        }
+
+        function binaryToChar(binary) {
+            try {
+                return String.fromCharCode(parseInt(binary, 2));
+            } catch {
+                return '?';
+            }
+        }
+
+        function updateCircuit() {
+            const { A, B, C, D, E, F, G, H } = inputs;
+            
+            // คำนวณ Gates
+            const gates = [
+                A && B,
+                C || D,
+                E !== F,
+                !(G && H),
+                !(A || B),
+                C === D
+            ];
+
+            gates.forEach((active, i) => {
+                const gate = document.getElementById(`gate1_${i}`);
+                const signal = document.getElementById(`signal1_${i}`);
+                if (gate) gate.className = active ? 'gate-box active' : 'gate-box';
+                if (signal) signal.className = active ? 'signal active' : 'signal';
+            });
+
+            // Layer 2
+            const complex = [
+                (A && B) && (C || D),
+                (E !== F) || !(G && H),
+                (A && !B) || (C && D),
+                (!E && F) || (G !== H),
+                (A !== E) && (B || F)
+            ];
+
+            complex.forEach((active, i) => {
+                const gate = document.getElementById(`gate2_${i}`);
+                const signal = document.getElementById(`signal2_${i}`);
+                if (gate) gate.className = active ? 'gate-box active' : 'gate-box';
+                if (signal) signal.className = active ? 'signal active' : 'signal';
+            });
+
+            // Output
+            const inputBinary = [A, B, C, D, E, F, G, H].map(v => v ? '1' : '0').join('');
+            document.getElementById('binaryValue').textContent = inputBinary;
+            document.getElementById('asciiChar').textContent = `'${binaryToChar(inputBinary)}'`;
+
+            const isCorrect = correctBinary.includes(inputBinary);
+            const binaryOutput = document.getElementById('binaryOutput');
+            const statusMessage = document.getElementById('statusMessage');
+            const trophy = document.getElementById('trophy');
+
+            if (isCorrect) {
+                binaryOutput.className = 'binary-output correct';
+                statusMessage.className = 'status-message status-correct';
+                statusMessage.textContent = '✅ Binary นี้ถูกต้อง! เป็น 1 ใน 9 ตัว';
+                trophy.style.display = 'block';
+
+                if (!foundBinaries.includes(inputBinary)) {
+                    foundBinaries.push(inputBinary);
+                    updateProgress();
+                }
+            } else {
+                binaryOutput.className = 'binary-output';
+                statusMessage.className = 'status-message status-incorrect';
+                statusMessage.textContent = '❌ Binary นี้ไม่ถูกต้อง ลองปรับ Input ใหม่';
+                trophy.style.display = 'none';
+            }
+
+            // Logic outputs (decoy)
+            const out1 = complex[0] && complex[1];
+            const out2 = complex[1] !== complex[2];
+            const out3 = !(complex[0] || complex[3]);
+
+            document.getElementById('out1').className = out1 ? 'signal active' : 'signal';
+            document.getElementById('out2').className = out2 ? 'signal active' : 'signal';
+            document.getElementById('out3').className = out3 ? 'signal active' : 'signal';
+            document.getElementById('out1Text').textContent = out1 ? '1' : '0';
+            document.getElementById('out2Text').textContent = out2 ? '1' : '0';
+            document.getElementById('out3Text').textContent = out3 ? '1' : '0';
+        }
+
+        function updateProgress() {
+            const count = foundBinaries.length;
+            document.getElementById('progressCount').textContent = `${count}/9`;
+
+            const progressMessage = document.getElementById('progressMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            if (count === 9) {
+                progressMessage.style.display = 'none';
+                successMessage.style.display = 'block';
+                successMessage.className = 'success-message';
+                
+                let binaryListHTML = '<div class="binary-list">';
+                correctBinary.forEach((binary, i) => {
+                    binaryListHTML += `<div class="binary-item">${i + 1}. ${binary} → '${binaryToChar(binary)}'</div>`;
+                });
+                binaryListHTML += '</div>';
+
+                successMessage.innerHTML = `
+                    <div class="success-title">🎉 ยินดีด้วย! คุณหาเจอครบทั้งหมดแล้ว!</div>
+                    <div class="answer-reveal">คำตอบคือ: "${correctWord}"</div>
+                    <div style="text-align: center; margin-top: 10px; color: #d1d5db;">รายการ Binary ทั้งหมด:</div>
+                    ${binaryListHTML}
+                `;
+            } else if (count > 0) {
+                progressMessage.textContent = `ยังหาไม่ครบ! เหลืออีก ${9 - count} ตัว`;
+                progressMessage.style.color = '#eab308';
+            } else {
+                progressMessage.textContent = 'ยังไม่ได้เริ่มค้นหา... ลองปรับค่า Input ดูสิ!';
+                progressMessage.style.color = '#9ca3af';
+            }
+        }
+
+        initInputs();
+        initGates();
+        updateCircuit();
+    </script>
+</body>
+</html>
