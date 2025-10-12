@@ -5,501 +5,336 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitHub Directory Scanner - BIOS</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #000;
-            color: #0f0;
-            font-family: 'Courier New', monospace;
-            padding: 20px;
-            line-height: 1.4;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            border: 2px solid #0f0;
-            padding: 20px;
-            background: #001100;
-        }
-
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #0f0;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-            text-shadow: 0 0 10px #0f0;
-        }
-
-        .header .subtitle {
-            font-size: 12px;
-            color: #0a0;
-        }
-
-        .config-section {
-            border: 1px solid #0f0;
-            padding: 15px;
-            margin-bottom: 20px;
-            background: #000;
-        }
-
-        .config-title {
-            color: #0f0;
-            margin-bottom: 10px;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-
-        .input-group {
-            margin-bottom: 10px;
-        }
-
-        label {
-            display: inline-block;
-            width: 150px;
-            color: #0a0;
-        }
-
-        input[type="text"] {
-            background: #000;
-            border: 1px solid #0f0;
-            color: #0f0;
-            padding: 5px 10px;
-            font-family: 'Courier New', monospace;
-            width: 300px;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            box-shadow: 0 0 5px #0f0;
-        }
-
-        button {
-            background: #0f0;
-            color: #000;
-            border: none;
-            padding: 8px 20px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-
-        button:hover {
-            background: #0a0;
-            box-shadow: 0 0 10px #0f0;
-        }
-
-        button:active {
-            background: #050;
-        }
-
-        .status {
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #0f0;
-            background: #000;
-            min-height: 40px;
-        }
-
-        .loading {
-            color: #ff0;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.3; }
-        }
-
-        .error {
-            color: #f00;
-        }
-
-        .success {
-            color: #0ff;
-        }
-
-        .filter-section {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .stats {
-            border: 1px solid #0f0;
-            padding: 10px;
-            margin-bottom: 15px;
-            background: #000;
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
-        }
-
-        .stat-item {
-            color: #0ff;
-        }
-
-        .stat-item span {
-            color: #0f0;
-            font-weight: bold;
-        }
-
-        .table-container {
-            overflow-x: auto;
-            border: 1px solid #0f0;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-
-        th {
-            background: #0f0;
-            color: #000;
-            padding: 8px;
-            text-align: left;
-            position: sticky;
-            top: 0;
-            font-weight: bold;
-        }
-
-        td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #003300;
-        }
-
-        tr:hover {
-            background: #002200;
-        }
-
-        a {
-            color: #0ff;
-            text-decoration: none;
-        }
-
-        a:hover {
-            color: #0f0;
-            text-decoration: underline;
-        }
-
-        .path {
-            color: #0a0;
-            word-break: break-all;
-        }
-
-        .size {
-            color: #ff0;
-            text-align: right;
-        }
-
-        .type {
-            color: #f0f;
-        }
-
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #0a0;
-        }
-
-        select {
-            background: #000;
-            border: 1px solid #0f0;
-            color: #0f0;
-            padding: 5px 10px;
-            font-family: 'Courier New', monospace;
-        }
-
-        .footer {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #0f0;
-            text-align: center;
-            color: #0a0;
-            font-size: 11px;
-        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#000;color:#0f0;font-family:'Courier New',monospace;padding:20px;line-height:1.4}
+        .container{max-width:1400px;margin:0 auto;border:2px solid #0f0;padding:20px;background:#001100}
+        .header{text-align:center;border-bottom:2px solid #0f0;padding-bottom:15px;margin-bottom:20px}
+        .header h1{font-size:24px;margin-bottom:5px;text-shadow:0 0 10px #0f0}
+        .header .subtitle{font-size:12px;color:#0a0}
+        .config-section{border:1px solid #0f0;padding:15px;margin-bottom:20px;background:#000}
+        .config-title{color:#0f0;margin-bottom:10px;font-weight:bold;text-decoration:underline}
+        .input-group{margin-bottom:10px}
+        label{display:inline-block;width:150px;color:#0a0}
+        input[type="text"]{background:#000;border:1px solid #0f0;color:#0f0;padding:5px 10px;font-family:'Courier New',monospace;width:300px}
+        input[type="text"]:focus{outline:none;box-shadow:0 0 5px #0f0}
+        button{background:#0f0;color:#000;border:none;padding:8px 20px;font-family:'Courier New',monospace;font-weight:bold;cursor:pointer;margin-right:10px}
+        button:hover{background:#0a0;box-shadow:0 0 10px #0f0}
+        button:active{background:#050}
+        .status{padding:10px;margin:10px 0;border:1px solid #0f0;background:#000;min-height:40px}
+        .loading{color:#ff0;animation:blink 1s infinite}
+        @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:.3}}
+        .error{color:#f00}
+        .success{color:#0ff}
+        .filter-section{display:flex;gap:15px;margin-bottom:15px;flex-wrap:wrap}
+        .stats{border:1px solid #0f0;padding:10px;margin-bottom:15px;background:#000;display:flex;gap:30px;flex-wrap:wrap}
+        .stat-item{color:#0ff}.stat-item span{color:#0f0;font-weight:bold}
+        .table-container{overflow-x:auto;border:1px solid #0f0;max-height:600px;overflow-y:auto}
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th{background:#0f0;color:#000;padding:8px;text-align:left;position:sticky;top:0;font-weight:bold}
+        td{padding:6px 8px;border-bottom:1px solid #003300}
+        tr:hover{background:#002200}
+        a{color:#0ff;text-decoration:none}
+        a:hover{color:#0f0;text-decoration:underline}
+        .path{color:#0a0;word-break:break-all}
+        .size{color:#ff0;text-align:right}
+        .type{color:#f0f}
+        .no-data{text-align:center;padding:40px;color:#0a0}
+        select{background:#000;border:1px solid #0f0;color:#0f0;padding:5px 10px;font-family:'Courier New',monospace}
+        .footer{margin-top:20px;padding-top:15px;border-top:1px solid #0f0;text-align:center;color:#0a0;font-size:11px}
+        .link-group{display:flex;gap:8px;flex-wrap:wrap}
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>╔═══════════════════════════════════════╗</h1>
-            <h1>║  GITHUB DIRECTORY SCANNER v1.0      ║</h1>
-            <h1>╚═══════════════════════════════════════╝</h1>
-            <div class="subtitle">BIOS-STYLE FILE BROWSER</div>
+<div class="container">
+    <div class="header">
+        <h1>╔═══════════════════════════════════════╗</h1>
+        <h1>║  GITHUB DIRECTORY SCANNER v1.0      ║</h1>
+        <h1>╚═══════════════════════════════════════╝</h1>
+        <div class="subtitle">BIOS-STYLE FILE BROWSER</div>
+    </div>
+
+    <div class="config-section">
+        <div class="config-title">► REPOSITORY CONFIGURATION</div>
+        <div class="input-group">
+            <label>GitHub Owner:</label>
+            <input type="text" id="owner" value="uio00799" placeholder="username">
         </div>
-
-        <div class="config-section">
-            <div class="config-title">► REPOSITORY CONFIGURATION</div>
-            <div class="input-group">
-                <label>GitHub Owner:</label>
-                <input type="text" id="owner" value="uio00799" placeholder="username">
-            </div>
-            <div class="input-group">
-                <label>Repository:</label>
-                <input type="text" id="repo" value="" placeholder="repository-name">
-            </div>
-            <div class="input-group">
-                <label>Branch:</label>
-                <input type="text" id="branch" value="main" placeholder="main">
-            </div>
-            <div class="input-group">
-                <button onclick="scanRepository()">[ SCAN REPOSITORY ]</button>
-                <button onclick="clearResults()">[ CLEAR ]</button>
-            </div>
+        <div class="input-group">
+            <label>Repository:</label>
+            <input type="text" id="repo" value="" placeholder="repository-name">
         </div>
-
-        <div class="status" id="status">
-            Ready to scan. Enter repository details and click SCAN REPOSITORY.
+        <div class="input-group">
+            <label>Branch:</label>
+            <input type="text" id="branch" value="main" placeholder="main">
         </div>
-
-        <div id="resultsSection" style="display: none;">
-            <div class="config-section">
-                <div class="config-title">► FILTER OPTIONS</div>
-                <div class="filter-section">
-                    <div class="input-group">
-                        <label>Search Path:</label>
-                        <input type="text" id="searchInput" placeholder="ค้นหาชื่อไฟล์หรือ path" oninput="filterFiles()">
-                    </div>
-                    <div class="input-group">
-                        <label>File Extension:</label>
-                        <select id="extensionFilter" onchange="filterFiles()">
-                            <option value="">All Files</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Type:</label>
-                        <select id="typeFilter" onchange="filterFiles()">
-                            <option value="">All</option>
-                            <option value="blob">Files Only</option>
-                            <option value="tree">Directories Only</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stats" id="stats"></div>
-
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">#</th>
-                            <th style="width: 80px;">TYPE</th>
-                            <th>PATH</th>
-                            <th style="width: 100px;">SIZE</th>
-                            <th style="width: 150px;">OPEN (WEB)</th>
-                            <th style="width: 150px;">RAW</th>
-                        </tr>
-                    </thead>
-                    <tbody id="fileTable"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="footer">
-            Press F5 to refresh | ESC to clear | GitHub API Rate Limit: 60 req/hour (unauthenticated)
+        <div class="input-group">
+            <button onclick="scanRepository()">[ SCAN REPOSITORY ]</button>
+            <button onclick="clearResults()">[ CLEAR ]</button>
         </div>
     </div>
 
-    <script>
-        let allFiles = [];
-        let filteredFiles = [];
-        let currentOwner = '';
-        let currentRepo = '';
+    <div class="status" id="status">
+        Ready to scan. Enter repository details and click SCAN REPOSITORY.
+    </div>
 
-        async function scanRepository() {
-            const owner = document.getElementById('owner').value.trim();
-            const repo = document.getElementById('repo').value.trim();
-            const branch = document.getElementById('branch').value.trim() || 'main';
-            const statusEl = document.getElementById('status');
+    <div id="resultsSection" style="display:none;">
+        <div class="config-section">
+            <div class="config-title">► FILTER OPTIONS</div>
+            <div class="filter-section">
+                <div class="input-group">
+                    <label>Search Path:</label>
+                    <input type="text" id="searchInput" placeholder="ค้นหาชื่อไฟล์หรือ path" oninput="filterFiles()">
+                </div>
+                <div class="input-group">
+                    <label>File Extension:</label>
+                    <select id="extensionFilter" onchange="filterFiles()">
+                        <option value="">All Files</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Type:</label>
+                    <select id="typeFilter" onchange="filterFiles()">
+                        <option value="">All</option>
+                        <option value="blob">Files Only</option>
+                        <option value="tree">Directories Only</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-            if (!owner || !repo) {
-                statusEl.innerHTML = '<span class="error">ERROR: Please enter both owner and repository name</span>';
-                return;
-            }
+        <div class="stats" id="stats"></div>
 
-            currentOwner = owner;
-            currentRepo = repo;
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th style="width:50px;">#</th>
+                    <th style="width:80px;">TYPE</th>
+                    <th>PATH</th>
+                    <th style="width:100px;">SIZE</th>
+                    <th style="width:230px;">OPEN (GITHUB / PREVIEW)</th>
+                    <th style="width:150px;">RAW</th>
+                </tr>
+                </thead>
+                <tbody id="fileTable"></tbody>
+            </table>
+        </div>
+    </div>
 
-            statusEl.innerHTML = '<span class="loading">► Scanning repository... Please wait...</span>';
-            document.getElementById('resultsSection').style.display = 'none';
+    <div class="footer">
+        Press F5 to refresh | ESC to clear | GitHub API Rate Limit: 60 req/hour (unauthenticated)
+    </div>
+</div>
 
-            try {
-                const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
-                const response = await fetch(url);
+<script>
+let allFiles = [];
+let filteredFiles = [];
+let currentOwner = '';
+let currentRepo  = '';
+let currentBranch = '';
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+async function scanRepository() {
+    const owner  = document.getElementById('owner').value.trim();
+    const repo   = document.getElementById('repo').value.trim();
+    const branch = document.getElementById('branch').value.trim() || 'main';
+    const statusEl = document.getElementById('status');
 
-                const data = await response.json();
-                
-                if (!data.tree || data.tree.length === 0) {
-                    statusEl.innerHTML = '<span class="error">No files found in repository</span>';
-                    return;
-                }
+    if (!owner || !repo) {
+        statusEl.innerHTML = '<span class="error">ERROR: Please enter both owner and repository name</span>';
+        return;
+    }
 
-                allFiles = data.tree.map((item, index) => ({
-                    index: index + 1,
-                    type: item.type,
-                    path: item.path,
-                    size: item.size || 0,
-                    sha: item.sha,
-                    url: item.url
-                }));
+    currentOwner = owner;
+    currentRepo  = repo;
+    currentBranch = branch;
 
-                filteredFiles = [...allFiles];
-                
-                populateExtensionFilter();
-                displayFiles();
-                updateStats();
+    statusEl.innerHTML = '<span class="loading">► Scanning repository... Please wait...</span>';
+    document.getElementById('resultsSection').style.display = 'none';
 
-                statusEl.innerHTML = `<span class="success">✓ Scan complete! Found ${allFiles.length} items</span>`;
-                document.getElementById('resultsSection').style.display = 'block';
+    try {
+        // ตรวจสอบว่า branch มีอยู่จริงไหม ถ้าไม่มีให้ดึง default_branch
+        const repoResp = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+        if (!repoResp.ok) throw new Error(`Repo not found (HTTP ${repoResp.status})`);
+        const repoInfo = await repoResp.json();
 
-            } catch (error) {
-                statusEl.innerHTML = `<span class="error">ERROR: ${error.message}</span>`;
-                console.error('Scan error:', error);
-            }
+        // ถ้า branch ไม่พบ จะลองใช้ default_branch
+        let treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
+        let response = await fetch(treeUrl);
+
+        if (response.status === 404) {
+            currentBranch = repoInfo.default_branch || 'main';
+            document.getElementById('branch').value = currentBranch;
+            treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${currentBranch}?recursive=1`;
+            response = await fetch(treeUrl);
         }
 
-        function populateExtensionFilter() {
-            const extensions = new Set();
-            allFiles.forEach(file => {
-                if (file.type === 'blob' && file.path.includes('.')) {
-                    const ext = file.path.split('.').pop().toLowerCase();
-                    extensions.add(ext);
-                }
-            });
-
-            const select = document.getElementById('extensionFilter');
-            select.innerHTML = '<option value="">All Files</option>';
-            
-            [...extensions].sort().forEach(ext => {
-                const option = document.createElement('option');
-                option.value = ext;
-                option.textContent = `.${ext}`;
-                select.appendChild(option);
-            });
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        function filterFiles() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const extFilter = document.getElementById('extensionFilter').value;
-            const typeFilter = document.getElementById('typeFilter').value;
+        const data = await response.json();
 
-            filteredFiles = allFiles.filter(file => {
-                const matchSearch = file.path.toLowerCase().includes(searchTerm);
-                const matchExt = !extFilter || file.path.toLowerCase().endsWith(`.${extFilter}`);
-                const matchType = !typeFilter || file.type === typeFilter;
-                return matchSearch && matchExt && matchType;
-            });
-
-            displayFiles();
-            updateStats();
+        if (!data.tree || data.tree.length === 0) {
+            statusEl.innerHTML = '<span class="error">No files found in repository</span>';
+            return;
         }
 
-        function displayFiles() {
-            const tbody = document.getElementById('fileTable');
-            
-            if (filteredFiles.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="no-data">No files match the current filters</td></tr>';
-                return;
-            }
+        allFiles = data.tree.map((item, index) => ({
+            index: index + 1,
+            type: item.type,   // 'blob' = file, 'tree' = directory
+            path: item.path,
+            size: item.size || 0,
+            sha: item.sha,
+            url: item.url
+        }));
 
-            tbody.innerHTML = filteredFiles.map(file => {
-                const webUrl = `https://${currentOwner}.github.io/${currentRepo}/${file.path}`;
-                const rawUrl = `https://raw.githubusercontent.com/${currentOwner}/${currentRepo}/main/${file.path}`;
-                
-                const sizeStr = file.type === 'blob' ? formatSize(file.size) : '-';
-                const typeClass = file.type === 'blob' ? 'type' : 'success';
-                const typeDisplay = file.type === 'blob' ? 'FILE' : 'DIR';
+        filteredFiles = [...allFiles];
 
-                const webLink = file.type === 'blob' 
-                    ? `<a href="${webUrl}" target="_blank">Open Web</a>`
-                    : '-';
-                
-                const rawLink = file.type === 'blob'
-                    ? `<a href="${rawUrl}" target="_blank">View RAW</a>`
-                    : '-';
+        populateExtensionFilter();
+        displayFiles();
+        updateStats();
 
-                return `
-                    <tr>
-                        <td>${file.index}</td>
-                        <td class="${typeClass}">${typeDisplay}</td>
-                        <td class="path">${file.path}</td>
-                        <td class="size">${sizeStr}</td>
-                        <td>${webLink}</td>
-                        <td>${rawLink}</td>
-                    </tr>
-                `;
-            }).join('');
+        statusEl.innerHTML = `<span class="success">✓ Scan complete! Found ${allFiles.length} items (branch: ${currentBranch})</span>`;
+        document.getElementById('resultsSection').style.display = 'block';
+
+    } catch (error) {
+        statusEl.innerHTML = `<span class="error">ERROR: ${error.message}</span>`;
+        console.error('Scan error:', error);
+    }
+}
+
+function populateExtensionFilter() {
+    const extensions = new Set();
+    allFiles.forEach(file => {
+        if (file.type === 'blob' && file.path.includes('.')) {
+            const ext = file.path.split('.').pop().toLowerCase();
+            extensions.add(ext);
         }
+    });
 
-        function updateStats() {
-            const files = filteredFiles.filter(f => f.type === 'blob').length;
-            const dirs = filteredFiles.filter(f => f.type === 'tree').length;
-            const totalSize = filteredFiles
-                .filter(f => f.type === 'blob')
-                .reduce((sum, f) => sum + f.size, 0);
+    const select = document.getElementById('extensionFilter');
+    select.innerHTML = '<option value="">All Files</option>';
 
-            document.getElementById('stats').innerHTML = `
-                <div class="stat-item">Total Items: <span>${filteredFiles.length}</span></div>
-                <div class="stat-item">Files: <span>${files}</span></div>
-                <div class="stat-item">Directories: <span>${dirs}</span></div>
-                <div class="stat-item">Total Size: <span>${formatSize(totalSize)}</span></div>
-            `;
-        }
+    [...extensions].sort().forEach(ext => {
+        const option = document.createElement('option');
+        option.value = ext;
+        option.textContent = `.${ext}`;
+        select.appendChild(option);
+    });
+}
 
-        function formatSize(bytes) {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
+function filterFiles() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const extFilter  = document.getElementById('extensionFilter').value;
+    const typeFilter = document.getElementById('typeFilter').value;
 
-        function clearResults() {
-            allFiles = [];
-            filteredFiles = [];
-            document.getElementById('resultsSection').style.display = 'none';
-            document.getElementById('status').innerHTML = 'Ready to scan. Enter repository details and click SCAN REPOSITORY.';
-            document.getElementById('searchInput').value = '';
-            document.getElementById('extensionFilter').selectedIndex = 0;
-            document.getElementById('typeFilter').selectedIndex = 0;
-        }
+    filteredFiles = allFiles.filter(file => {
+        const matchSearch = file.path.toLowerCase().includes(searchTerm);
+        const matchExt    = !extFilter || file.path.toLowerCase().endsWith(`.${extFilter}`);
+        const matchType   = !typeFilter || file.type === typeFilter;
+        return matchSearch && matchExt && matchType;
+    });
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                clearResults();
-            }
-        });
+    displayFiles();
+    updateStats();
+}
 
-        // Enter to scan
-        document.querySelectorAll('#owner, #repo, #branch').forEach(input => {
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    scanRepository();
-                }
-            });
-        });
-    </script>
+function isHtml(path){
+    return /\.html?$/.test(path.toLowerCase());
+}
+
+function displayFiles() {
+    const tbody = document.getElementById('fileTable');
+
+    if (filteredFiles.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No files match the current filters</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filteredFiles.map(file => {
+        const sizeStr = file.type === 'blob' ? formatSize(file.size) : '-';
+        const typeClass = file.type === 'blob' ? 'type' : 'success';
+        const typeDisplay = file.type === 'blob' ? 'FILE' : 'DIR';
+
+        // ลิงก์เปิดใน GitHub UI (ถูกต้องทั้งไฟล์และโฟลเดอร์ ไม่ต้องพึ่ง GitHub Pages)
+        const githubUrl = file.type === 'blob'
+            ? `https://github.com/${currentOwner}/${currentRepo}/blob/${currentBranch}/${file.path}`
+            : `https://github.com/${currentOwner}/${currentRepo}/tree/${currentBranch}/${file.path}`;
+
+        // ลิงก์ RAW ตามสาขาที่เลือก (ไม่ล็อก main)
+        const rawUrl = file.type === 'blob'
+            ? `https://raw.githubusercontent.com/${currentOwner}/${currentRepo}/${currentBranch}/${file.path}`
+            : '';
+
+        // ลิงก์พรีวิวไฟล์ HTML (เรนเดอร์หน้าเว็บได้จริง โดยไม่ต้องเปิด GitHub Pages)
+        const previewUrl = (file.type === 'blob' && isHtml(file.path))
+            ? `https://htmlpreview.github.io/?https://github.com/${currentOwner}/${currentRepo}/blob/${currentBranch}/${file.path}`
+            : '';
+
+        const webLink = `
+            <div class="link-group">
+                <a href="${githubUrl}" target="_blank">Open on GitHub</a>
+                ${previewUrl ? `<a href="${previewUrl}" target="_blank">Preview</a>` : ``}
+            </div>
+        `;
+
+        const rawLink = file.type === 'blob'
+            ? `<a href="${rawUrl}" target="_blank">View RAW</a>`
+            : '-';
+
+        return `
+            <tr>
+                <td>${file.index}</td>
+                <td class="${typeClass}">${typeDisplay}</td>
+                <td class="path">${file.path}</td>
+                <td class="size">${sizeStr}</td>
+                <td>${webLink}</td>
+                <td>${rawLink}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function updateStats() {
+    const files = filteredFiles.filter(f => f.type === 'blob').length;
+    const dirs  = filteredFiles.filter(f => f.type === 'tree').length;
+    const totalSize = filteredFiles
+        .filter(f => f.type === 'blob')
+        .reduce((sum, f) => sum + f.size, 0);
+
+    document.getElementById('stats').innerHTML = `
+        <div class="stat-item">Total Items: <span>${filteredFiles.length}</span></div>
+        <div class="stat-item">Files: <span>${files}</span></div>
+        <div class="stat-item">Directories: <span>${dirs}</span></div>
+        <div class="stat-item">Total Size: <span>${formatSize(totalSize)}</span></div>
+    `;
+}
+
+function formatSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B','KB','MB','GB','TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+function clearResults() {
+    allFiles = [];
+    filteredFiles = [];
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('status').innerHTML = 'Ready to scan. Enter repository details and click SCAN REPOSITORY.';
+    const si = document.getElementById('searchInput'); if (si) si.value = '';
+    const ef = document.getElementById('extensionFilter'); if (ef) ef.selectedIndex = 0;
+    const tf = document.getElementById('typeFilter'); if (tf) tf.selectedIndex = 0;
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') clearResults(); });
+
+// Enter to scan
+document.querySelectorAll('#owner, #repo, #branch').forEach(input => {
+    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') scanRepository(); });
+});
+</script>
 </body>
 </html>
