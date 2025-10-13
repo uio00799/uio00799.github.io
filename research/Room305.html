@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXTREME IT PUZZLE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #00ff00;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #ffff00;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        
+        .stage {
+            background: rgba(0, 50, 0, 0.5);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .stage-title {
+            color: #ffff00;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .difficulty {
+            background: #ff0000;
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .code-block {
+            background: #000;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-size: 0.9em;
+        }
+        
+        .hint-system {
+            background: rgba(255, 255, 0, 0.05);
+            border: 2px solid #ffff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .hint-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .hint-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .hint-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .hint-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hint-content {
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid #ffff00;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+            color: #ffff00;
+            line-height: 1.6;
+        }
+
+        .hint-content.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mistakes-counter {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .mistakes-count {
+            color: #ff0000;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            margin: 10px 0;
+        }
+        
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #00cc00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .locked {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .unlocked {
+            animation: unlock 0.5s ease-out;
+        }
+        
+        @keyframes unlock {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .hex-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .hex-cell {
+            aspect-ratio: 1;
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 10px;
+        }
+
+        .hex-cell:hover {
+            background: rgba(0, 255, 0, 0.4);
+        }
+
+        .website-hint {
+            background: rgba(0, 150, 255, 0.1);
+            border: 2px solid #0096ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .website-hint a {
+            color: #0096ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .website-hint a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <canvas class="matrix" id="matrix"></canvas>
+    
+    <div class="container">
+        <h1>🔐 EXTREME IT PUZZLE 🔐</h1>
+        <div class="subtitle">ภารกิจ: ค้นหาคำลับ 8 ตัวอักษร</div>
+        
+        <div class="mistakes-counter">
+            ❌ ความผิดพลาด: <span class="mistakes-count" id="totalMistakes">0</span> ครั้ง
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <!-- STAGE 1: Network Forensics -->
+        <div class="stage" id="stage1">
+            <div class="stage-header">
+                <div class="stage-title">🌐 STAGE 1: Network Packet Analysis</div>
+                <div class="difficulty">EXTREME</div>
+            </div>
+            
+            <p>คุณได้รับ packet capture ที่น่าสงสัย วิเคราะห์ข้อมูลและหา 3 ตัวอักษรแรก</p>
+            
+            <div class="code-block">
+<pre>0000   45 00 00 3c 1c 46 40 00 40 06 b1 e6 c0 a8 01 64
+0010   c0 a8 01 65 00 50 c3 f2 38 af eb 4e 00 00 00 00
+0020   a0 02 72 10 fe 30 00 00 02 04 05 b4 04 02 08 0a
+0030   43 4f 4d 50 55 54 45 52 01 03 03 07
+                      
+TCP Flags: SYN
+Payload: ??? hidden in hex dump
+Protocol: TCP/IP</pre>
+            </div>
+
+            <div class="hint-system">
+                <strong>💡 ระบบคำใบ้</strong> (ความผิดพลาดในขั้นนี้: <span id="stage1Mistakes">0</span> ครั้ง)
+                <div class="hint-buttons">
+                    <button class="hint-btn" onclick="showHint(1, 5)" id="hint1-5">คำใบ้ที่ 1 (5 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(1, 10)" id="hint1-10" disabled>คำใบ้ที่ 2 (10 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(1, 25)" id="hint1-25" disabled>คำใบ้ที่ 3 (25 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(1, 50)" id="hint1-50" disabled>คำใบ้ที่ 4 (50 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(1, 100)" id="hint1-100" disabled>วิธีทำ (100 ผิด)</button>
+                </div>
+                <div class="hint-content" id="hint1-5-content">
+                    <strong>คำใบ้ระดับ 1:</strong><br>
+                    ลองดูที่ offset 0030 ของ hex dump... มันไม่ใช่แค่ตัวเลขธรรมดา
+                </div>
+                <div class="hint-content" id="hint1-10-content">
+                    <strong>คำใบ้ระดับ 2:</strong><br>
+                    เลข hex สามารถแปลงเป็น ASCII ได้<br>
+                    ตัวอย่าง: 0x43 = 'C', 0x4F = 'O'
+                </div>
+                <div class="hint-content" id="hint1-25-content">
+                    <strong>คำใบ้ระดับ 3:</strong><br>
+                    คุณต้องการ 3 ตัวอักษรแรก จาก offset 0030<br>
+                    43 4F 4D = ???
+                </div>
+                <div class="hint-content" id="hint1-50-content">
+                    <strong>คำใบ้ระดับ 4:</strong><br>
+                    43 (hex) = 67 (decimal) = 'C' (ASCII)<br>
+                    4F (hex) = 79 (decimal) = 'O' (ASCII)<br>
+                    4D (hex) = 77 (decimal) = 'M' (ASCII)
+                </div>
+                <div class="hint-content" id="hint1-100-content">
+                    <strong>วิธีทำทีละขั้นตอน:</strong><br>
+                    1. ดูที่บรรทัด offset 0030<br>
+                    2. เลือก 3 bytes แรก: 43 4F 4D<br>
+                    3. ใช้ ASCII table หรือเว็บไซต์แปลง hex-to-ascii<br>
+                    4. 43=C, 4F=O, 4D=M<br>
+                    5. รวมกัน = COM<br>
+                    <div class="website-hint">
+                        🌐 เว็บไซต์ช่วย: <a href="https://www.rapidtables.com/convert/number/hex-to-ascii.html" target="_blank">Hex to ASCII Converter</a>
+                    </div>
+                </div>
+            </div>
+
+            <input type="text" id="stage1Input" placeholder="ใส่ 3 ตัวอักษร (ตัวพิมพ์ใหญ่)">
+            <button onclick="checkStage1()">Submit Stage 1</button>
+            <div class="success" id="stage1Success">✅ Stage 1 สำเร็จ! ได้ part 1/3 แล้ว</div>
+            <div class="error" id="stage1Error">❌ ไม่ถูกต้อง! ลองอีกครั้ง...</div>
+        </div>
+
+        <!-- STAGE 2: Binary Exploitation -->
+        <div class="stage locked" id="stage2">
+            <div class="stage-header">
+                <div class="stage-title">⚙️ STAGE 2: Binary & XOR Encryption</div>
+                <div class="difficulty">NIGHTMARE</div>
+            </div>
+            
+            <p>Decrypt ข้อมูลที่ถูก XOR encrypt และหาอักษร 2 ตัวถัดไป</p>
+            
+            <div class="code-block">
+<pre>Encrypted bytes (hex):
+0x70, 0x75
+
+XOR Key: 0x20
+
+Formula: plaintext = encrypted XOR key
+
+ผลลัพธ์เป็นอักษร 2 ตัว</pre>
+            </div>
+
+            <div class="hex-grid">
+                <div class="hex-cell">0x70<br><small>(Byte 1)</small></div>
+                <div class="hex-cell">0x75<br><small>(Byte 2)</small></div>
+                <div class="hex-cell">XOR Key:<br>0x20</div>
+            </div>
+
+            <div class="hint-system">
+                <strong>💡 ระบบคำใบ้</strong> (ความผิดพลาดในขั้นนี้: <span id="stage2Mistakes">0</span> ครั้ง)
+                <div class="hint-buttons">
+                    <button class="hint-btn" onclick="showHint(2, 5)" id="hint2-5">คำใบ้ที่ 1 (5 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(2, 10)" id="hint2-10" disabled>คำใบ้ที่ 2 (10 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(2, 25)" id="hint2-25" disabled>คำใบ้ที่ 3 (25 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(2, 50)" id="hint2-50" disabled>คำใบ้ที่ 4 (50 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(2, 100)" id="hint2-100" disabled>วิธีทำ (100 ผิด)</button>
+                </div>
+                <div class="hint-content" id="hint2-5-content">
+                    <strong>คำใบ้ระดับ 1:</strong><br>
+                    XOR คือการ exclusive OR ระหว่างสองค่า<br>
+                    ถ้า A XOR B = C แล้ว C XOR B = A
+                </div>
+                <div class="hint-content" id="hint2-10-content">
+                    <strong>คำใบ้ระดับ 2:</strong><br>
+                    เอา encrypted byte XOR กับ key<br>
+                    0x70 XOR 0x20 = ?<br>
+                    0x75 XOR 0x20 = ?
+                </div>
+                <div class="hint-content" id="hint2-25-content">
+                    <strong>คำใบ้ระดับ 3:</strong><br>
+                    แปลง hex เป็น binary ก่อน XOR:<br>
+                    0x70 = 01110000<br>
+                    0x20 = 00100000<br>
+                    XOR = 01010000 = 0x50 = 'P'
+                </div>
+                <div class="hint-content" id="hint2-50-content">
+                    <strong>คำใบ้ระดับ 4:</strong><br>
+                    0x70 XOR 0x20 = 0x50 = 'P'<br>
+                    0x75 XOR 0x20 = 0x55 = 'U'
+                </div>
+                <div class="hint-content" id="hint2-100-content">
+                    <strong>วิธีทำทีละขั้นตอน:</strong><br>
+                    1. ใช้ XOR calculator<br>
+                    2. 0x70 XOR 0x20 = 0x50 (decimal 80) = 'P'<br>
+                    3. 0x75 XOR 0x20 = 0x55 (decimal 85) = 'U'<br>
+                    4. รวมกัน = PU<br>
+                    <div class="website-hint">
+                        🌐 เว็บไซต์ช่วย: <a href="https://xor.pw/" target="_blank">XOR Calculator</a><br>
+                        🌐 หรือ: <a href="https://www.dcode.fr/xor-cipher" target="_blank">XOR Cipher Tool</a>
+                    </div>
+                </div>
+            </div>
+
+            <input type="text" id="stage2Input" placeholder="ใส่ 2 ตัวอักษร (ตัวพิมพ์ใหญ่)">
+            <button onclick="checkStage2()">Submit Stage 2</button>
+            <div class="success" id="stage2Success">✅ Stage 2 สำเร็จ! ได้ part 2/3 แล้ว</div>
+            <div class="error" id="stage2Error">❌ ไม่ถูกต้อง! ตรวจสอบการ XOR</div>
+        </div>
+
+        <!-- STAGE 3: Cryptography -->
+        <div class="stage locked" id="stage3">
+            <div class="stage-header">
+                <div class="stage-title">🔑 STAGE 3: Multi-Layer Decryption</div>
+                <div class="difficulty">INSANE</div>
+            </div>
+            
+            <p>ถอดรหัส 3 layers และหาอักษร 3 ตัวสุดท้าย</p>
+            
+            <div class="code-block">
+<pre>Encrypted String: "VGVy"
+
+Layer 1: Base64 Decode
+Layer 2: ไม่มีการเข้ารหัสเพิ่ม
+Layer 3: แปลงเป็นตัวพิมพ์ใหญ่
+
+ผลลัพธ์ = 3 ตัวอักษร</pre>
+            </div>
+
+            <div class="hint-system">
+                <strong>💡 ระบบคำใบ้</strong> (ความผิดพลาดในขั้นนี้: <span id="stage3Mistakes">0</span> ครั้ง)
+                <div class="hint-buttons">
+                    <button class="hint-btn" onclick="showHint(3, 5)" id="hint3-5">คำใบ้ที่ 1 (5 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(3, 10)" id="hint3-10" disabled>คำใบ้ที่ 2 (10 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(3, 25)" id="hint3-25" disabled>คำใบ้ที่ 3 (25 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(3, 50)" id="hint3-50" disabled>คำใบ้ที่ 4 (50 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(3, 100)" id="hint3-100" disabled>วิธีทำ (100 ผิด)</button>
+                </div>
+                <div class="hint-content" id="hint3-5-content">
+                    <strong>คำใบ้ระดับ 1:</strong><br>
+                    ต้องใช้ Base64 decoder เท่านั้น
+                </div>
+                <div class="hint-content" id="hint3-10-content">
+                    <strong>คำใบ้ระดับ 2:</strong><br>
+                    "VGVy" เมื่อ decode จะได้คำที่เป็นภาษาอังกฤษ
+                </div>
+                <div class="hint-content" id="hint3-25-content">
+                    <strong>คำใบ้ระดับ 3:</strong><br>
+                    "VGVy" → Base64 decode → "Ter"<br>
+                    แปลงเป็นตัวพิมพ์ใหญ่
+                </div>
+                <div class="hint-content" id="hint3-50-content">
+                    <strong>คำใบ้ระดับ 4:</strong><br>
+                    Ter → TER (ตัวพิมพ์ใหญ่)
+                </div>
+                <div class="hint-content" id="hint3-100-content">
+                    <strong>วิธีทำทีละขั้นตอน:</strong><br>
+                    1. ใช้ Base64 decoder กับ "VGVy"<br>
+                    2. ได้ผลลัพธ์ "Ter"<br>
+                    3. แปลงเป็นตัวพิมพ์ใหญ่ = TER<br>
+                    <div class="website-hint">
+                        🌐 Base64: <a href="https://www.base64decode.org/" target="_blank">Base64 Decoder</a>
+                    </div>
+                </div>
+            </div>
+
+            <input type="text" id="stage3Input" placeholder="ใส่ 3 ตัวอักษร (ตัวพิมพ์ใหญ่)">
+            <button onclick="checkStage3()">Submit Stage 3</button>
+            <div class="success" id="stage3Success">✅ Stage 3 สำเร็จ! ได้ part 3/3 แล้ว</div>
+            <div class="error" id="stage3Error">❌ ไม่ถูกต้อง! ลอง decode Base64</div>
+        </div>
+
+        <!-- FINAL STAGE -->
+        <div class="stage locked" id="stageFinal">
+            <div class="stage-header">
+                <div class="stage-title">🏆 FINAL CHALLENGE: รวมคำตอบ</div>
+                <div class="difficulty">ULTIMATE</div>
+            </div>
+            
+            <p>รวม 3 parts ที่ได้จากทุก stage</p>
+            
+            <div class="code-block">
+<pre>Stage 1: ??? (3 ตัวอักษร)
+Stage 2: ??? (2 ตัวอักษร)  
+Stage 3: ??? (3 ตัวอักษร)
+
+รวมกัน = ???????? (8 ตัวอักษร)</pre>
+            </div>
+
+            <div class="hint-system">
+                <strong>💡 ระบบคำใบ้</strong> (ความผิดพลาดในขั้นนี้: <span id="stage4Mistakes">0</span> ครั้ง)
+                <div class="hint-buttons">
+                    <button class="hint-btn" onclick="showHint(4, 5)" id="hint4-5">คำใบ้ที่ 1 (5 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(4, 10)" id="hint4-10" disabled>คำใบ้ที่ 2 (10 ผิด)</button>
+                    <button class="hint-btn" onclick="showHint(4, 25)" id="hint4-25" disabled>คำใบ้ที่ 3 (25 ผิด)</button>
+                </div>
+                <div class="hint-content" id="hint4-5-content">
+                    <strong>คำใบ้ระดับ 1:</strong><br>
+                    นำคำตอบจาก 3 stages มาต่อกันเรียงตามลำดับ
+                </div>
+                <div class="hint-content" id="hint4-10-content">
+                    <strong>คำใบ้ระดับ 2:</strong><br>
+                    รูปแบบ: [Stage1][Stage2][Stage3]<br>
+                    ตัวอย่าง: ABC + DE + FGH = ABCDEFGH
+                </div>
+                <div class="hint-content" id="hint4-25-content">
+                    <strong>คำใบ้ระดับ 3:</strong><br>
+                    คำนี้เกี่ยวข้องกับ IT และอุปกรณ์ที่คุณใช้อยู่ตอนนี้
+                </div>
+            </div>
+
+            <input type="text" id="finalInput" placeholder="ใส่คำตอบสุดท้าย 8 ตัวอักษร" style="font-size: 1.3em; text-align: center;">
+            <button onclick="checkFinal()" style="width: 100%; padding: 20px; font-size: 1.2em;">🚀 SUBMIT FINAL ANSWER 🚀</button>
+            <div class="success" id="finalSuccess" style="font-size: 1.5em; text-align: center;">
+                🎉🎉🎉 CONGRATULATIONS! 🎉🎉🎉<br>
+                คุณได้ไขปริศนาสำเร็จ!<br>
+                คำตอบคือ: <strong id="finalAnswer"></strong>
+            </div>
+            <div class="error" id="finalError">❌ ยังไม่ถูก... ลองอีกครั้ง!</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const chars = '01アイウエオカキクケコ';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+
+        let progress = 0;
+        let totalMistakes = 0;
+        let stageMistakes = {1: 0, 2: 0, 3: 0, 4: 0};
+
+        function updateMistakes(stage) {
+            totalMistakes++;
+            stageMistakes[stage]++;
+            document.getElementById('totalMistakes').textContent = totalMistakes;
+            document.getElementById(`stage${stage}Mistakes`).textContent = stageMistakes[stage];
+            
+            if (stageMistakes[stage] >= 5) {
+                document.getElementById(`hint${stage}-5`).disabled = false;
+            }
+            if (stageMistakes[stage] >= 10) {
+                document.getElementById(`hint${stage}-10`).disabled = false;
+            }
+            if (stageMistakes[stage] >= 25) {
+                document.getElementById(`hint${stage}-25`).disabled = false;
+            }
+            if (stageMistakes[stage] >= 50) {
+                document.getElementById(`hint${stage}-50`).disabled = false;
+            }
+            if (stageMistakes[stage] >= 100) {
+                document.getElementById(`hint${stage}-100`).disabled = false;
+            }
+        }
+
+        function showHint(stage, level) {
+            const hintId = `hint${stage}-${level}-content`;
+            const hintElement = document.getElementById(hintId);
+            
+            if (hintElement.classList.contains('show')) {
+                hintElement.classList.remove('show');
+            } else {
+                document.querySelectorAll(`[id^="hint${stage}-"][id$="-content"]`).forEach(el => {
+                    el.classList.remove('show');
+                });
+                hintElement.classList.add('show');
+            }
+        }
+
+        function checkStage1() {
+            const input = document.getElementById('stage1Input').value.toUpperCase().trim();
+            
+            if (input === 'COM') {
+                document.getElementById('stage1Success').style.display = 'block';
+                document.getElementById('stage1Error').style.display = 'none';
+                document.getElementById('stage2').classList.remove('locked');
+                document.getElementById('stage2').classList.add('unlocked');
+                progress = 33;
+                document.getElementById('progress').style.width = progress + '%';
+                document.getElementById('stage1Input').disabled = true;
+                
+                setTimeout(() => {
+                    document.getElementById('stage2').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+            } else {
+                document.getElementById('stage1Error').style.display = 'block';
+                document.getElementById('stage1Success').style.display = 'none';
+                updateMistakes(1);
+            }
+        }
+
+        function checkStage2() {
+            const input = document.getElementById('stage2Input').value.toUpperCase().trim();
+            
+            if (input === 'PU') {
+                document.getElementById('stage2Success').style.display = 'block';
+                document.getElementById('stage2Error').style.display = 'none';
+                document.getElementById('stage3').classList.remove('locked');
+                document.getElementById('stage3').classList.add('unlocked');
+                progress = 66;
+                document.getElementById('progress').style.width = progress + '%';
+                document.getElementById('stage2Input').disabled = true;
+                
+                setTimeout(() => {
+                    document.getElementById('stage3').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+            } else {
+                document.getElementById('stage2Error').style.display = 'block';
+                document.getElementById('stage2Success').style.display = 'none';
+                updateMistakes(2);
+            }
+        }
+
+        function checkStage3() {
+            const input = document.getElementById('stage3Input').value.toUpperCase().trim();
+            
+            if (input === 'TER') {
+                document.getElementById('stage3Success').style.display = 'block';
+                document.getElementById('stage3Error').style.display = 'none';
+                document.getElementById('stageFinal').classList.remove('locked');
+                document.getElementById('stageFinal').classList.add('unlocked');
+                progress = 90;
+                document.getElementById('progress').style.width = progress + '%';
+                document.getElementById('stage3Input').disabled = true;
+                
+                setTimeout(() => {
+                    document.getElementById('stageFinal').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+            } else {
+                document.getElementById('stage3Error').style.display = 'block';
+                document.getElementById('stage3Success').style.display = 'none';
+                updateMistakes(3);
+            }
+        }
+
+        function checkFinal() {
+            const input = document.getElementById('finalInput').value.toUpperCase().trim();
+            
+            if (input === 'COMPUTER') {
+                document.getElementById('finalSuccess').style.display = 'block';
+                document.getElementById('finalError').style.display = 'none';
+                document.getElementById('finalAnswer').textContent = input;
+                progress = 100;
+                document.getElementById('progress').style.width = progress + '%';
+                document.getElementById('finalInput').disabled = true;
+                
+                confetti();
+                
+                setTimeout(() => {
+                    alert(`🎊 ยินดีด้วย! 🎊\n\nคุณใช้ความพยายาม ${totalMistakes} ครั้ง\n\n` +
+                          `Stage 1: ${stageMistakes[1]} ครั้ง\n` +
+                          `Stage 2: ${stageMistakes[2]} ครั้ง\n` +
+                          `Stage 3: ${stageMistakes[3]} ครั้ง\n` +
+                          `Final: ${stageMistakes[4]} ครั้ง\n\n` +
+                          `คุณเก่งมาก! 🌟`);
+                }, 1000);
+            } else {
+                document.getElementById('finalError').style.display = 'block';
+                document.getElementById('finalSuccess').style.display = 'none';
+                updateMistakes(4);
+            }
+        }
+
+        function confetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            for (let i = 0; i < 150; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-20px';
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = Math.random() * 10 + 5 + 'px';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.zIndex = '9999';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    document.body.appendChild(confetti);
+                    
+                    let pos = -20;
+                    let rotation = Math.random() * 360;
+                    const speed = Math.random() * 3 + 2;
+                    const drift = (Math.random() - 0.5) * 2;
+                    
+                    const fall = setInterval(() => {
+                        pos += speed;
+                        rotation += 5;
+                        const left = parseFloat(confetti.style.left);
+                        confetti.style.top = pos + 'px';
+                        confetti.style.left = (left + drift) + '%';
+                        confetti.style.transform = `rotate(${rotation}deg)`;
+                        
+                        if (pos > window.innerHeight) {
+                            clearInterval(fall);
+                            confetti.remove();
+                        }
+                    }, 20);
+                }, i * 20);
+            }
+        }
+
+        document.addEventListener('copy', (e) => {
+            e.preventDefault();
+            alert('⚠️ ห้าม copy คำตอบ! ลองไขปริศนาด้วยตัวเอง');
+        });
+
+        document.addEventListener('paste', (e) => {
+            const activeElement = document.activeElement;
+            if (activeElement.tagName === 'INPUT') {
+                e.preventDefault();
+                alert('⚠️ ห้าม paste! ต้องพิมพ์เอง');
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'H') {
+                alert(`📊 สถิติปัจจุบัน:\n\n` +
+                      `ความผิดพลาดทั้งหมด: ${totalMistakes}\n` +
+                      `Stage 1: ${stageMistakes[1]} ครั้ง\n` +
+                      `Stage 2: ${stageMistakes[2]} ครั้ง\n` +
+                      `Stage 3: ${stageMistakes[3]} ครั้ง\n` +
+                      `Final: ${stageMistakes[4]} ครั้ง`);
+            }
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (progress > 0 && progress < 100) {
+                e.preventDefault();
+                e.returnValue = 'คุณยังทำไม่เสร็จ! ต้องการออกจริงหรือ?';
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
