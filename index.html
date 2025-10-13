@@ -49,18 +49,22 @@
         select{background:#000;border:1px solid #0f0;color:#0f0;padding:5px 10px;font-family:'Courier New',monospace}
         .footer{margin-top:20px;padding-top:15px;border-top:1px solid #0f0;text-align:center;color:#0a0;font-size:11px}
         .link-group{display:flex;gap:8px;flex-wrap:wrap}
-        .user-info{border:1px solid #0f0;padding:10px;margin-bottom:15px;background:#000;display:flex;justify-content:space-between;align-items:center}
+        .user-info{border:1px solid #0f0;padding:10px;margin-bottom:15px;background:#000;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
         .user-badge{color:#0ff;font-weight:bold}
         .level-badge{display:inline-block;padding:2px 8px;border:1px solid;margin-left:10px;font-size:11px}
         .level-admin{border-color:#f00;color:#f00}
         .level-user{border-color:#0ff;color:#0ff}
         .level-guest{border-color:#ff0;color:#ff0}
+        .level-researcher{border-color:#f0f;color:#f0f}
         .locked-icon{color:#f00;margin-right:5px}
         .access-denied{color:#f00;font-style:italic}
         .admin-panel{border:1px solid #f00;padding:15px;margin-bottom:20px;background:#110000}
         .admin-title{color:#f00;margin-bottom:10px;font-weight:bold}
         .user-list{max-height:200px;overflow-y:auto;border:1px solid #0f0;padding:10px;background:#000;margin-top:10px}
         .user-item{padding:5px;margin:3px 0;border-bottom:1px solid #003300}
+        .session-timer{color:#ff0;font-size:14px;margin-left:15px;animation:blink 1s infinite}
+        .path-rules{border:1px solid #f0f;padding:10px;margin-bottom:15px;background:#000}
+        .rule-item{padding:3px 0;color:#0a0;font-size:11px}
     </style>
 </head>
 <body>
@@ -87,10 +91,15 @@
         <button onclick="login()">[ LOGIN ]</button>
     </div>
     <div style="margin-top:30px;padding-top:20px;border-top:1px solid #0f0;font-size:11px;color:#0a0">
-        <div style="margin-bottom:5px"><strong>Demo Accounts:</strong></div>
-        <div>Admin: admin / admin123 (Full Access)</div>
-        <div>User: user / user123 (Limited Access)</div>
-        <div>Guest: guest / guest123 (View Only)</div>
+        <div style="margin-bottom:5px"><strong>Available Access Levels:</strong></div>
+        <div>🔴 Admin: Full Access (All Files & Folders)</div>
+        <div>🟣 Researcher: Research Data Access</div>
+        <div>🔵 User: Standard Access (Limited)</div>
+        <div>🟡 Guest: View Only (120s Session)</div>
+        <div style="margin-top:10px;color:#666;font-size:10px">
+            * Guest/User accounts rotate on each page refresh<br>
+            * Guest sessions expire after 120 seconds
+        </div>
     </div>
 </div>
 
@@ -99,18 +108,28 @@
     <div class="container">
         <div class="header">
             <h1>╔═══════════════════════════════════════╗</h1>
-            <h1>║  GITHUB DIRECTORY SCANNER v2.0      ║</h1>
+            <h1>║  GITHUB DIRECTORY SCANNER v2.5      ║</h1>
             <h1>║         [SECURED EDITION]           ║</h1>
             <h1>╚═══════════════════════════════════════╝</h1>
-            <div class="subtitle">BIOS-STYLE FILE BROWSER WITH ACCESS CONTROL</div>
+            <div class="subtitle">BIOS-STYLE FILE BROWSER WITH PATH-BASED ACCESS CONTROL</div>
         </div>
 
         <div class="user-info">
             <div>
                 <span class="user-badge">Logged in as: <span id="currentUsername"></span></span>
                 <span id="currentUserLevel"></span>
+                <span id="sessionTimer" class="session-timer" style="display:none"></span>
             </div>
             <button class="danger" onclick="logout()">[ LOGOUT ]</button>
+        </div>
+
+        <!-- Path Access Rules Display -->
+        <div class="path-rules">
+            <div class="config-title">► PATH ACCESS RULES</div>
+            <div class="rule-item">🔴 Admin: Full access to all paths</div>
+            <div class="rule-item">🟣 Researcher: Access to /data, /research, /datasets paths</div>
+            <div class="rule-item">🔵 User: Access to /user, /public paths + specific files (e.g., LogicGatePuzzle.html)</div>
+            <div class="rule-item">🟡 Guest: Access to /public paths only (120 second session limit)</div>
         </div>
 
         <!-- Admin Panel -->
@@ -127,8 +146,9 @@
             <div class="input-group">
                 <label>Access Level:</label>
                 <select id="newUserLevel">
-                    <option value="guest">Guest (View Only)</option>
-                    <option value="user">User (Limited)</option>
+                    <option value="guest">Guest (View Only - 120s)</option>
+                    <option value="user">User (Standard)</option>
+                    <option value="researcher">Researcher (Data Access)</option>
                     <option value="admin">Admin (Full Access)</option>
                 </select>
             </div>
@@ -213,12 +233,36 @@
 </div>
 
 <script>
-// Authentication System
+// User Database with Rotating Accounts
+const guestAccounts = [
+    { username: 'guest123', password: 'guest123' },
+    { username: 'visitor123', password: 'visitor123' },
+    { username: 'invitee123', password: 'invitee123' },
+    { username: 'patron123', password: 'patron123' },
+    { username: 'client123', password: 'client123' }
+];
+
+const userAccounts = [
+    { username: 'user123', password: 'user123' },
+    { username: 'customer123', password: 'customer123' },
+    { username: 'client123', password: 'client123' }
+];
+
+// Randomly select active accounts on page load
+const activeGuestAccount = guestAccounts[Math.floor(Math.random() * guestAccounts.length)];
+const activeUserAccount = userAccounts[Math.floor(Math.random() * userAccounts.length)];
+
+// Build users object
 const users = {
-    admin: { password: 'admin123', level: 'admin' },
-    user: { password: 'user123', level: 'user' },
-    guest: { password: 'guest123', level: 'guest' }
+    'drsidichan': { password: '1270001XX', level: 'admin' },
+    'researcherdatatech': { password: '93817264', level: 'researcher' }
 };
+
+// Add active guest account
+users[activeGuestAccount.username] = { password: activeGuestAccount.password, level: 'guest' };
+
+// Add active user account
+users[activeUserAccount.username] = { password: activeUserAccount.password, level: 'user' };
 
 let currentUser = null;
 let allFiles = [];
@@ -226,28 +270,89 @@ let filteredFiles = [];
 let currentOwner = '';
 let currentRepo = '';
 let currentBranch = '';
+let sessionTimer = null;
+let remainingTime = 120;
+
+// Path-based Access Control Rules
+const pathAccessRules = {
+    guest: {
+        allowedPaths: ['/public'],
+        deniedPaths: [],
+        specificFiles: [],
+        sessionTimeout: 120 // seconds
+    },
+    user: {
+        allowedPaths: ['/user', '/public'],
+        deniedPaths: [],
+        specificFiles: ['LogicGatePuzzle.html'],
+        sessionTimeout: null
+    },
+    researcher: {
+        allowedPaths: ['/data', '/research', '/datasets', '/public'],
+        deniedPaths: [],
+        specificFiles: [],
+        sessionTimeout: null
+    },
+    admin: {
+        allowedPaths: ['*'], // Full access
+        deniedPaths: [],
+        specificFiles: [],
+        sessionTimeout: null
+    }
+};
 
 // Access Level Configuration
 const accessLevels = {
     guest: {
         canViewRaw: false,
         canDownload: false,
-        canViewSensitive: false,
         restrictedExtensions: ['env', 'key', 'pem', 'config', 'secret']
     },
     user: {
         canViewRaw: true,
         canDownload: true,
-        canViewSensitive: false,
         restrictedExtensions: ['env', 'key', 'pem']
+    },
+    researcher: {
+        canViewRaw: true,
+        canDownload: true,
+        restrictedExtensions: ['key', 'pem']
     },
     admin: {
         canViewRaw: true,
         canDownload: true,
-        canViewSensitive: true,
         restrictedExtensions: []
     }
 };
+
+function startSessionTimer() {
+    if (currentUser.level !== 'guest') return;
+    
+    remainingTime = 120;
+    const timerEl = document.getElementById('sessionTimer');
+    timerEl.style.display = 'inline-block';
+    
+    sessionTimer = setInterval(() => {
+        remainingTime--;
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
+        timerEl.textContent = `⏱ Session: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (remainingTime <= 0) {
+            clearInterval(sessionTimer);
+            alert('Guest session expired! You will be logged out.');
+            logout();
+        }
+    }, 1000);
+}
+
+function stopSessionTimer() {
+    if (sessionTimer) {
+        clearInterval(sessionTimer);
+        sessionTimer = null;
+    }
+    document.getElementById('sessionTimer').style.display = 'none';
+}
 
 function login() {
     const username = document.getElementById('loginUsername').value.trim();
@@ -263,13 +368,19 @@ function login() {
         currentUser = { username, level: users[username].level };
         showMainApp();
         statusEl.innerHTML = '<span class="success">✓ Login successful</span>';
+        
+        // Start timer for guest accounts
+        if (currentUser.level === 'guest') {
+            startSessionTimer();
+        }
     } else {
-        statusEl.innerHTML = '<span class="error">ERROR: Invalid credentials</span>';
+        statusEl.innerHTML = '<span class="error">ERROR: Invalid credentials or account not active</span>';
         document.getElementById('loginPassword').value = '';
     }
 }
 
 function logout() {
+    stopSessionTimer();
     currentUser = null;
     clearResults();
     document.getElementById('loginScreen').style.display = 'block';
@@ -296,7 +407,37 @@ function showMainApp() {
     }
 }
 
+function hasPathAccess(filePath) {
+    const rules = pathAccessRules[currentUser.level];
+    
+    // Admin has full access
+    if (rules.allowedPaths.includes('*')) {
+        return true;
+    }
+    
+    // Check specific files
+    const fileName = filePath.split('/').pop();
+    if (rules.specificFiles.includes(fileName)) {
+        return true;
+    }
+    
+    // Check if path starts with allowed paths
+    for (const allowedPath of rules.allowedPaths) {
+        if (filePath.startsWith(allowedPath) || `/${filePath}`.startsWith(allowedPath)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 function hasAccess(file) {
+    // Check path access first
+    if (!hasPathAccess(file.path)) {
+        return false;
+    }
+    
+    // Check file extension restrictions
     const access = accessLevels[currentUser.level];
     const ext = file.path.split('.').pop().toLowerCase();
     return !access.restrictedExtensions.includes(ext);
@@ -330,8 +471,8 @@ function addUser() {
 }
 
 function deleteUser(username) {
-    if (username === 'admin') {
-        alert('Cannot delete admin account');
+    if (username === 'drsidichan') {
+        alert('Cannot delete main admin account');
         return;
     }
     if (confirm(`Delete user "${username}"?`)) {
@@ -345,13 +486,16 @@ function displayUserList() {
     list.innerHTML = Object.keys(users).map(username => {
         const user = users[username];
         const levelClass = `level-${user.level}`;
-        const deleteBtn = username !== 'admin' ? 
+        const deleteBtn = username !== 'drsidichan' ? 
             `<button class="danger" style="padding:2px 8px;font-size:10px" onclick="deleteUser('${username}')">DELETE</button>` : '';
+        const activeTag = (username === activeGuestAccount.username || username === activeUserAccount.username) ? 
+            '<span style="color:#0f0;margin-left:5px">[ACTIVE]</span>' : '';
         return `
             <div class="user-item">
                 <span style="color:#0ff">${username}</span>
                 <span class="level-badge ${levelClass}" style="font-size:10px">[${user.level.toUpperCase()}]</span>
                 <span style="color:#666;margin-left:10px">Pass: ${user.password}</span>
+                ${activeTag}
                 ${deleteBtn}
             </div>
         `;
@@ -497,7 +641,7 @@ function displayFiles() {
         let webLink, rawLink;
 
         if (!hasFileAccess) {
-            webLink = '<span class="access-denied">🔒 Access Denied</span>';
+            webLink = '<span class="access-denied">🔒 Access Denied (Path Restricted)</span>';
             rawLink = '<span class="access-denied">🔒 Restricted</span>';
         } else {
             webLink = `
@@ -535,6 +679,7 @@ function updateStats() {
         <div class="stat-item">Total Items: <span>${filteredFiles.length}</span></div>
         <div class="stat-item">Files: <span>${files}</span></div>
         <div class="stat-item">Directories: <span>${dirs}</span></div>
+        <div class="stat-item">Accessible: <span>${accessibleFiles.length}</span></div>
         <div class="stat-item">Total Size: <span>${formatSize(totalSize)}</span></div>
         ${restrictedCount > 0 ? `<div class="stat-item" style="color:#f00">Restricted: <span>${restrictedCount}</span></div>` : ''}
     `;
@@ -584,6 +729,12 @@ document.querySelectorAll('#loginUsername, #loginPassword').forEach(input => {
         if (e.key === 'Enter') login();
     });
 });
+
+// Display active accounts info on page load
+console.log('=== ACTIVE ROTATING ACCOUNTS ===');
+console.log('Active Guest Account:', activeGuestAccount.username, '/', activeGuestAccount.password);
+console.log('Active User Account:', activeUserAccount.username, '/', activeUserAccount.password);
+console.log('================================');
 </script>
 </body>
 </html>
