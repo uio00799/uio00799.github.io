@@ -15,84 +15,121 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
-            padding: 10px;
+            padding: 20px;
             color: #fff;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transform: scale(0.9);
-            transform-origin: top center;
         }
 
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
             margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 20px;
         }
 
         .header h1 {
-            font-size: 1.8rem;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .word-progress {
+            background: rgba(147, 51, 234, 0.3);
+            border: 2px solid #a855f7;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .word-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .letter-box {
+            width: 60px;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #4b5563;
+            border-radius: 10px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            transition: all 0.5s;
         }
 
-        .trophy {
-            background: rgba(34, 197, 94, 0.2);
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: 2px solid #22c55e;
-            font-size: 1.2rem;
-            animation: pulse 2s infinite;
+        .letter-box.found {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: #22c55e;
+            color: #22c55e;
+            animation: letterReveal 0.5s ease-in-out;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        @keyframes letterReveal {
+            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
-        .instructions {
-            background: rgba(59, 130, 246, 0.2);
-            padding: 20px;
-            border-radius: 15px;
+        .game-area {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 30px;
-            border: 1px solid rgba(59, 130, 246, 0.5);
         }
 
-        .instructions h3 {
-            font-size: 1.2rem;
+        .current-target {
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid #3b82f6;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .current-target h3 {
+            font-size: 1.3rem;
+            color: #60a5fa;
+            margin-bottom: 10px;
+        }
+
+        .target-letter {
+            font-size: 4rem;
+            color: #22c55e;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-section h4 {
             margin-bottom: 15px;
             color: #60a5fa;
         }
 
-        .instructions ol {
-            margin-left: 25px;
-            line-height: 1.8;
-        }
-
         .input-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .input-btn {
-            padding: 15px;
+            padding: 20px 10px;
             border: none;
             border-radius: 12px;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -108,18 +145,16 @@
         }
 
         .input-btn:hover {
-            transform: scale(1.08);
+            transform: translateY(-3px);
         }
 
         .reset-btn {
-            display: block;
-            margin: 0 auto 30px;
-            padding: 15px 40px;
+            padding: 12px 30px;
             background: #ef4444;
             border: none;
             border-radius: 10px;
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -130,204 +165,154 @@
             transform: scale(1.05);
         }
 
-        .circuit-diagram {
+        .output-section {
             background: rgba(0, 0, 0, 0.3);
-            padding: 40px;
+            padding: 25px;
             border-radius: 15px;
-            margin-bottom: 30px;
-        }
-
-        .gate-layer {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .gate {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .gate-box {
-            width: 60px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            transition: all 0.3s;
-            background: #374151;
-            color: #9ca3af;
-        }
-
-        .gate-box.active {
-            background: #22c55e;
-            color: white;
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
-        }
-
-        .signal {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background: #4b5563;
-            transition: all 0.3s;
-        }
-
-        .signal.active {
-            background: #22c55e;
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.8);
-        }
-
-        .output-display {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 40px;
-            border-radius: 15px;
-            border: 2px solid #06b6d4;
-            margin-bottom: 30px;
-        }
-
-        .output-display h2 {
-            text-align: center;
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-        }
-
-        .binary-output {
-            padding: 30px;
-            border-radius: 12px;
-            background: rgba(31, 41, 55, 0.5);
-            border: 2px solid #4b5563;
             margin-bottom: 20px;
-            transition: all 0.3s;
         }
 
-        .binary-output.correct {
-            background: rgba(22, 163, 74, 0.3);
-            border-color: #22c55e;
+        .binary-display {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
         .binary-value {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-family: 'Courier New', monospace;
-            text-align: center;
-            letter-spacing: 4px;
-            margin: 20px 0;
-        }
-
-        .ascii-char {
-            text-align: center;
-            font-size: 1.2rem;
+            letter-spacing: 8px;
+            margin: 15px 0;
             color: #06b6d4;
         }
 
-        .status-message {
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-        }
-
-        .status-correct {
-            background: rgba(34, 197, 94, 0.2);
-            border: 2px solid #22c55e;
-            color: #22c55e;
-        }
-
-        .status-incorrect {
-            background: rgba(234, 179, 8, 0.2);
-            border: 2px solid #eab308;
-            color: #eab308;
-        }
-
-        .logic-outputs {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #374151;
-        }
-
-        .logic-output {
-            text-align: center;
-        }
-
-        .progress-tracker {
-            background: rgba(147, 51, 234, 0.2);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid rgba(147, 51, 234, 0.5);
-        }
-
-        .progress-tracker h3 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #c084fc;
-        }
-
-        .progress-count {
+        .ascii-result {
             font-size: 1.5rem;
-            color: #06b6d4;
-            font-weight: bold;
+            color: #a855f7;
         }
 
-        .success-message {
-            background: rgba(22, 163, 74, 0.3);
-            border: 2px solid #22c55e;
-            border-radius: 15px;
-            padding: 30px;
-            margin-top: 20px;
-            animation: celebration 1s ease-in-out;
-        }
-
-        @keyframes celebration {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .success-title {
-            font-size: 2rem;
+        .feedback {
+            padding: 20px;
+            border-radius: 12px;
             text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .feedback.correct {
+            background: rgba(34, 197, 94, 0.3);
+            border: 2px solid #22c55e;
             color: #22c55e;
+        }
+
+        .feedback.incorrect {
+            background: rgba(239, 68, 68, 0.3);
+            border: 2px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .hint-section {
+            background: rgba(251, 191, 36, 0.1);
+            border: 2px solid #fbbf24;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .hint-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
             margin-bottom: 20px;
         }
 
-        .answer-reveal {
-            font-size: 1.8rem;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .binary-list {
-            margin-top: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.95rem;
-        }
-
-        .binary-item {
-            color: #22c55e;
+        .hint-btn {
+            padding: 15px;
+            border: 2px solid #fbbf24;
+            border-radius: 10px;
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
             font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .hint-btn:hover:not(:disabled) {
+            background: rgba(251, 191, 36, 0.3);
+            transform: scale(1.05);
+        }
+
+        .hint-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hint-display {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            min-height: 60px;
+            color: #fbbf24;
+        }
+
+        .mistakes-counter {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            border-radius: 12px;
+            padding: 15px;
             text-align: center;
-            padding: 5px;
+            margin-bottom: 20px;
+        }
+
+        .victory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .victory-content {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            animation: victoryPop 0.5s ease-in-out;
+        }
+
+        @keyframes victoryPop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .victory-title {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .victory-word {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 30px 0;
+            letter-spacing: 5px;
         }
 
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 1.8rem;
+                font-size: 2rem;
             }
-            .input-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .target-letter {
+                font-size: 3rem;
             }
             .binary-value {
-                font-size: 2rem;
+                font-size: 1.8rem;
                 letter-spacing: 4px;
             }
         }
@@ -336,146 +321,182 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>
-                <span>⚡</span>
-                วงจร Logic Gate ปริศนา
-            </h1>
-            <div id="trophy" class="trophy" style="display: none;">
-                🏆 ถูกต้อง!
+            <h1>🔌 วงจร Logic Gate ปริศนา</h1>
+            <p style="color: #9ca3af;">ค้นหาตัวอักษรทีละตัวเพื่อสร้างคำลับ!</p>
+        </div>
+
+        <div class="word-progress">
+            <h3 style="text-align: center; color: #a855f7; margin-bottom: 15px;">📝 ความคืบหน้า</h3>
+            <div class="word-display" id="wordDisplay"></div>
+        </div>
+
+        <div class="game-area">
+            <div class="current-target">
+                <h3>🎯 ตัวอักษรที่ต้องหา</h3>
+                <div class="target-letter" id="targetLetter">K</div>
+                <p style="color: #9ca3af; margin-top: 10px;">ปรับค่า Input A-H ให้ได้ Binary ที่ถูกต้อง</p>
             </div>
-        </div>
 
-        <div class="instructions">
-            <h3>📖 วิธีเล่น</h3>
-            <p><strong>เป้าหมาย:</strong> หาค่า Input (A-H) ที่ทำให้ได้ Binary Code ที่ถูกต้อง</p>
-            <p style="margin-top: 10px;"><strong>กติกา:</strong></p>
-            <ol>
-                <li>กดปุ่ม INPUT A-H เพื่อสลับสถานะ ON(1)/OFF(0)</li>
-                <li>Output จะแสดง Binary 8 bits จาก Input ของคุณ</li>
-                <li>หาค่า Input ที่ทำให้ได้ Binary ที่ตรงกับคำตอบ</li>
-                <li>มี <strong style="color: #eab308;">9 Binary codes</strong> ที่ถูกต้อง ซึ่งแปลงเป็นตัวอักษรได้คำหนึ่ง</li>
-            </ol>
-        </div>
-
-        <div class="input-grid" id="inputGrid"></div>
-
-        <button class="reset-btn" onclick="resetInputs()">🔄 รีเซ็ต</button>
-
-        <div class="circuit-diagram">
-            <h2 style="margin-bottom: 30px;">🔌 วงจรตรรกศาสตร์ (ซับซ้อน)</h2>
-            
-            <div class="gate-layer" id="layer1"></div>
-            <div class="gate-layer" id="layer2"></div>
-            <div class="gate-layer" id="layer3"></div>
-            
-            <div style="text-align: center; color: #6b7280; margin-top: 20px;">
-                ⚠️ วงจรมีความซับซ้อนหลายชั้น แต่ Output ขึ้นกับ Input โดยตรง
+            <div class="mistakes-counter" id="mistakesCounter">
+                ❌ ตอบผิด: <span id="mistakeCount">0</span> ครั้ง
             </div>
-        </div>
 
-        <div class="output-display">
-            <h2>📊 OUTPUT ของวงจร</h2>
-            
-            <div id="binaryOutput" class="binary-output">
-                <div style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px;">BINARY OUTPUT (8 bits):</div>
-                <div class="binary-value" id="binaryValue">00000000</div>
-                <div class="ascii-char">
-                    ASCII Character: <span style="font-size: 2rem; color: #06b6d4;" id="asciiChar">'@'</span>
+            <div class="input-section">
+                <h4>⚡ ปรับค่า Input (กดเพื่อเปลี่ยน ON/OFF)</h4>
+                <div class="input-grid" id="inputGrid"></div>
+                <button class="reset-btn" onclick="resetInputs()">🔄 รีเซ็ต Input</button>
+            </div>
+
+            <div class="output-section">
+                <h4 style="margin-bottom: 15px; color: #06b6d4;">📊 Output</h4>
+                <div class="binary-display">
+                    <div style="color: #9ca3af; font-size: 0.9rem;">Binary (8 bits):</div>
+                    <div class="binary-value" id="binaryValue">00000000</div>
+                    <div class="ascii-result">
+                        ตัวอักษร: <span id="asciiChar" style="font-size: 2rem; color: #a855f7;">'@'</span>
+                    </div>
                 </div>
             </div>
 
-            <div id="statusMessage" class="status-message status-incorrect">
-                ❌ Binary นี้ไม่ถูกต้อง ลองปรับ Input ใหม่
-            </div>
-
-            <div class="logic-outputs">
-                <div class="logic-output">
-                    <div style="color: #6b7280; font-size: 0.9rem; margin-bottom: 10px;">Logic OUT 1</div>
-                    <div class="signal" id="out1"></div>
-                    <div style="color: #4b5563; font-size: 0.8rem; margin-top: 5px;" id="out1Text">0</div>
-                </div>
-                <div class="logic-output">
-                    <div style="color: #6b7280; font-size: 0.9rem; margin-bottom: 10px;">Logic OUT 2</div>
-                    <div class="signal" id="out2"></div>
-                    <div style="color: #4b5563; font-size: 0.8rem; margin-top: 5px;" id="out2Text">0</div>
-                </div>
-                <div class="logic-output">
-                    <div style="color: #6b7280; font-size: 0.9rem; margin-bottom: 10px;">Logic OUT 3</div>
-                    <div class="signal" id="out3"></div>
-                    <div style="color: #4b5563; font-size: 0.8rem; margin-top: 5px;" id="out3Text">0</div>
-                </div>
-            </div>
-            <div style="text-align: center; color: #4b5563; font-size: 0.8rem; margin-top: 15px;">
-                (Logic Outputs เป็นส่วนของวงจรภายใน - ไม่ใช่คำตอบหลัก)
+            <div id="feedback" class="feedback incorrect">
+                ❌ ยังไม่ใช่ตัวอักษรที่ต้องการ ลองใหม่อีกครั้ง!
             </div>
         </div>
 
-        <div class="progress-tracker">
-            <h3>🎯 ความคืบหน้า</h3>
-            <p>Binary ที่คุณค้นพบแล้ว: <span class="progress-count" id="progressCount">0/9</span></p>
-            
-            <div id="progressMessage" style="margin-top: 15px; color: #9ca3af;">
-                ยังไม่ได้เริ่มค้นหา... ลองปรับค่า Input ดูสิ!
+        <div class="hint-section">
+            <h3 style="text-align: center; color: #fbbf24; margin-bottom: 20px;">💡 ต้องการคำใบ้?</h3>
+            <div class="hint-buttons">
+                <button class="hint-btn" onclick="buyHint(5)">
+                    💡 คำใบ้เล็ก<br>
+                    <small>(ตอบผิด 5 ครั้ง)</small>
+                </button>
+                <button class="hint-btn" onclick="buyHint(10)">
+                    💡 คำใบ้กลาง<br>
+                    <small>(ตอบผิด 10 ครั้ง)</small>
+                </button>
+                <button class="hint-btn" onclick="buyHint(25)">
+                    💡 คำใบ้ใหญ่<br>
+                    <small>(ตอบผิด 25 ครั้ง)</small>
+                </button>
+                <button class="hint-btn" onclick="buyHint(50)">
+                    💡 คำใบ้พิเศษ<br>
+                    <small>(ตอบผิด 50 ครั้ง)</small>
+                </button>
+                <button class="hint-btn" onclick="buyHint(100)">
+                    📖 วิธีหา<br>
+                    <small>(ตอบผิด 100 ครั้ง)</small>
+                </button>
             </div>
+            <div class="hint-display" id="hintDisplay">
+                คำใบ้จะปรากฏที่นี่เมื่อคุณตอบผิดครบตามจำนวนที่กำหนด
+            </div>
+        </div>
+    </div>
 
-            <div id="successMessage" style="display: none;"></div>
+    <div class="victory-screen" id="victoryScreen">
+        <div class="victory-content">
+            <div class="victory-title">🎉 ยินดีด้วย! 🎉</div>
+            <div>คุณหาคำลับเจอแล้ว!</div>
+            <div class="victory-word" id="victoryWord">KNOWLEDGE</div>
+            <p style="font-size: 1.2rem; margin-top: 20px;">
+                ตอบผิดทั้งหมด: <span id="finalMistakes">0</span> ครั้ง
+            </p>
+            <button class="reset-btn" onclick="location.reload()" style="margin-top: 30px; padding: 15px 40px; font-size: 1.2rem;">
+                🔄 เริ่มเกมใหม่
+            </button>
         </div>
     </div>
 
     <script>
-        const inputs = { A: false, B: false, C: false, D: false, E: false, F: false, G: false, H: false };
+        const targetWord = "Knowledge";
         const correctBinary = [
             "01001011", "01101110", "01101111", "01110111",
             "01101100", "01100101", "01100100", "01100111", "01100101"
         ];
-        const correctWord = "Knowledge";
-        let foundBinaries = [];
+        
+        let currentIndex = 0;
+        let mistakes = 0;
+        let foundLetters = [];
+        let inputs = { A: false, B: false, C: false, D: false, E: false, F: false, G: false, H: false };
+        let lastBinary = "00000000";
+
+        const hints = {
+            10: [
+                "Binary code มี 8 bits (8 หลัก)",
+                "เลข 0 หมายถึง OFF และ 1 หมายถึง ON",
+                "ASCII ของ 'K' อยู่ระหว่าง 65-90",
+                "ลอง ON Input ตัวที่ 2 และ 4 ดูสิ",
+                "ตัวอักษร 'n' มีค่า ASCII ประมาณ 110"
+            ],
+            25: [
+                "Binary ของ 'K' คือ 01001011",
+                "Input A ถึง H = Bit 7 ถึง Bit 0",
+                "Input B และ D ควรเป็น ON สำหรับ 'K'",
+                "Binary ที่ขึ้นต้นด้วย 011 มักเป็นตัวอักษรพิมพ์เล็ก",
+                "ตัวอักษร 'o' ปรากฏ 2 ครั้งในคำนี้"
+            ],
+            50: [
+                "K = 01001011 (A=OFF, B=ON, C=OFF, D=ON, E=OFF, F=ON, G=ON, H=ON)",
+                "ตัวอักษรต่อไปคือ 'n' = 01101110",
+                "Input ที่ต้อง ON: A, B, C หรือ D ขึ้นอยู่กับตัวอักษร",
+                "ลองค้นหาตัวอักษรที่มี 5-6 bits เป็น 1",
+                "Binary 01100101 คือตัวอักษร 'e'"
+            ],
+            100: [
+                "คำที่ต้องหาคือคำที่เกี่ยวกับความรู้",
+                "ลำดับตัวอักษร: K-n-o-w-l-e-d-g-e",
+                "ตัว 'w' = 01110111 (7 bits เป็น 1)",
+                "Input H คือ bit สุดท้าย (Bit 0)",
+                "ลอง ON Input B, C, D มักได้ตัวพิมพ์เล็ก"
+            ],
+            500: [
+                "วิธีหา: แปลง ASCII character เป็น Binary 8 bits",
+                "ตัวอย่าง: 'K' (ASCII 75) = 01001011",
+                "Input A = Bit 7 (ซ้ายสุด), Input H = Bit 0 (ขวาสุด)",
+                "เปิดเครื่องคิดเลข แปลง DEC เป็น BIN",
+                "Binary ทั้งหมด: K(01001011), n(01101110), o(01101111), w(01110111), l(01101100), e(01100101), d(01100100), g(01100111), e(01100101)"
+            ]
+        };
+
+        function initGame() {
+            updateWordDisplay();
+            initInputs();
+            updateTarget();
+            updateCircuit();
+        }
+
+        function updateWordDisplay() {
+            const display = document.getElementById('wordDisplay');
+            display.innerHTML = '';
+            for (let i = 0; i < targetWord.length; i++) {
+                const box = document.createElement('div');
+                box.className = foundLetters[i] ? 'letter-box found' : 'letter-box';
+                box.textContent = foundLetters[i] ? targetWord[i] : '?';
+                display.appendChild(box);
+            }
+        }
+
+        function updateTarget() {
+            if (currentIndex < targetWord.length) {
+                document.getElementById('targetLetter').textContent = targetWord[currentIndex];
+            }
+        }
 
         function initInputs() {
             const grid = document.getElementById('inputGrid');
             Object.keys(inputs).forEach(key => {
                 const btn = document.createElement('button');
                 btn.className = 'input-btn';
-                btn.innerHTML = `
-                    <div style="font-size: 1.5rem;">⚡ INPUT ${key}</div>
-                    <div style="margin-top: 10px;">OFF (0)</div>
-                `;
+                btn.innerHTML = `INPUT ${key}<br><small>OFF (0)</small>`;
                 btn.onclick = () => toggleInput(key, btn);
                 grid.appendChild(btn);
-            });
-        }
-
-        function initGates() {
-            const layer1 = document.getElementById('layer1');
-            const layer2 = document.getElementById('layer2');
-            const layer3 = document.getElementById('layer3');
-
-            ['AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'].forEach((type, i) => {
-                layer1.innerHTML += `
-                    <div class="gate">
-                        <div class="gate-box" id="gate1_${i}">${type}</div>
-                        <div class="signal" id="signal1_${i}"></div>
-                    </div>
-                `;
-            });
-
-            ['CPX1', 'CPX2', 'CPX3', 'CPX4', 'CPX5'].forEach((type, i) => {
-                layer2.innerHTML += `
-                    <div class="gate">
-                        <div class="gate-box" id="gate2_${i}">${type}</div>
-                        <div class="signal" id="signal2_${i}"></div>
-                    </div>
-                `;
             });
         }
 
         function toggleInput(key, btn) {
             inputs[key] = !inputs[key];
             btn.className = inputs[key] ? 'input-btn active' : 'input-btn';
-            btn.innerHTML = `
-                <div style="font-size: 1.5rem;">⚡ INPUT ${key}</div>
-                <div style="margin-top: 10px;">${inputs[key] ? 'ON (1)' : 'OFF (0)'}</div>
-            `;
+            btn.innerHTML = `INPUT ${key}<br><small>${inputs[key] ? 'ON (1)' : 'OFF (0)'}</small>`;
             updateCircuit();
         }
 
@@ -484,12 +505,9 @@
                 inputs[key] = false;
             });
             document.querySelectorAll('.input-btn').forEach((btn, i) => {
-                btn.className = 'input-btn';
                 const key = Object.keys(inputs)[i];
-                btn.innerHTML = `
-                    <div style="font-size: 1.5rem;">⚡ INPUT ${key}</div>
-                    <div style="margin-top: 10px;">OFF (0)</div>
-                `;
+                btn.className = 'input-btn';
+                btn.innerHTML = `INPUT ${key}<br><small>OFF (0)</small>`;
             });
             updateCircuit();
         }
@@ -504,116 +522,78 @@
 
         function updateCircuit() {
             const { A, B, C, D, E, F, G, H } = inputs;
-            
-            // คำนวณ Gates
-            const gates = [
-                A && B,
-                C || D,
-                E !== F,
-                !(G && H),
-                !(A || B),
-                C === D
-            ];
-
-            gates.forEach((active, i) => {
-                const gate = document.getElementById(`gate1_${i}`);
-                const signal = document.getElementById(`signal1_${i}`);
-                if (gate) gate.className = active ? 'gate-box active' : 'gate-box';
-                if (signal) signal.className = active ? 'signal active' : 'signal';
-            });
-
-            // Layer 2
-            const complex = [
-                (A && B) && (C || D),
-                (E !== F) || !(G && H),
-                (A && !B) || (C && D),
-                (!E && F) || (G !== H),
-                (A !== E) && (B || F)
-            ];
-
-            complex.forEach((active, i) => {
-                const gate = document.getElementById(`gate2_${i}`);
-                const signal = document.getElementById(`signal2_${i}`);
-                if (gate) gate.className = active ? 'gate-box active' : 'gate-box';
-                if (signal) signal.className = active ? 'signal active' : 'signal';
-            });
-
-            // Output
             const inputBinary = [A, B, C, D, E, F, G, H].map(v => v ? '1' : '0').join('');
+            
             document.getElementById('binaryValue').textContent = inputBinary;
             document.getElementById('asciiChar').textContent = `'${binaryToChar(inputBinary)}'`;
 
-            const isCorrect = correctBinary.includes(inputBinary);
-            const binaryOutput = document.getElementById('binaryOutput');
-            const statusMessage = document.getElementById('statusMessage');
-            const trophy = document.getElementById('trophy');
+            const feedback = document.getElementById('feedback');
+            const targetBinary = correctBinary[currentIndex];
 
-            if (isCorrect) {
-                binaryOutput.className = 'binary-output correct';
-                statusMessage.className = 'status-message status-correct';
-                statusMessage.textContent = '✅ Binary นี้ถูกต้อง! เป็น 1 ใน 9 ตัว';
-                trophy.style.display = 'block';
-
-                if (!foundBinaries.includes(inputBinary)) {
-                    foundBinaries.push(inputBinary);
-                    updateProgress();
-                }
-            } else {
-                binaryOutput.className = 'binary-output';
-                statusMessage.className = 'status-message status-incorrect';
-                statusMessage.textContent = '❌ Binary นี้ไม่ถูกต้อง ลองปรับ Input ใหม่';
-                trophy.style.display = 'none';
-            }
-
-            // Logic outputs (decoy)
-            const out1 = complex[0] && complex[1];
-            const out2 = complex[1] !== complex[2];
-            const out3 = !(complex[0] || complex[3]);
-
-            document.getElementById('out1').className = out1 ? 'signal active' : 'signal';
-            document.getElementById('out2').className = out2 ? 'signal active' : 'signal';
-            document.getElementById('out3').className = out3 ? 'signal active' : 'signal';
-            document.getElementById('out1Text').textContent = out1 ? '1' : '0';
-            document.getElementById('out2Text').textContent = out2 ? '1' : '0';
-            document.getElementById('out3Text').textContent = out3 ? '1' : '0';
-        }
-
-        function updateProgress() {
-            const count = foundBinaries.length;
-            document.getElementById('progressCount').textContent = `${count}/9`;
-
-            const progressMessage = document.getElementById('progressMessage');
-            const successMessage = document.getElementById('successMessage');
-
-            if (count === 9) {
-                progressMessage.style.display = 'none';
-                successMessage.style.display = 'block';
-                successMessage.className = 'success-message';
+            if (inputBinary !== lastBinary) {
+                lastBinary = inputBinary;
                 
-                let binaryListHTML = '<div class="binary-list">';
-                correctBinary.forEach((binary, i) => {
-                    binaryListHTML += `<div class="binary-item">${i + 1}. ${binary} → '${binaryToChar(binary)}'</div>`;
-                });
-                binaryListHTML += '</div>';
-
-                successMessage.innerHTML = `
-                    <div class="success-title">🎉 ยินดีด้วย! คุณหาเจอครบทั้งหมดแล้ว!</div>
-                    <div class="answer-reveal">คำตอบคือ: "${correctWord}"</div>
-                    <div style="text-align: center; margin-top: 10px; color: #d1d5db;">รายการ Binary ทั้งหมด:</div>
-                    ${binaryListHTML}
-                `;
-            } else if (count > 0) {
-                progressMessage.textContent = `ยังหาไม่ครบ! เหลืออีก ${9 - count} ตัว`;
-                progressMessage.style.color = '#eab308';
-            } else {
-                progressMessage.textContent = 'ยังไม่ได้เริ่มค้นหา... ลองปรับค่า Input ดูสิ!';
-                progressMessage.style.color = '#9ca3af';
+                if (inputBinary === targetBinary) {
+                    feedback.className = 'feedback correct';
+                    feedback.textContent = `✅ ถูกต้อง! คุณหาเจอตัวอักษร '${targetWord[currentIndex]}' แล้ว!`;
+                    
+                    foundLetters[currentIndex] = true;
+                    currentIndex++;
+                    
+                    setTimeout(() => {
+                        updateWordDisplay();
+                        
+                        if (currentIndex >= targetWord.length) {
+                            showVictory();
+                        } else {
+                            updateTarget();
+                            resetInputs();
+                            feedback.className = 'feedback incorrect';
+                            feedback.textContent = '❌ ยังไม่ใช่ตัวอักษรที่ต้องการ ลองใหม่อีกครั้ง!';
+                        }
+                    }, 1500);
+                } else {
+                    mistakes++;
+                    document.getElementById('mistakeCount').textContent = mistakes;
+                    feedback.className = 'feedback incorrect';
+                    feedback.textContent = `❌ ยังไม่ใช่ตัวอักษรที่ต้องการ (ตอบผิด ${mistakes} ครั้ง)`;
+                    updateHintButtons();
+                }
             }
         }
 
-        initInputs();
-        initGates();
-        updateCircuit();
+        function updateHintButtons() {
+            document.querySelectorAll('.hint-btn').forEach(btn => {
+                const cost = parseInt(btn.getAttribute('onclick').match(/\d+/)[0]);
+                btn.disabled = mistakes < cost;
+            });
+        }
+
+        function buyHint(cost) {
+            if (mistakes < cost) {
+                alert(`ต้องตอบผิดอย่างน้อย ${cost} ครั้งถึงจะดูคำใบ้นี้ได้!`);
+                return;
+            }
+
+            const hintLevel = hints[cost];
+            const randomHint = hintLevel[Math.floor(Math.random() * hintLevel.length)];
+            
+            document.getElementById('hintDisplay').innerHTML = `
+                <div style="font-size: 1.1rem; line-height: 1.6;">
+                    💡 <strong>คำใบ้:</strong><br>
+                    ${randomHint}
+                </div>
+            `;
+        }
+
+        function showVictory() {
+            document.getElementById('finalMistakes').textContent = mistakes;
+            document.getElementById('victoryWord').textContent = targetWord.toUpperCase();
+            document.getElementById('victoryScreen').style.display = 'flex';
+        }
+
+        initGame();
+        updateHintButtons();
     </script>
 </body>
 </html>
