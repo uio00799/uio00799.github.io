@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ห้อง 306: ห้องปฏิบัติการนักเล่นแร่แปรธาตุ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #2d1b2e 100%);
+            color: #d4af37;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="10" y="20" font-size="8" fill="rgba(212,175,55,0.05)" font-family="serif">⚗️🜁🜂🜃🜄</text></svg>') repeat;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .room-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .room-header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 3px double #d4af37;
+            margin-bottom: 50px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+        }
+
+        .room-number {
+            font-size: 5em;
+            color: #d4af37;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+            letter-spacing: 15px;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .room-title {
+            font-size: 1.8em;
+            color: #b8860b;
+            margin-top: 15px;
+            letter-spacing: 4px;
+            font-style: italic;
+        }
+
+        .lab-description {
+            text-align: center;
+            font-size: 1.1em;
+            color: #999;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .laboratory-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 50px 0;
+        }
+
+        .lab-section {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #8b7355;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .lab-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(212, 175, 55, 0.3);
+            border-color: #d4af37;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-bottom: 2px solid #8b7355;
+            padding-bottom: 15px;
+        }
+
+        .alchemy-shelf {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .potion-bottle {
+            background: linear-gradient(135deg, rgba(139, 115, 85, 0.3), rgba(0, 0, 0, 0.6));
+            border: 2px solid #8b7355;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .potion-bottle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .potion-bottle:hover::before {
+            left: 100%;
+        }
+
+        .potion-bottle:hover {
+            transform: scale(1.05);
+            border-color: #d4af37;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .element-symbol {
+            font-size: 3em;
+            margin: 15px 0;
+            color: #d4af37;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        .element-name {
+            font-size: 1.2em;
+            color: #b8860b;
+            margin: 10px 0;
+        }
+
+        .element-number {
+            font-size: 0.9em;
+            color: #999;
+            font-style: italic;
+        }
+
+        .ancient-scroll {
+            background: rgba(139, 115, 85, 0.2);
+            border: 3px double #8b7355;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 30px 0;
+            font-family: 'Georgia', serif;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .scroll-text {
+            font-size: 1.3em;
+            line-height: 2;
+            color: #d4af37;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .rune-sequence {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .rune {
+            font-size: 2.5em;
+            color: #d4af37;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #8b7355;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .rune:hover {
+            transform: rotate(15deg) scale(1.2);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.7);
+        }
+
+        .formula-board {
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #8b7355;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .formula-title {
+            font-size: 1.5em;
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 20px;
+            text-decoration: underline;
+        }
+
+        .formula-line {
+            font-size: 1.8em;
+            color: #b8860b;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(139, 115, 85, 0.2);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .cipher-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+        }
+
+        .cipher-table th,
+        .cipher-table td {
+            border: 1px solid #8b7355;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .cipher-table th {
+            background: rgba(139, 115, 85, 0.3);
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        .cipher-table td {
+            background: rgba(0, 0, 0, 0.4);
+            color: #b8860b;
+        }
+
+        .cipher-table tr:hover td {
+            background: rgba(212, 175, 55, 0.2);
+        }
+
+        .answer-chamber {
+            background: linear-gradient(135deg, rgba(139, 115, 85, 0.3), rgba(0, 0, 0, 0.8));
+            border: 3px double #d4af37;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 50px 0;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.4);
+        }
+
+        .answer-chamber h3 {
+            color: #d4af37;
+            font-size: 2em;
+            margin-bottom: 25px;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        }
+
+        .transmutation-input {
+            width: 400px;
+            padding: 20px;
+            font-size: 1.8em;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #8b7355;
+            border-radius: 15px;
+            color: #d4af37;
+            margin: 25px 0;
+            font-family: 'Georgia', serif;
+            transition: all 0.3s ease;
+        }
+
+        .transmutation-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+        }
+
+        .transmute-btn {
+            padding: 20px 50px;
+            font-size: 1.4em;
+            background: linear-gradient(135deg, #8b7355, #d4af37);
+            border: none;
+            border-radius: 15px;
+            color: #1a1a2e;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .transmute-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6);
+            background: linear-gradient(135deg, #d4af37, #ffd700);
+        }
+
+        .result-display {
+            margin-top: 30px;
+            font-size: 1.8em;
+            font-weight: bold;
+            min-height: 50px;
+        }
+
+        .success-text {
+            color: #00ff00;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+            animation: glow 1.5s infinite;
+        }
+
+        .fail-text {
+            color: #ff4444;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.7);
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(0, 255, 0, 0.7); }
+            50% { text-shadow: 0 0 40px rgba(0, 255, 0, 1); }
+        }
+
+        .hint-parchment {
+            background: rgba(139, 115, 85, 0.2);
+            border: 2px solid #8b7355;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .hint-title {
+            font-size: 1.5em;
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .hint-list {
+            list-style: none;
+            color: #b8860b;
+            font-size: 1.1em;
+            line-height: 1.8;
+        }
+
+        .hint-list li {
+            padding: 10px 0;
+            border-bottom: 1px dashed #8b7355;
+        }
+
+        .hint-list li:before {
+            content: "⚗️ ";
+            margin-right: 10px;
+        }
+
+        .constellation-map {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .star-point {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #8b7355;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            color: #d4af37;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .star-point:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.8);
+            background: rgba(212, 175, 55, 0.2);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="room-container">
+        <div class="room-header">
+            <div class="room-number">306</div>
+            <div class="room-title">ห้องปฏิบัติการนักเล่นแร่แปรธาตุ</div>
+            <div class="lab-description">"จงค้นหาสัญลักษณ์ที่เชื่อมโยงทุกสิ่งเข้าด้วยกัน"</div>
+        </div>
+
+        <div class="laboratory-layout">
+            <div class="lab-section">
+                <div class="section-title">⚗️ ชั้นวางยาปรุงแต่ง</div>
+                <div class="alchemy-shelf">
+                    <div class="potion-bottle">
+                        <div class="element-symbol">Ag</div>
+                        <div class="element-name">เงิน</div>
+                        <div class="element-number">เลข 47</div>
+                    </div>
+                    <div class="potion-bottle">
+                        <div class="element-symbol">N</div>
+                        <div class="element-name">ไนโตรเจน</div>
+                        <div class="element-number">เลข 7</div>
+                    </div>
+                    <div class="potion-bottle">
+                        <div class="element-symbol">D</div>
+                        <div class="element-name">ดิวทีเรียม</div>
+                        <div class="element-number">ไอโซโทป 2H</div>
+                    </div>
+                </div>
+                <div class="hint-parchment">
+                    <p style="text-align: center; color: #b8860b; font-style: italic;">
+                        "ธาตุสามประการ รวมกันเป็นหนึ่ง<br>
+                        จงเรียงลำดับตามแสงดาว<br>
+                        สัญลักษณ์จะปรากฏชัด"
+                    </p>
+                </div>
+            </div>
+
+            <div class="lab-section">
+                <div class="section-title">📜 ม้วนคัมภีร์โบราณ</div>
+                <div class="ancient-scroll">
+                    <div class="scroll-text">
+                        "ในภาษาของชาวโรมันโบราณ<br>
+                        สัญลักษณ์แห่งการเชื่อมโยง<br>
+                        คือ '⁊' หรือที่เรียกว่า..."
+                    </div>
+                </div>
+                <div class="rune-sequence">
+                    <div class="rune" title="Tironian Et">⁊</div>
+                    <div class="rune" title="Ampersand">⅋</div>
+                    <div class="rune" title="และ">&</div>
+                    <div class="rune" title="Plus">＋</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="formula-board">
+            <div class="formula-title">สูตรการแปรธาตุ</div>
+            <div class="formula-line">
+                α + β = γ
+            </div>
+            <div class="formula-line">
+                🜁 ∩ 🜂 = 🜃
+            </div>
+            <div class="formula-line">
+                ☉ ⚬ ☽ = ?
+            </div>
+            <div style="text-align: center; color: #999; margin-top: 20px; font-style: italic;">
+                "เมื่อสองสิ่งรวมเป็นหนึ่ง จะใช้สัญลักษณ์ใด?"
+            </div>
+        </div>
+
+        <div class="lab-section" style="grid-column: 1 / -1;">
+            <div class="section-title">🌟 แผนที่กลุ่มดาว</div>
+            <div class="constellation-map">
+                <div class="star-point floating" style="animation-delay: 0s;">1</div>
+                <div class="star-point floating" style="animation-delay: 0.2s;">14</div>
+                <div class="star-point floating" style="animation-delay: 0.4s;">4</div>
+                <div class="star-point floating" style="animation-delay: 0.6s;">•</div>
+                <div class="star-point floating" style="animation-delay: 0.8s;">A</div>
+                <div class="star-point floating" style="animation-delay: 1s;">N</div>
+                <div class="star-point floating" style="animation-delay: 1.2s;">D</div>
+                <div class="star-point floating" style="animation-delay: 1.4s;">★</div>
+            </div>
+            <p style="text-align: center; color: #b8860b; margin-top: 20px; font-style: italic;">
+                "ดาวทั้งเจ็ด นำทางไปสู่ความจริง"
+            </p>
+        </div>
+
+        <div class="lab-section" style="grid-column: 1 / -1;">
+            <div class="section-title">📊 ตารางการถอดรหัส</div>
+            <table class="cipher-table">
+                <thead>
+                    <tr>
+                        <th>สัญลักษณ์</th>
+                        <th>ความหมายในภาษาโบราณ</th>
+                        <th>การใช้งาน</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-size: 1.5em;">&</td>
+                        <td>Et (และในภาษาลาติน)</td>
+                        <td>เชื่อมสองสิ่งเข้าด้วยกัน</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 1.5em;">⁊</td>
+                        <td>Tironian Et</td>
+                        <td>สัญลักษณ์โบราณของ "และ"</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 1.5em;">+</td>
+                        <td>Plus</td>
+                        <td>บวก/รวม</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 1.5em; color: #d4af37; font-weight: bold;">???</td>
+                        <td>คำในภาษาอังกฤษ</td>
+                        <td>สัญลักษณ์ที่มาจาก "et"</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="hint-parchment" style="grid-column: 1 / -1;">
+            <div class="hint-title">🔮 คำใบ้จากนักเล่นแร่แปรธาตุ</div>
+            <ul class="hint-list">
+                <li>ธาตุ Ag, N, D เรียงตามลำดับจะได้อะไร?</li>
+                <li>สัญลักษณ์ & มาจากคำในภาษาลาตินว่า "Et" ซึ่งแปลว่า "และ"</li>
+                <li>ชื่อของสัญลักษณ์ & เรียกว่าอะไร?</li>
+                <li>มองหาคำที่เกี่ยวข้องกับการ "เชื่อมโยง" หรือ "รวมกัน"</li>
+                <li>แผนที่ดาวบอกใบ้ตัวอักษร: 1=A, 14=N, 4=D</li>
+                <li>คำตอบเป็นภาษาอังกฤษ 3 ตัวอักษร</li>
+                <li>คัมภีร์โบราณพูดถึงสัญลักษณ์ที่ใช้เชื่อมสองสิ่ง</li>
+            </ul>
+        </div>
+
+        <div class="answer-chamber">
+            <h3>⚱️ หีบแห่งการแปรธาตุ ⚱️</h3>
+            <p style="color: #b8860b; font-size: 1.2em; margin-bottom: 20px;">
+                "จงใส่คำสัญลักษณ์แห่งการเชื่อมโยง"
+            </p>
+            <input type="text" class="transmutation-input" id="alchemyInput" placeholder="...">
+            <br>
+            <button class="transmute-btn" onclick="performTransmutation()">แปรธาตุ</button>
+            <div class="result-display" id="resultDisplay"></div>
+        </div>
+    </div>
+
+    <script>
+        function performTransmutation() {
+            const input = document.getElementById('alchemyInput').value.trim().toLowerCase();
+            const resultDisplay = document.getElementById('resultDisplay');
+            
+            const correctAnswers = ['and', '&', 'และ', 'et'];
+            
+            if (correctAnswers.includes(input)) {
+                resultDisplay.textContent = '✨ สำเร็จ! คำตอบคือ "AND" (สัญลักษณ์ &) ✨';
+                resultDisplay.className = 'result-display success-text';
+                createAlchemyEffect();
+                celebrateSuccess();
+            } else {
+                resultDisplay.textContent = '❌ การแปรธาตุล้มเหลว... ลองใหม่อีกครั้ง';
+                resultDisplay.className = 'result-display fail-text';
+                shakeEffect();
+            }
+        }
+
+        function createAlchemyEffect() {
+            const colors = ['#d4af37', '#ffd700', '#00ff00', '#00ffff'];
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.style.position = 'fixed';
+                    particle.style.width = Math.random() * 15 + 5 + 'px';
+                    particle.style.height = particle.style.width;
+                    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.borderRadius = '50%';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.top = Math.random() * window.innerHeight + 'px';
+                    particle.style.opacity = '0.8';
+                    particle.style.zIndex = '1000';
+                    particle.style.pointerEvents = 'none';
+                    particle.style.boxShadow = '0 0 20px currentColor';
+                    document.body.appendChild(particle);
+                    
+                    particle.animate([
+                        { transform: 'scale(0) rotate(0deg)', opacity: 0 },
+                        { transform: 'scale(1.5) rotate(360deg)', opacity: 0.8 },
+                        { transform: 'scale(0) rotate(720deg)', opacity: 0 }
+                    ], {
+                        duration: 2000,
+                        easing: 'ease-out'
+                    });
+                    
+                    setTimeout(() => particle.remove(), 2000);
+                }, i * 20);
+            }
+        }
+
+        function celebrateSuccess() {
+            const answerChamber = document.querySelector('.answer-chamber');
+            answerChamber.style.animation = 'glow 1s ease-in-out 3';
+        }
+
+        function shakeEffect() {
+            const input = document.getElementById('alchemyInput');
+            input.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                input.style.animation = '';
+            }, 500);
+        }
+
+        document.getElementById('alchemyInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performTransmutation();
+            }
+        });
+
+        // Interactive potion bottles
+        document.querySelectorAll('.potion-bottle').forEach(bottle => {
+            bottle.addEventListener('click', function() {
+                this.style.animation = 'float 0.5s ease-in-out';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 500);
+            });
+        });
+
+        // Hover effects for runes
+        document.querySelectorAll('.rune').forEach(rune => {
+            rune.addEventListener('mouseenter', function() {
+                const title = this.getAttribute('title');
+                const tooltip = document.createElement('div');
+                tooltip.textContent = title;
+                tooltip.style.position = 'absolute';
+                tooltip.style.background = 'rgba(0,0,0,0.8)';
+                tooltip.style.color = '#d4af37';
+                tooltip.style.padding = '5px 10px';
+                tooltip.style.borderRadius = '5px';
+                tooltip.style.fontSize = '0.9em';
+                tooltip.style.marginTop = '-40px';
+                tooltip.className = 'rune-tooltip';
+                this.appendChild(tooltip);
+            });
+            
+            rune.addEventListener('mouseleave', function() {
+                const tooltip = this.querySelector('.rune-tooltip');
+                if (tooltip) tooltip.remove();
+            });
+        });
+
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
