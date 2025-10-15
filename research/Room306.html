@@ -3,279 +3,411 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Room 306 — SQL Injection Forensics Challenge (HTML)</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Room 306 — SQL Injection Forensics Challenge</title>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* Smooth scrolling for logs container */
-    #logsContainer { scroll-behavior: smooth; }
-    /* Mono font nicer on Windows */
+    :root{
+      --bg-a:#0f172a;          /* slate-900 */
+      --bg-b:#0b1445;          /* blue-950ish */
+      --panel:#111827;         /* gray-900 */
+      --panel-2:#1f2937;       /* gray-800 */
+      --text:#e5e7eb;          /* gray-200 */
+      --muted:#9ca3af;         /* gray-400 */
+      --muted-2:#6b7280;       /* gray-500 */
+      --cyan:#22d3ee;
+      --cyan-2:#06b6d4;
+      --yellow:#fbbf24;
+      --yellow-2:#f59e0b;
+      --green:#22c55e;
+      --red:#ef4444;
+      --blue:#2563eb;
+      --border:#334155;        /* slate-700 */
+      --shadow-cyan: 0 20px 45px rgba(34,211,238,.2);
+      --shadow-green: 0 20px 45px rgba(34,197,94,.25);
+      --radius:14px;
+      --radius-sm:10px;
+      --radius-lg:18px;
+      --mono: JetBrainsMono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
     @font-face {
       font-family: "JetBrainsMono";
       src: local("JetBrains Mono"), local("JetBrainsMono");
     }
-    .font-mono { font-family: JetBrainsMono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    /* Handy utility for hidden via classList */
-    .is-hidden { display: none; }
+    *{box-sizing:border-box}
+    body{
+      margin:0;padding:16px;
+      min-height:100vh;
+      font-family: var(--mono);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 20% -10%, #0b2a59 0%, transparent 60%),
+        radial-gradient(1200px 800px at 120% 110%, #0b2a59 0%, transparent 60%),
+        linear-gradient(135deg, var(--bg-a), var(--bg-b));
+    }
+    a{color:var(--cyan)}
+
+    .container{max-width:1200px;margin:0 auto}
+
+    .card{
+      background: linear-gradient(90deg, var(--panel-2), var(--panel));
+      border:2px solid rgba(34,211,238,.4);
+      border-radius:var(--radius);
+      padding:16px;
+      margin-bottom:24px;
+      box-shadow: var(--shadow-cyan);
+    }
+    .card.alt{border-color:#eab30866; box-shadow:none}
+    .card.soft{border:1px solid rgba(34,211,238,.3); box-shadow:none}
+
+    .row{display:flex;gap:12px;align-items:center}
+    .between{justify-content:space-between}
+    .col{display:flex;flex-direction:column;gap:6px}
+    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    @media(min-width:768px){ .stats{grid-template-columns:repeat(4,1fr);} }
+
+    .stat{background: linear-gradient(135deg, #0b1220, #0f172a);
+      border:1px solid #334155; border-radius:12px; padding:12px; transition:.2s border}
+    .stat:hover{border-color:var(--cyan)}
+    .muted{color:var(--muted); font-size:12px}
+    .big{font-weight:700; font-size:24px}
+    .big.cyan{color:var(--cyan)}
+    .big.yellow{color:var(--yellow)}
+    .big.gray{color:#475569}
+
+    .chip{display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px}
+    .chip.cyan{background:rgba(34,211,238,.15); color:var(--cyan)}
+    .chip.green{background:rgba(34,197,94,.15); color:var(--green)}
+
+    .hdr-icon{background:var(--cyan); padding:10px; border-radius:12px; display:grid; place-items:center}
+    .lock{background:var(--red); padding:12px; border-radius:999px}
+    .unlock{background:var(--green); padding:12px; border-radius:999px}
+
+    .panel{background: linear-gradient(90deg, #0b1220, #111827);
+      border:1px solid rgba(34,211,238,.3); border-radius:12px; padding:12px}
+
+    h1{margin:0; color:var(--cyan); letter-spacing:.08em}
+    h2{margin:0 0 4px 0}
+    .title{font-size:28px; font-weight:800}
+    .subtitle{color:#67e8f9}
+
+    .objective{background:#0b2250; border-left:4px solid var(--blue); border-radius:8px; padding:12px}
+    .objective .label{color:#93c5fd; font-weight:700; font-size:12px}
+    .objective .text{color:#bfdbfe; font-size:14px}
+
+    .code{background:#020617bb; border:1px solid rgba(34,211,238,.3);
+      padding:12px; border-radius:10px; color:#a5f3fc; font-size:13px; word-break:break-all}
+
+    textarea{
+      width:100%; min-height:110px; resize:vertical;
+      background:#0a0f1a; color:#34d399; border:2px solid #155e75;
+      border-radius:12px; padding:12px; outline:none;
+    }
+    textarea:focus{border-color:var(--cyan)}
+
+    .btns{display:flex; gap:12px; flex-wrap:wrap}
+    .btn{
+      appearance:none; border:0; padding:12px 16px; border-radius:12px;
+      font-weight:800; letter-spacing:.02em;
+      color:white; cursor:pointer; transition:transform .08s ease, box-shadow .2s ease, filter .15s ease;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      box-shadow:0 6px 18px rgba(0,0,0,.25);
+    }
+    .btn:active{transform:scale(.98)}
+    .btn-primary{background:linear-gradient(90deg, var(--cyan-2), var(--cyan)); box-shadow: var(--shadow-cyan)}
+    .btn-secondary{background:linear-gradient(90deg, #485262, #4b5563)}
+    .btn-warning{background:linear-gradient(90deg, #b45309, #f59e0b)}
+    .btn-primary:hover{filter:brightness(1.05)}
+    .btn-secondary:hover{filter:brightness(1.05)}
+    .btn-warning:hover{filter:brightness(1.08)}
+
+    .hint{background:linear-gradient(90deg,#0b1220,#111827); border:2px solid #f59e0b66; border-radius:12px; padding:16px}
+    .hint-card{border-left:4px solid var(--yellow); background:rgba(234,179,8,.15); border-radius:8px; padding:12px; margin-bottom:10px}
+    .hint-card.l2{border-color:#fb923c; background:rgba(251,146,60,.15)}
+    .hint-card.l3{border-color:#ef4444; background:rgba(239,68,68,.15)}
+
+    .locked{
+      text-align:center; padding:28px; background:#0a0f1a; border:1px solid #374151; border-radius:10px;
+      color:var(--muted);
+    }
+    .next-box{margin-top:8px; text-align:center; background:#0a0f1a; border:1px solid #374151; border-radius:10px; padding:10px}
+
+    .logs{max-height:380px; overflow:auto; background:#000; border:2px solid #22c55e; border-radius:14px; padding:16px; box-shadow: var(--shadow-green)}
+    .log-empty{color:#64748b; text-align:center; padding:40px 0}
+    .logrow{display:flex; gap:12px; font-size:13px; padding:8px; border-radius:8px; transition:.15s background}
+    .logrow:hover{background:rgba(148,163,184,.08)}
+    .logtime{color:#64748b; flex-shrink:0}
+    .logmsg{display:flex; gap:8px; align-items:center}
+    .logmsg.info{color:#9ca3af}
+    .logmsg.success{color:#22c55e}
+    .logmsg.error{color:#ef4444}
+    .logmsg.warning{color:#f59e0b}
+
+    .success{background:linear-gradient(90deg,#064e3b,#065f46,#064e3b);
+      border:2px solid #34d399; border-radius:16px; padding:24px; box-shadow: var(--shadow-green)}
+
+    .badge{display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; background:rgba(16,185,129,.2); color:#34d399}
+    .center{display:flex; justify-content:center; align-items:center; gap:10px}
+    .key{font-size:44px; font-weight:900; background: linear-gradient(90deg, #34d399, #10b981); -webkit-background-clip:text; background-clip:text; color:transparent}
+
+    .kb .item{background:rgba(17,24,39,.8); border:1px solid #374151; border-radius:10px; padding:12px}
+    .kb .item:hover{border-color:var(--cyan)}
+
+    .footer{color:#94a3b8; text-align:center; font-size:12px; padding-bottom:16px}
+    .difficulty{color:var(--yellow); font-family:var(--mono)}
+    .is-hidden{display:none !important}
+
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+    .animate-pulse{animation:pulse 1.2s ease-in-out infinite}
   </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 p-4 md:p-6 font-mono">
-  <div class="max-w-7xl mx-auto">
+<body>
+  <div class="container">
+
     <!-- Header -->
-    <div class="bg-gradient-to-r from-gray-800 to-gray-900 border-2 border-cyan-400 rounded-lg p-4 md:p-6 mb-6 shadow-2xl shadow-cyan-500/20">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-        <div class="flex items-center gap-3">
-          <div class="bg-cyan-500 p-2 rounded-lg">
-            <i data-lucide="database" class="w-8 h-8 text-white"></i>
-          </div>
-          <div>
-            <h1 class="text-2xl md:text-3xl font-bold text-cyan-400 tracking-wider">ROOM 306</h1>
-            <p class="text-sm md:text-base text-cyan-300">SQL Injection Forensics Challenge</p>
+    <div class="card">
+      <div class="row between" style="margin-bottom:14px">
+        <div class="row">
+          <div class="hdr-icon"><i data-lucide="database" class="w-8 h-8" style="width:32px;height:32px;color:#fff"></i></div>
+          <div class="col">
+            <h1 class="title">ROOM 306</h1>
+            <div class="subtitle">SQL Injection Forensics Challenge</div>
           </div>
         </div>
-        <div class="flex items-center gap-3">
-          <div id="headerLocked" class="bg-red-500 p-3 rounded-full">
-            <i data-lucide="lock" class="w-8 h-8 text-white"></i>
+        <div class="row">
+          <div id="headerLocked" class="lock">
+            <i data-lucide="lock" style="width:32px;height:32px;color:#fff"></i>
           </div>
-          <div id="headerUnlocked" class="bg-green-500 p-3 rounded-full animate-pulse is-hidden">
-            <i data-lucide="unlock" class="w-8 h-8 text-white"></i>
+          <div id="headerUnlocked" class="unlock animate-pulse is-hidden">
+            <i data-lucide="unlock" style="width:32px;height:32px;color:#fff"></i>
           </div>
         </div>
       </div>
 
-      <div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-3 md:p-4 mb-4 border border-cyan-500/30">
-        <div class="flex items-center gap-2 mb-2">
-          <i data-lucide="shield" class="w-5 h-5 text-yellow-400"></i>
-          <span class="text-yellow-400 font-bold text-sm md:text-base">MISSION BRIEFING</span>
+      <div class="panel" style="margin-bottom:14px">
+        <div class="row" style="gap:8px; margin-bottom:6px">
+          <i data-lucide="shield" style="width:18px;height:18px;color:var(--yellow)"></i>
+          <span style="color:var(--yellow);font-weight:800;font-size:14px">MISSION BRIEFING</span>
         </div>
-        <p class="text-gray-300 text-sm md:text-base">Exploit SQL vulnerabilities to extract the hidden keyword and unlock the door</p>
+        <div style="color:#d1d5db; font-size:14px">
+          Exploit SQL vulnerabilities to extract the hidden keyword and unlock the door
+        </div>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all">
-          <div class="text-gray-400 text-xs mb-1">Total Attempts</div>
-          <div id="attemptsCount" class="text-white font-bold text-xl md:text-2xl">0</div>
+      <div class="stats">
+        <div class="stat">
+          <div class="muted">Total Attempts</div>
+          <div id="attemptsCount" class="big">0</div>
         </div>
-        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all">
-          <div class="text-gray-400 text-xs mb-1">Stage Attempts</div>
-          <div id="stageAttemptsCount" class="text-cyan-400 font-bold text-xl md:text-2xl">0</div>
+        <div class="stat">
+          <div class="muted">Stage Attempts</div>
+          <div id="stageAttemptsCount" class="big cyan">0</div>
         </div>
-        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-3 border border-gray-700 hover:border-yellow-500 transition-all">
-          <div class="text-gray-400 text-xs mb-1">Current Stage</div>
-          <div id="currentStageCount" class="text-yellow-400 font-bold text-xl md:text-2xl">1/3</div>
+        <div class="stat">
+          <div class="muted">Current Stage</div>
+          <div id="currentStageCount" class="big yellow">1/3</div>
         </div>
-        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-3 border border-gray-700 hover:border-yellow-500 transition-all">
-          <div class="text-gray-400 text-xs mb-1 flex items-center gap-1">
-            <i data-lucide="zap" class="w-3 h-3"></i>
+        <div class="stat">
+          <div class="row muted" style="gap:6px">
+            <i data-lucide="zap" style="width:14px;height:14px"></i>
             Hints Unlocked
           </div>
-          <div id="hintsUnlockedCount" class="font-bold text-xl md:text-2xl text-gray-600">0/3</div>
+          <div id="hintsUnlockedCount" class="big gray">0/3</div>
         </div>
       </div>
     </div>
 
     <!-- Success Screen -->
-    <div id="successPanel" class="bg-gradient-to-r from-green-900 via-emerald-900 to-green-900 border-2 border-green-400 rounded-lg p-6 mb-6 shadow-2xl shadow-green-500/30 animate-pulse is-hidden">
-      <div class="flex items-center gap-4 mb-4">
-        <div class="bg-green-500 p-3 rounded-full">
-          <i data-lucide="unlock" class="w-12 h-12 text-white"></i>
+    <div id="successPanel" class="success is-hidden">
+      <div class="row" style="gap:16px; margin-bottom:12px">
+        <div class="unlock">
+          <i data-lucide="unlock" style="width:48px;height:48px;color:#fff"></i>
         </div>
-        <div>
-          <h2 class="text-3xl md:text-4xl font-bold text-green-400 mb-1">MISSION COMPLETE!</h2>
-          <p class="text-green-300 text-lg">Outstanding work, security researcher!</p>
-        </div>
-      </div>
-      <div class="bg-black/50 rounded-lg p-5 mb-4 border-2 border-green-500">
-        <div class="flex items-center gap-3 justify-center">
-          <span class="text-green-300 text-xl">Extracted Keyword:</span>
-          <span id="foundKeyword" class="font-bold text-4xl md:text-5xl text-white tracking-wider bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">AND</span>
+        <div class="col">
+          <h2 style="color:#34d399; font-size:32px; font-weight:900; margin:0">MISSION COMPLETE!</h2>
+          <div style="color:#86efac; font-size:18px">Outstanding work, security researcher!</div>
         </div>
       </div>
-      <div class="flex items-center justify-center gap-2 text-gray-300">
-        <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+      <div class="panel" style="border:2px solid #34d399; background:#0008; margin-bottom:10px">
+        <div class="center">
+          <span style="color:#86efac; font-size:18px">Extracted Keyword:</span>
+          <span id="foundKeyword" class="key">AND</span>
+        </div>
+      </div>
+      <div class="center" style="color:#d1fae5">
+        <i data-lucide="check-circle" style="width:18px;height:18px;color:#34d399"></i>
         <span>Door 306 is now unlocked. Proceed to next challenge.</span>
       </div>
     </div>
 
-    <!-- Stage Info (hidden on success) -->
-    <div id="stageInfoContainer" class="bg-gradient-to-r from-gray-800 to-gray-900 border-2 border-yellow-500 rounded-lg p-4 md:p-6 mb-6 shadow-xl">
-      <div class="flex items-start gap-3 mb-4">
-        <div class="bg-yellow-500 p-2 rounded-lg flex-shrink-0">
-          <i data-lucide="alert-triangle" class="w-6 h-6 text-black"></i>
-        </div>
-        <div class="flex-1">
-          <h2 id="stageTitle" class="text-lg md:text-xl font-bold text-yellow-400 mb-2">Stage 1: Authentication Bypass</h2>
-          <p id="stageDesc" class="text-gray-300 text-sm md:text-base mb-3">A vulnerable login form is exposed. The password field is injectable.</p>
-          <div class="bg-blue-950 border-l-4 border-blue-500 rounded p-3 mb-3">
-            <div class="flex items-center gap-2 mb-2">
-              <i data-lucide="trending-up" class="w-4 h-4 text-blue-400"></i>
-              <span class="text-blue-400 text-xs md:text-sm font-bold">OBJECTIVE</span>
+    <!-- Stage Info -->
+    <div id="stageInfoContainer" class="card alt">
+      <div class="row" style="gap:12px; margin-bottom:14px">
+        <div style="background:var(--yellow); padding:10px; border-radius:10px"><i data-lucide="alert-triangle" style="width:24px;height:24px;color:#000"></i></div>
+        <div class="col" style="gap:8px; flex:1">
+          <h2 id="stageTitle" style="color:var(--yellow); margin:0">Stage 1: Authentication Bypass</h2>
+          <div id="stageDesc" style="color:#e5e7eb">A vulnerable login form is exposed. The password field is injectable.</div>
+          <div class="objective">
+            <div class="row" style="gap:8px; margin-bottom:4px">
+              <i data-lucide="trending-up" style="width:16px;height:16px;color:#60a5fa"></i>
+              <span class="label">OBJECTIVE</span>
             </div>
-            <div id="stageObjective" class="text-blue-200 text-sm">Bypass authentication to gain access to the system</div>
+            <div id="stageObjective" class="text">Bypass authentication to gain access to the system</div>
           </div>
         </div>
       </div>
-      <div class="bg-black/70 p-4 rounded-lg border border-cyan-500/30">
-        <div class="flex items-center gap-2 mb-2">
-          <i data-lucide="terminal" class="w-4 h-4 text-cyan-400"></i>
-          <span class="text-cyan-400 text-xs font-bold">VULNERABLE SQL QUERY</span>
+      <div class="code">
+        <div class="row" style="gap:8px; margin-bottom:6px">
+          <i data-lucide="terminal" style="width:16px;height:16px;color:#67e8f9"></i>
+          <span style="color:#67e8f9; font-weight:800; font-size:12px">VULNERABLE SQL QUERY</span>
         </div>
-        <code id="stageCode" class="text-cyan-300 text-xs md:text-sm block break-all">SELECT * FROM users WHERE username='admin' AND password='[YOUR_INPUT]'</code>
+        <code id="stageCode">SELECT * FROM users WHERE username='admin' AND password='[YOUR_INPUT]'</code>
       </div>
     </div>
 
-    <!-- SQL Console (hidden on success) -->
-    <div id="consoleContainer" class="bg-black border-2 border-cyan-400 rounded-lg p-4 md:p-6 mb-6 shadow-2xl shadow-cyan-500/20">
-      <div class="flex items-center gap-2 mb-4">
-        <i data-lucide="terminal" class="w-5 h-5 text-cyan-400"></i>
-        <span class="text-cyan-400 font-bold text-sm md:text-base tracking-wider">SQL INJECTION CONSOLE</span>
-        <div class="flex-1"></div>
-        <div class="bg-cyan-500/20 px-2 py-1 rounded text-cyan-400 text-xs">ACTIVE</div>
+    <!-- Console -->
+    <div id="consoleContainer" class="card soft">
+      <div class="row" style="gap:8px; margin-bottom:10px">
+        <i data-lucide="terminal" style="width:18px;height:18px;color:#67e8f9"></i>
+        <span style="color:#67e8f9; font-weight:800">SQL INJECTION CONSOLE</span>
+        <div style="flex:1"></div>
+        <span class="chip cyan">ACTIVE</span>
       </div>
 
-      <textarea id="sqlInput" rows="4" placeholder="Enter your SQL injection payload... (Press Enter to execute, Shift+Enter for new line)" class="w-full bg-gray-950 text-green-400 border-2 border-cyan-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-400 font-mono text-sm md:text-base min-h-[100px] resize-y placeholder-gray-600 transition-all"></textarea>
+      <textarea id="sqlInput" placeholder="Enter your SQL injection payload... (Press Enter to execute, Shift+Enter for new line)"></textarea>
 
-      <div class="flex flex-col sm:flex-row gap-3 mt-4">
-        <button id="executeBtn" class="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white px-6 py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-cyan-500/50 transform hover:scale-105">
-          <i data-lucide="terminal" class="w-5 h-5"></i>
-          EXECUTE QUERY
+      <div class="btns" style="margin-top:12px">
+        <button id="executeBtn" class="btn btn-primary">
+          <i data-lucide="terminal"></i> EXECUTE QUERY
         </button>
-        <button id="hintBtn" class="flex-1 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white px-6 py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-105">
-          <i data-lucide="lightbulb" class="w-5 h-5"></i>
-          <span id="hintBtnLabel">SHOW HINTS</span>
+        <button id="hintBtn" class="btn btn-secondary">
+          <i data-lucide="lightbulb"></i> <span id="hintBtnLabel">SHOW HINTS</span>
         </button>
       </div>
 
-      <!-- Hint Panel -->
-      <div id="hintPanel" class="mt-5 bg-gradient-to-r from-gray-900 to-gray-800 border-2 border-yellow-500 rounded-lg p-4 shadow-xl is-hidden">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-          <div class="flex items-center gap-2">
-            <i data-lucide="lightbulb" class="w-6 h-6 text-yellow-400"></i>
-            <span class="text-yellow-400 font-bold">PROGRESSIVE HINT SYSTEM</span>
+      <!-- Hints -->
+      <div id="hintPanel" class="hint is-hidden" style="margin-top:16px">
+        <div class="row between" style="margin-bottom:10px">
+          <div class="row" style="gap:8px">
+            <i data-lucide="lightbulb" style="width:22px;height:22px;color:var(--yellow)"></i>
+            <span style="color:var(--yellow);font-weight:800">PROGRESSIVE HINT SYSTEM</span>
           </div>
-          <div class="bg-yellow-500/20 px-3 py-1 rounded text-yellow-400 text-xs">Unlocks at 10, 25, 50 attempts</div>
+          <span class="chip" style="background:rgba(245,158,11,.15);color:var(--yellow)">Unlocks at 10, 25, 50 attempts</span>
         </div>
 
-        <!-- Level 0 (Locked) -->
-        <div id="hintsLocked" class="text-center py-8 bg-gray-950 rounded-lg border border-gray-700">
-          <i data-lucide="lock" class="w-12 h-12 mx-auto mb-3 text-gray-600"></i>
-          <div class="text-gray-400 text-lg mb-2">No Hints Available Yet</div>
-          <div class="text-white font-bold text-2xl">
-            <span id="nextHintCount">10</span>
-            <span class="text-gray-500 text-base"> more attempts</span>
+        <div id="hintsLocked" class="locked">
+          <i data-lucide="lock" style="width:44px;height:44px;color:#64748b"></i>
+          <div style="font-size:18px; color:#9aa5b1; margin-top:4px">No Hints Available Yet</div>
+          <div style="font-weight:900; font-size:22px; color:white">
+            <span id="nextHintCount">10</span> <span style="color:#94a3b8; font-size:14px">more attempts</span>
           </div>
-          <div class="text-gray-500 text-sm mt-1">to unlock Level 1 Hint</div>
+          <div style="color:#94a3b8; font-size:13px; margin-top:4px">to unlock Level 1 Hint</div>
         </div>
 
-        <!-- Level 1 -->
-        <div id="hintLevel1" class="mb-3 p-4 bg-yellow-900/30 rounded-lg border-l-4 border-yellow-500 shadow-lg is-hidden">
-          <div class="flex items-center gap-2 mb-2">
-            <i data-lucide="check-circle" class="w-5 h-5 text-yellow-400"></i>
-            <span class="text-yellow-300 font-bold">Level 1 Hint</span>
-            <span class="bg-yellow-500/30 px-2 py-0.5 rounded text-xs text-yellow-300">Unlocked at 10</span>
+        <div id="hintLevel1" class="hint-card is-hidden">
+          <div class="row" style="gap:8px; margin-bottom:6px">
+            <i data-lucide="check-circle" style="width:18px;height:18px;color:var(--yellow)"></i>
+            <span style="color:#fde68a; font-weight:800">Level 1 Hint</span>
+            <span class="chip" style="background:rgba(245,158,11,.2); color:#fbbf24">Unlocked at 10</span>
           </div>
-          <div id="hintL1Text" class="text-yellow-100 text-sm leading-relaxed"></div>
+          <div id="hintL1Text" style="color:#fff; opacity:.9; font-size:14px"></div>
         </div>
 
-        <!-- Level 2 -->
-        <div id="hintLevel2" class="mb-3 p-4 bg-orange-900/30 rounded-lg border-l-4 border-orange-500 shadow-lg is-hidden">
-          <div class="flex items-center gap-2 mb-2">
-            <i data-lucide="check-circle" class="w-5 h-5 text-orange-400"></i>
-            <span class="text-orange-300 font-bold">Level 2 Hint</span>
-            <span class="bg-orange-500/30 px-2 py-0.5 rounded text-xs text-orange-300">Unlocked at 25</span>
+        <div id="hintLevel2" class="hint-card l2 is-hidden">
+          <div class="row" style="gap:8px; margin-bottom:6px">
+            <i data-lucide="check-circle" style="width:18px;height:18px;color:#fb923c"></i>
+            <span style="color:#fdba74; font-weight:800">Level 2 Hint</span>
+            <span class="chip" style="background:rgba(251,146,60,.2); color:#fb923c">Unlocked at 25</span>
           </div>
-          <div id="hintL2Text" class="text-orange-100 text-sm leading-relaxed"></div>
+          <div id="hintL2Text" style="color:#fff; opacity:.9; font-size:14px"></div>
         </div>
 
-        <!-- Level 3 (Full solution) -->
-        <div id="hintLevel3" class="p-4 bg-red-900/30 rounded-lg border-l-4 border-red-500 shadow-lg is-hidden">
-          <div class="flex items-center gap-2 mb-3">
-            <i data-lucide="check-circle" class="w-5 h-5 text-red-400"></i>
-            <span class="text-red-300 font-bold">Level 3 Hint</span>
-            <span class="bg-red-500/30 px-2 py-0.5 rounded text-xs text-red-300">Unlocked at 50</span>
+        <div id="hintLevel3" class="hint-card l3 is-hidden">
+          <div class="row" style="gap:8px; margin-bottom:6px">
+            <i data-lucide="check-circle" style="width:18px;height:18px;color:#ef4444"></i>
+            <span style="color:#fecaca; font-weight:800">Level 3 Hint</span>
+            <span class="chip" style="background:rgba(239,68,68,.2); color:#ef4444">Unlocked at 50</span>
           </div>
-          <div id="hintL3Text" class="text-red-100 mb-3 text-sm leading-relaxed"></div>
-          <div class="bg-black/70 p-4 rounded-lg border-2 border-red-500">
-            <div class="flex items-center gap-2 mb-2">
-              <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400"></i>
-              <span class="text-red-400 text-xs font-bold">FULL SOLUTION</span>
+          <div id="hintL3Text" style="color:#fff; opacity:.9; font-size:14px; margin-bottom:8px"></div>
+          <div class="code" style="border:2px solid #ef4444">
+            <div class="row" style="gap:6px; margin-bottom:6px">
+              <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#ef4444"></i>
+              <span style="color:#ef4444; font-weight:800; font-size:12px">FULL SOLUTION</span>
             </div>
-            <pre id="hintFullSolution" class="text-red-200 font-mono text-xs md:text-sm whitespace-pre-wrap break-all"></pre>
+            <pre id="hintFullSolution" style="white-space:pre-wrap; margin:0"></pre>
           </div>
         </div>
 
-        <!-- Next unlock box -->
-        <div id="nextHintAttemptsBox" class="mt-3 p-3 bg-gray-950 rounded-lg text-center border border-gray-700">
-          <div class="text-gray-400 text-sm mb-1">Next hint unlocks in</div>
-          <div class="text-white font-bold text-xl" id="nextHintAttempts">10</div>
-          <div class="text-gray-500 text-xs">attempts</div>
+        <div id="nextHintAttemptsBox" class="next-box">
+          <div class="muted" style="margin-bottom:2px">Next hint unlocks in</div>
+          <div id="nextHintAttempts" style="font-weight:900; font-size:22px">10</div>
+          <div class="muted">attempts</div>
         </div>
       </div>
     </div>
 
-    <!-- Activity Logs -->
-    <div class="bg-black border-2 border-green-500 rounded-lg p-4 md:p-6 mb-6 shadow-2xl shadow-green-500/20 max-h-96 overflow-y-auto" id="logsWrapper">
-      <div class="flex items-center gap-2 mb-4 sticky top-0 bg-black pb-2">
-        <i data-lucide="shield" class="w-5 h-5 text-green-400"></i>
-        <span class="text-green-400 font-bold tracking-wider">SYSTEM ACTIVITY LOGS</span>
-        <div class="flex-1"></div>
-        <div class="bg-green-500/20 px-2 py-1 rounded text-green-400 text-xs">MONITORING</div>
+    <!-- Logs -->
+    <div class="logs" id="logsWrapper">
+      <div class="row" style="gap:8px; margin-bottom:12px; position:sticky; top:0; background:#000; padding-bottom:8px">
+        <i data-lucide="shield" style="width:18px;height:18px;color:#34d399"></i>
+        <span style="color:#34d399; font-weight:800; letter-spacing:.08em">SYSTEM ACTIVITY LOGS</span>
+        <div style="flex:1"></div>
+        <span class="chip green">MONITORING</span>
       </div>
-      <div id="logsEmpty" class="text-center py-12 text-gray-600">
-        <i data-lucide="terminal" class="w-16 h-16 mx-auto mb-4 opacity-30"></i>
-        <div class="text-sm">Awaiting query execution...</div>
+      <div id="logsEmpty" class="log-empty">
+        <i data-lucide="terminal" style="width:64px;height:64px;opacity:.3"></i>
+        <div>Awaiting query execution...</div>
       </div>
-      <div id="logsContainer" class="space-y-1"></div>
+      <div id="logsContainer"></div>
     </div>
 
     <!-- Knowledge Base -->
-    <div class="bg-gradient-to-r from-gray-800 to-gray-900 border border-cyan-500/30 rounded-lg p-4 md:p-6 mb-6">
-      <div class="flex items-center gap-2 mb-4">
-        <i data-lucide="database" class="w-5 h-5 text-cyan-400"></i>
-        <h3 class="text-cyan-400 font-bold">Required IT Knowledge & Skills</h3>
+    <div class="card soft">
+      <div class="row" style="gap:8px; margin-bottom:10px">
+        <i data-lucide="database" style="width:18px;height:18px;color:#67e8f9"></i>
+        <h3 style="margin:0;color:#67e8f9">Required IT Knowledge & Skills</h3>
       </div>
-      <div class="grid md:grid-cols-2 gap-3">
-        <div class="bg-gray-900/70 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all group">
-          <div class="text-cyan-300 font-bold text-sm mb-1 group-hover:text-cyan-400 transition-colors">• SQL Injection Fundamentals</div>
-          <div class="text-gray-400 text-xs">Authentication bypass techniques</div>
+      <div class="kb" style="display:grid; gap:10px; grid-template-columns:1fr; margin-top:6px">
+        <div class="item">
+          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• SQL Injection Fundamentals</div>
+          <div class="muted">Authentication bypass techniques</div>
         </div>
-        <div class="bg-gray-900/70 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all group">
-          <div class="text-cyan-300 font-bold text-sm mb-1 group-hover:text-cyan-400 transition-colors">• UNION-based Injection</div>
-          <div class="text-gray-400 text-xs">Combining multiple query results</div>
+        <div class="item">
+          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• UNION-based Injection</div>
+          <div class="muted">Combining multiple query results</div>
         </div>
-        <div class="bg-gray-900/70 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all group">
-          <div class="text-cyan-300 font-bold text-sm mb-1 group-hover:text-cyan-400 transition-colors">• Database Enumeration</div>
-          <div class="text-gray-400 text-xs">Using information_schema tables</div>
+        <div class="item">
+          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• Database Enumeration</div>
+          <div class="muted">Using information_schema tables</div>
         </div>
-        <div class="bg-gray-900/70 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all group">
-          <div class="text-cyan-300 font-bold text-sm mb-1 group-hover:text-cyan-400 transition-colors">• Data Exfiltration</div>
-          <div class="text-gray-400 text-xs">Extracting sensitive information</div>
+        <div class="item">
+          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• Data Exfiltration</div>
+          <div class="muted">Extracting sensitive information</div>
         </div>
-        <div class="bg-gray-900/70 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all group">
-          <div class="text-cyan-300 font-bold text-sm mb-1 group-hover:text-cyan-400 transition-colors">• SQL Query Syntax</div>
-          <div class="text-gray-400 text-xs">SELECT, FROM, WHERE, UNION</div>
+        <div class="item">
+          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• SQL Query Syntax</div>
+          <div class="muted">SELECT, FROM, WHERE, UNION</div>
         </div>
-        <div class="bg-gray-900/70 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all group">
-          <div class="text-cyan-300 font-bold text-sm mb-1 group-hover:text-cyan-400 transition-colors">• Web Security Concepts</div>
-          <div class="text-gray-400 text-xs">OWASP Top 10 vulnerabilities</div>
+        <div class="item">
+          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• Web Security Concepts</div>
+          <div class="muted">OWASP Top 10 vulnerabilities</div>
         </div>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="text-center text-gray-500 text-xs md:text-sm space-y-2 pb-4">
-      <div class="flex items-center justify-center gap-2">
-        <i data-lucide="shield" class="w-4 h-4"></i>
+    <div class="footer">
+      <div class="center">
+        <i data-lucide="shield" style="width:16px;height:16px"></i>
         <span>Room 306: SQL Injection Forensics Challenge</span>
       </div>
-      <div class="flex items-center justify-center gap-2">
+      <div class="center" style="margin-top:6px">
         <span>Difficulty:</span>
-        <span id="difficultyStars" class="text-yellow-400 font-mono">★★★★★★★★☆☆</span>
-        <span id="difficultyNumeric" class="text-white font-bold">(8/10)</span>
+        <span id="difficultyStars" class="difficulty">★★★★★★★★☆☆</span>
+        <span id="difficultyNumeric" style="color:white; font-weight:900">(8/10)</span>
       </div>
     </div>
+
   </div>
 
   <script>
@@ -283,7 +415,6 @@
     // State
     // ---------------------------
     let stage = 1;
-    let sqlInput = "";
     let logs = [];
     let showHint = false;
     let attempts = 0;
@@ -297,19 +428,19 @@
         "SQL injection allows you to manipulate database queries by injecting malicious SQL code.",
         "Try closing the password string with a single quote (') and then adding a condition that's always true.",
         "Use the OR operator to bypass authentication. For example: '1'='1' is always true, which will return all records.",
-        "Complete payload: ' OR '1'='1\n\nThis closes the password field and adds an OR condition that's always true, bypassing authentication."
+        "Complete payload: ' OR '1'='1\\n\\nThis closes the password field and adds an OR condition that's always true, bypassing authentication."
       ],
       stage2: [
         "You need to discover what tables exist in the database schema.",
         "UNION SELECT allows you to combine results from different queries. The number of columns must match.",
         "The information_schema database contains metadata about all tables. Use information_schema.tables to enumerate them.",
-        "Full payload: ' UNION SELECT NULL, table_name FROM information_schema.tables--\n\nThis combines your query with a query that lists all table names."
+        "Full payload: ' UNION SELECT NULL, table_name FROM information_schema.tables--\\n\\nThis combines your query with a query that lists all table names."
       ],
       stage3: [
         "The hidden_vault table has been discovered. It contains sensitive credentials.",
         "Use UNION SELECT to extract data from the hidden_vault table. You need to retrieve both username and password.",
         "The hidden_vault table has columns: id, username, password. Select the username and password fields.",
-        "Complete payload: ' UNION SELECT username, password FROM hidden_vault--\n\nOr more specific: ' UNION SELECT username, password FROM hidden_vault WHERE id=1--"
+        "Complete payload: ' UNION SELECT username, password FROM hidden_vault--\\n\\nOr more specific: ' UNION SELECT username, password FROM hidden_vault WHERE id=1--"
       ]
     };
 
@@ -393,7 +524,6 @@
     function addLog(message, type = 'info') {
       const entry = { message, type, time: timeNow() };
       logs.push(entry);
-      // Render the new log at the end (latest at bottom)
       renderLogs();
     }
 
@@ -404,36 +534,36 @@
         return;
       }
       logsEmpty.classList.add('is-hidden');
-      // Build rows
       const frag = document.createDocumentFragment();
       logs.forEach((log) => {
         const row = document.createElement('div');
-        row.className = 'flex gap-3 text-xs md:text-sm hover:bg-gray-900/50 p-2 rounded transition-all group';
+        row.className = 'logrow';
 
         const time = document.createElement('span');
-        time.className = 'text-gray-600 flex-shrink-0 font-mono';
+        time.className = 'logtime';
         time.textContent = `[${log.time}]`;
 
         const msg = document.createElement('span');
-        msg.className = 'flex items-center gap-2 group-hover:text-white transition-colors';
-        if (log.type === 'success') msg.classList.add('text-green-400');
-        else if (log.type === 'error') msg.classList.add('text-red-400');
-        else if (log.type === 'warning') msg.classList.add('text-yellow-400');
-        else msg.classList.add('text-gray-400');
+        msg.className = 'logmsg ' + (log.type || 'info');
 
-        if (log.type === 'success') msg.innerHTML = `<svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span class="break-all"></span>`;
-        else if (log.type === 'error') msg.innerHTML = `<svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span class="break-all"></span>`;
-        else if (log.type === 'warning') msg.innerHTML = `<svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span class="break-all"></span>`;
-        else msg.innerHTML = `<span class="break-all"></span>`;
-
+        // icon + text
+        let icon = '';
+        if (log.type === 'success') {
+          icon = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+        } else if (log.type === 'error') {
+          icon = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+        } else if (log.type === 'warning') {
+          icon = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+        }
+        msg.innerHTML = (icon ? icon + ' ' : '') + '<span class="break-all"></span>';
         msg.querySelector('span').textContent = log.message;
+
         row.appendChild(time);
         row.appendChild(msg);
         frag.appendChild(row);
       });
       logsContainer.innerHTML = '';
       logsContainer.appendChild(frag);
-      // scroll to bottom
       logsWrapper.scrollTop = logsWrapper.scrollHeight;
     }
 
@@ -466,8 +596,11 @@
       stageAttemptsCount.textContent = stageAttempts;
       currentStageCount.textContent = `${stage}/3`;
       hintsUnlockedCount.textContent = `${autoHintLevel}/3`;
-      hintsUnlockedCount.classList.toggle('text-gray-600', autoHintLevel === 0);
-      hintsUnlockedCount.classList.toggle('text-yellow-400', autoHintLevel > 0);
+      if (autoHintLevel === 0) {
+        hintsUnlockedCount.style.color = '#475569';
+      } else {
+        hintsUnlockedCount.style.color = 'var(--yellow)';
+      }
     }
 
     function updateStageInfo() {
@@ -486,26 +619,25 @@
     }
 
     function updateHintPanel() {
-      // button pulse when autoHintLevel>0 and panel hidden
+      // change hintBtn style depending on state
       if (autoHintLevel > 0 && !showHint) {
         hintBtn.classList.add('animate-pulse');
-        hintBtn.classList.remove('bg-gradient-to-r', 'from-gray-700', 'to-gray-600');
-        hintBtn.classList.add('bg-gradient-to-r', 'from-yellow-600', 'to-yellow-500', 'hover:from-yellow-500', 'hover:to-yellow-400');
+        hintBtn.classList.remove('btn-secondary');
+        hintBtn.classList.add('btn-warning');
       } else {
         hintBtn.classList.remove('animate-pulse');
         if (autoHintLevel > 0) {
-          hintBtn.classList.remove('from-gray-700', 'to-gray-600');
-          hintBtn.classList.add('from-yellow-600', 'to-yellow-500', 'hover:from-yellow-500', 'hover:to-yellow-400');
+          hintBtn.classList.remove('btn-secondary');
+          hintBtn.classList.add('btn-warning');
         } else {
-          hintBtn.classList.remove('from-yellow-600', 'to-yellow-500');
-          hintBtn.classList.add('from-gray-700', 'to-gray-600', 'hover:from-gray-600', 'hover:to-gray-500');
+          hintBtn.classList.remove('btn-warning');
+          hintBtn.classList.add('btn-secondary');
         }
       }
       hintBtnLabel.textContent = showHint ? 'HIDE HINTS' : `SHOW HINTS${autoHintLevel > 0 ? ` (${autoHintLevel})` : ''}`;
 
       hintPanel.classList.toggle('is-hidden', !showHint);
 
-      // Populate hints content for current stage
       const bucket = hints[`stage${stage}`];
       hintL1Text.textContent = bucket[0];
       hintL2Text.textContent = bucket[1];
@@ -521,7 +653,7 @@
       // Next hint box
       const remaining = getNextHintAttempts();
       nextHintAttempts.textContent = remaining;
-      nextHintCount.textContent = remaining; // for locked card text
+      nextHintCount.textContent = remaining;
       nextHintAttemptsBox.classList.toggle('is-hidden', autoHintLevel >= 3 || stageAttempts >= 50);
     }
 
@@ -542,11 +674,9 @@
     function checkStage1(input) {
       const normalized = input.trim().toLowerCase();
       if (normalized.includes("'") && normalized.includes("or") && (normalized.includes("'1'='1'") || normalized.includes("1=1"))) {
-        addLog("\u2713 Authentication bypassed successfully!", 'success');
+        addLog("✓ Authentication bypassed successfully!", 'success');
         addLog("System breach detected. Accessing database tables...", 'info');
-        setTimeout(() => {
-          resetForNextStage(2);
-        }, 1500);
+        setTimeout(() => { resetForNextStage(2); }, 1500);
         return true;
       }
       return false;
@@ -555,13 +685,11 @@
     function checkStage2(input) {
       const normalized = input.trim().toLowerCase();
       if (normalized.includes("union") && normalized.includes("select") && normalized.includes("information_schema") && (normalized.includes("table"))) {
-        addLog("\u2713 Table enumeration successful!", 'success');
+        addLog("✓ Table enumeration successful!", 'success');
         addLog("Discovered tables: users, products, sessions, hidden_vault", 'success');
         addLog("Target identified: hidden_vault", 'warning');
         addLog("Initiating data exfiltration...", 'info');
-        setTimeout(() => {
-          resetForNextStage(3);
-        }, 1500);
+        setTimeout(() => { resetForNextStage(3); }, 1500);
         return true;
       }
       return false;
@@ -570,15 +698,15 @@
     function checkStage3(input) {
       const normalized = input.trim().toLowerCase();
       if (normalized.includes("union") && normalized.includes("select") && normalized.includes("hidden_vault") && (normalized.includes("username") || normalized.includes("password") || normalized.includes("*"))) {
-        addLog("\u2713 Data extraction complete!", 'success');
+        addLog("✓ Data extraction complete!", 'success');
         addLog("Raw data retrieved from hidden_vault:", 'info');
-        addLog("  \u2192 username: admin", 'success');
-        addLog("  \u2192 password: YW5k (Base64 encoded)", 'success');
+        addLog("  → username: admin", 'success');
+        addLog("  → password: YW5k (Base64 encoded)", 'success');
         addLog("Decoding password...", 'info');
         setTimeout(() => {
           const decoded = atob('YW5k'); // 'and'
-          addLog(`Base64 decode: YW5k \u2192 ${decoded}`, 'success');
-          addLog("\ud83d\udd10 Final keyword extracted: AND", 'success');
+          addLog(`Base64 decode: YW5k → ${decoded}`, 'success');
+          addLog("🔐 Final keyword extracted: AND", 'success');
           foundKeyword = decoded;
           showSuccess = true;
           updateHeaderLock();
@@ -593,9 +721,9 @@
     // Submit / Keyboard
     // ---------------------------
     function handleSubmit() {
-      const value = sqlInputEl.value;
+      const value = sqlInputEl.value || '';
       if (value.trim() === '') {
-        addLog("\u26a0 Empty query - Please enter a SQL injection payload", 'error');
+        addLog("⚠ Empty query - Please enter a SQL injection payload", 'error');
         return;
       }
 
@@ -609,18 +737,17 @@
       else if (stage === 3) success = checkStage3(value);
 
       if (!success) {
-        addLog("\u2717 Query failed or incomplete - Try again", 'error');
-        // Auto hint unlocks
+        addLog("✗ Query failed or incomplete - Try again", 'error');
         const currentAttempts = stageAttempts;
         if (currentAttempts === 10 && autoHintLevel < 1) {
           autoHintLevel = 1;
-          addLog("\ud83d\udca1 HINT LEVEL 1 UNLOCKED! Click 'SHOW HINTS' button.", 'warning');
+          addLog("💡 HINT LEVEL 1 UNLOCKED! Click 'SHOW HINTS' button.", 'warning');
         } else if (currentAttempts === 25 && autoHintLevel < 2) {
           autoHintLevel = 2;
-          addLog("\ud83d\udca1 HINT LEVEL 2 UNLOCKED! More detailed guidance available.", 'warning');
+          addLog("💡 HINT LEVEL 2 UNLOCKED! More detailed guidance available.", 'warning');
         } else if (currentAttempts === 50 && autoHintLevel < 3) {
           autoHintLevel = 3;
-          addLog("\ud83d\udca1 HINT LEVEL 3 UNLOCKED! Solution revealed!", 'warning');
+          addLog("💡 HINT LEVEL 3 UNLOCKED! Solution revealed!", 'warning');
         }
       } else {
         sqlInputEl.value = '';
@@ -637,13 +764,8 @@
         handleSubmit();
       }
     });
-
     executeBtn.addEventListener('click', handleSubmit);
-
-    hintBtn.addEventListener('click', () => {
-      showHint = !showHint;
-      updateHintPanel();
-    });
+    hintBtn.addEventListener('click', () => { showHint = !showHint; updateHintPanel(); });
 
     // ---------------------------
     // Initial Render
@@ -655,9 +777,8 @@
       updateHintPanel();
       updateDifficulty();
       renderLogs();
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
-
     document.addEventListener('DOMContentLoaded', initialRender);
   </script>
 </body>
