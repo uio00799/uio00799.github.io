@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+# Write the provided HTML to /mnt/data/index.html and zip with a README for GitHub Pages deployment
+html_content = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -662,3 +663,35 @@
   </script>
 </body>
 </html>
+"""
+readme = """# Room 306 — SQL Injection Forensics Challenge
+
+This repo is a **static single-file site** for GitHub Pages.
+
+## How to deploy on GitHub Pages
+
+1. Create a **public** repository, e.g. `room306-sql-challenge`.
+2. Upload the `index.html` from this folder to the repo root and commit.
+3. Go to **Settings → Pages**:
+   - **Source**: *Deploy from a branch*
+   - **Branch**: `main` and **Folder**: `/ (root)` → **Save**
+4. Open: `https://<username>.github.io/room306-sql-challenge/`
+
+> Uses Tailwind CDN and Lucide CDN, no build step required.
+"""
+
+import os, zipfile, io, textwrap
+
+os.makedirs("/mnt/data", exist_ok=True)
+with open("/mnt/data/index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+with open("/mnt/data/README.md", "w", encoding="utf-8") as f:
+    f.write(readme)
+
+zip_path = "/mnt/data/room306-github-pages.zip"
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+    z.write("/mnt/data/index.html", "index.html")
+    z.write("/mnt/data/README.md", "README.md")
+
+zip_path, "/mnt/data/index.html", "/mnt/data/README.md"
