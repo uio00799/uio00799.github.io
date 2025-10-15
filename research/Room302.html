@@ -614,13 +614,13 @@ admin_token: [REDACTED]</pre>
                 document.getElementById('answer-input').disabled = true;
                 document.querySelector('.submit-btn').disabled = true;
             } else {
-                if (attempts >= 2) {
+                if (attempts >= 10) {
                     document.getElementById('hint1').classList.remove('hidden');
                 }
-                if (attempts >= 3) {
+                if (attempts >= 25) {
                     document.getElementById('hint2').classList.remove('hidden');
                 }
-                if (attempts >= 4) {
+                if (attempts >= 50) {
                     document.getElementById('hint3').classList.remove('hidden');
                 }
                 
