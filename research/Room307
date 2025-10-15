@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ห้อง 307 - Clue Room & Passcode #2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e8e8e8;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #aaa;
+            font-size: 1.1em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .evidence-board {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #666;
+            border-radius: 10px;
+            padding: 25px;
+            min-height: 400px;
+        }
+
+        .evidence-board h2 {
+            color: #00ff88;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #00ff88;
+            padding-bottom: 10px;
+        }
+
+        .clue-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .clue-card:hover {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+            transform: translateX(5px);
+        }
+
+        .clue-card.collected {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.15);
+        }
+
+        .clue-card .room-label {
+            color: #00ff88;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .clue-card .clue-word {
+            font-size: 1.8em;
+            color: #fff;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .clue-card .clue-hint {
+            color: #999;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+        .status-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5em;
+        }
+
+        .passcode-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+        .passcode-panel h2 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 10px;
+        }
+
+        .assembly-zone {
+            background: rgba(0, 0, 0, 0.3);
+            border: 3px dashed #666;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .assembly-zone h3 {
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+
+        .word-slots {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .word-slot {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #444;
+            border-radius: 5px;
+            padding: 15px 25px;
+            min-width: 150px;
+            font-size: 1.2em;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .word-slot.filled {
+            border-color: #00ff88;
+            color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.6); }
+        }
+
+        .verify-button {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .verify-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .verify-button:disabled {
+            background: #444;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .result-panel {
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #00ff88;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            display: none;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-panel h2 {
+            color: #00ff88;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .result-word {
+            font-size: 3em;
+            color: #fff;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
+        }
+
+        .final-puzzle {
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .final-puzzle h3 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+        }
+
+        .cipher-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 1.1em;
+            color: #00ff88;
+            margin: 15px 0;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-top: 15px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #666;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1.1em;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
+        .unlock-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .unlock-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.5);
+        }
+
+        .success-message {
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.5s;
+        }
+
+        .success-message h3 {
+            color: #00ff88;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            height: 30px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #00ff88, #00d4aa);
+            height: 100%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .word-slots {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 ห้อง 307 - ศูนย์รวมคำใบ้</h1>
+            <p>Knowledge Repository & Passcode Verification System</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%">
+                0/4 คำใบ้
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="evidence-board">
+                <h2>📋 กระดานสรุปหลักฐาน</h2>
+                
+                <div class="clue-card" data-room="305" data-word="Computer">
+                    <span class="status-icon">⬜</span>
+                    <div class="room-label">ห้อง 305</div>
+                    <div class="clue-word">Computer</div>
+                    <div class="clue-hint">Binary Logic & Pattern Recognition</div>
+                </div>
+
+                <div class="clue-card" data-room="303-304" data-word="Science">
+                    <span class="status-icon">⬜</span>
+                    <div class="room-label">ห้อง 303-304</div>
+                    <div class="clue-word">Science</div>
+                    <div class="clue-hint">Audio Analysis & Frequency Spectrum</div>
+                </div>
+
+                <div class="clue-card" data-room="306" data-word="and">
+                    <span class="status-icon">⬜</span>
+                    <div class="room-label">ห้อง 306</div>
+                    <div class="clue-word">and</div>
+                    <div class="clue-hint">Cipher Decoding & Substitution</div>
+                </div>
+
+                <div class="clue-card" data-room="302" data-word="Information">
+                    <span class="status-icon">⬜</span>
+                    <div class="room-label">ห้อง 302</div>
+                    <div class="clue-word">Information</div>
+                    <div class="clue-hint">Sequential Timing & Coordination</div>
+                </div>
+            </div>
+
+            <div class="passcode-panel">
+                <h2>🔒 Passcode Assembly #2</h2>
+                
+                <div class="assembly-zone">
+                    <h3>ประกอบคำใบ้ทั้ง 4 ห้อง</h3>
+                    <div class="word-slots">
+                        <div class="word-slot" data-position="1">?</div>
+                        <div class="word-slot" data-position="2">?</div>
+                        <div class="word-slot" data-position="3">?</div>
+                        <div class="word-slot" data-position="4">?</div>
+                    </div>
+                </div>
+
+                <button class="verify-button" id="verifyBtn" disabled>
+                    🔍 ยืนยันความครบถ้วน
+                </button>
+            </div>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <h2>✅ Passcode #2 ยืนยันสำเร็จ!</h2>
+            <div class="result-word" id="resultWord">TECHNOLOGY</div>
+            <p style="color: #aaa; font-size: 1.1em; margin: 20px 0;">
+                คุณได้รวบรวมหลักฐานครบถ้วนแล้ว<br>
+                ระบบได้จัดเตรียมข้อความเข้ารหัสสำหรับปลดล็อก Terminal F3
+            </p>
+
+            <div class="final-puzzle">
+                <h3>🧩 ปริศนาสุดท้าย - Caesar Shift Cipher</h3>
+                <p style="color: #aaa; margin-bottom: 15px;">
+                    ข้อความที่เข้ารหัสด้วย Caesar Cipher (Shift: 7)
+                </p>
+                <div class="cipher-display" id="cipherText">
+                    Hger niixkvtlx tvkhgrfl tkx tvvximxw
+                </div>
+                <p style="color: #999; font-size: 0.9em; margin-top: 10px;">
+                    คำใบ้: แต่ละตัวอักษรถูกเลื่อนไปข้างหน้า 7 ตำแหน่งในอักษรภาษาอังกฤษ
+                </p>
+
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="finalAnswer" 
+                        placeholder="ถอดรหัสและป้อนคำตอบที่นี่..."
+                        autocomplete="off"
+                    >
+                </div>
+
+                <button class="unlock-button" id="unlockBtn">
+                    🔓 ปลดล็อก Terminal F3
+                </button>
+
+                <div class="success-message" id="successMsg">
+                    <h3>🎉 ปลดล็อกสำเร็จ!</h3>
+                    <p style="color: #aaa;">
+                        Terminal F3 (ห้อง 308-309) พร้อมใช้งานแล้ว<br>
+                        <strong style="color: #00ff88;">คำใบ้: "Only uppercase acronyms are accepted"</strong><br>
+                        ใช้คำใบ้นี้เพื่อเข้าสู่ห้อง 301 (Data Center)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const collectedWords = {
+            '305': { word: 'Computer', collected: false },
+            '303-304': { word: 'Science', collected: false },
+            '306': { word: 'and', collected: false },
+            '302': { word: 'Information', collected: false }
+        };
+
+        const correctOrder = ['Computer', 'Science', 'and', 'Information'];
+        let currentOrder = [];
+
+        function updateProgress() {
+            const collected = Object.values(collectedWords).filter(w => w.collected).length;
+            const progress = (collected / 4) * 100;
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = progress + '%';
+            progressFill.textContent = `${collected}/4 คำใบ้`;
+
+            if (collected === 4) {
+                document.getElementById('verifyBtn').disabled = false;
+            }
+        }
+
+        document.querySelectorAll('.clue-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const room = this.dataset.room;
+                const word = this.dataset.word;
+
+                if (!collectedWords[room].collected) {
+                    collectedWords[room].collected = true;
+                    this.classList.add('collected');
+                    this.querySelector('.status-icon').textContent = '✅';
+                    
+                    currentOrder.push(word);
+                    updateWordSlots();
+                    updateProgress();
+
+                    this.style.animation = 'glow 0.5s';
+                    setTimeout(() => {
+                        this.style.animation = '';
+                    }, 500);
+                }
+            });
+        });
+
+        function updateWordSlots() {
+            const slots = document.querySelectorAll('.word-slot');
+            currentOrder.forEach((word, index) => {
+                if (slots[index]) {
+                    slots[index].textContent = word;
+                    slots[index].classList.add('filled');
+                }
+            });
+        }
+
+        document.getElementById('verifyBtn').addEventListener('click', function() {
+            if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
+                document.getElementById('resultPanel').classList.add('show');
+                this.textContent = '✅ ยืนยันแล้ว';
+                this.disabled = true;
+                this.style.background = '#00ff88';
+                this.style.color = '#000';
+            } else {
+                alert('❌ ลำดับคำไม่ถูกต้อง! กรุณาตรวจสอบลำดับของคำใบ้');
+            }
+        });
+
+        document.getElementById('unlockBtn').addEventListener('click', function() {
+            const answer = document.getElementById('finalAnswer').value.trim().toUpperCase();
+            const correctAnswer = 'MONITORING SYSTEMS';
+
+            if (answer === correctAnswer) {
+                document.getElementById('successMsg').classList.add('show');
+                this.disabled = true;
+                this.textContent = '✅ ปลดล็อกแล้ว';
+                this.style.background = '#00ff88';
+                this.style.color = '#000';
+            } else {
+                const input = document.getElementById('finalAnswer');
+                input.style.borderColor = '#ff6b6b';
+                input.value = '';
+                input.placeholder = '❌ ไม่ถูกต้อง ลองอีกครั้ง...';
+                
+                setTimeout(() => {
+                    input.style.borderColor = '#666';
+                    input.placeholder = 'ถอดรหัสและป้อนคำตอบที่นี่...';
+                }, 2000);
+            }
+        });
+
+        document.getElementById('finalAnswer').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('unlockBtn').click();
+            }
+        });
+    </script>
+</body>
+</html>
