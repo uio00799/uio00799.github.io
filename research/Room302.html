@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ห้อง 302 — GitHub Repository Hunt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+            color: #c9d1d9;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1f6feb 0%, #58a6ff 100%);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(31, 111, 235, 0.3);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1em;
+        }
+
+        .post-it {
+            background: #ffd93d;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transform: rotate(-1deg);
+            position: relative;
+        }
+
+        .post-it::before {
+            content: "📌";
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            font-size: 2em;
+        }
+
+        .post-it p {
+            color: #333;
+            font-weight: 500;
+            margin: 5px 0;
+            margin-left: 20px;
+        }
+
+        .github-interface {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .repo-header {
+            background: #161b22;
+            padding: 20px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .repo-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #58a6ff;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .repo-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #8b949e;
+            font-size: 0.9em;
+        }
+
+        .tabs {
+            display: flex;
+            background: #0d1117;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            color: #8b949e;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #c9d1d9;
+        }
+
+        .tab.active {
+            color: #c9d1d9;
+            border-bottom-color: #f78166;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .file-tree {
+            background: #0d1117;
+        }
+
+        .file-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .file-item:hover {
+            background: #161b22;
+        }
+
+        .file-item.folder {
+            color: #58a6ff;
+        }
+
+        .file-item.suspicious {
+            border-left-color: #f85149;
+        }
+
+        .file-content {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .commit-list {
+            list-style: none;
+        }
+
+        .commit-item {
+            padding: 15px;
+            border-bottom: 1px solid #21262d;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .commit-item:hover {
+            background: #161b22;
+        }
+
+        .commit-hash {
+            color: #58a6ff;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .commit-message {
+            margin: 8px 0;
+            color: #c9d1d9;
+        }
+
+        .commit-author {
+            color: #8b949e;
+            font-size: 0.85em;
+        }
+
+        .hidden-clue {
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .hidden-clue.revealed {
+            opacity: 1;
+        }
+
+        .answer-section {
+            background: #161b22;
+            border: 2px solid #30363d;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-size: 1em;
+            margin: 10px 0;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+
+        .submit-btn {
+            background: #238636;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #2ea043;
+        }
+
+        .submit-btn:disabled {
+            background: #21262d;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .hint-box {
+            background: #1f2937;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .hint-box.hidden {
+            display: none;
+        }
+
+        .theory-section {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .theory-section h3 {
+            color: #58a6ff;
+            margin-bottom: 15px;
+        }
+
+        .theory-item {
+            margin: 10px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .theory-item::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #58a6ff;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 ห้อง 302 — GitHub Repository Hunt</h1>
+            <p>ค้นหาข้อมูลที่ซ่อนอยู่ใน Repository นี้</p>
+        </div>
+
+        <div class="post-it">
+            <p><strong>💡 คำใบ้จากโพสต์อิท:</strong></p>
+            <p>"ลับลมคมใน commit history มีอะไรบางอย่างซ่อนอยู่..."</p>
+            <p>"README.md ไม่ได้บอกทุกอย่าง"</p>
+            <p>"ใครลบไฟล์อะไรไปบ้างนะ? 🤔"</p>
+        </div>
+
+        <div class="github-interface">
+            <div class="repo-header">
+                <div class="repo-title">
+                    <span class="emoji">📁</span>
+                    <span>SecretProject / data-analysis</span>
+                </div>
+                <div class="repo-stats">
+                    <div class="stat">
+                        <span>⭐</span>
+                        <span>42 stars</span>
+                    </div>
+                    <div class="stat">
+                        <span>🔱</span>
+                        <span>15 forks</span>
+                    </div>
+                    <div class="stat">
+                        <span>👁️</span>
+                        <span>8 watching</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('code')">
+                    <span>📄 Code</span>
+                </div>
+                <div class="tab" onclick="switchTab('commits')">
+                    <span>📝 Commits (7)</span>
+                </div>
+                <div class="tab" onclick="switchTab('issues')">
+                    <span>⚠️ Issues (2)</span>
+                </div>
+            </div>
+
+            <div id="code-tab" class="tab-content active">
+                <div class="file-tree">
+                    <div class="file-item folder" onclick="toggleFolder('src')">
+                        <span>📁</span>
+                        <span>src/</span>
+                    </div>
+                    <div class="file-item" onclick="showFile('readme')">
+                        <span>📄</span>
+                        <span>README.md</span>
+                    </div>
+                    <div class="file-item suspicious" onclick="showFile('config')">
+                        <span>⚙️</span>
+                        <span>config.json</span>
+                    </div>
+                    <div class="file-item" onclick="showFile('gitignore')">
+                        <span>📄</span>
+                        <span>.gitignore</span>
+                    </div>
+                </div>
+
+                <div id="file-display"></div>
+            </div>
+
+            <div id="commits-tab" class="tab-content">
+                <ul class="commit-list">
+                    <li class="commit-item" onclick="showCommit(1)">
+                        <div class="commit-hash">a7f9c2d</div>
+                        <div class="commit-message">Update documentation</div>
+                        <div class="commit-author">by developer123 • 2 days ago</div>
+                    </li>
+                    <li class="commit-item" onclick="showCommit(2)">
+                        <div class="commit-hash">3b8e1f5</div>
+                        <div class="commit-message">Fix typo in config</div>
+                        <div class="commit-author">by developer123 • 5 days ago</div>
+                    </li>
+                    <li class="commit-item" onclick="showCommit(3)">
+                        <div class="commit-hash">9d2c4a1</div>
+                        <div class="commit-message">Add new feature</div>
+                        <div class="commit-author">by developer123 • 1 week ago</div>
+                    </li>
+                    <li class="commit-item suspicious" onclick="showCommit(4)">
+                        <div class="commit-hash">e5f7b3c</div>
+                        <div class="commit-message" style="color: #f85149;">Remove sensitive data 🔴</div>
+                        <div class="commit-author">by developer123 • 2 weeks ago</div>
+                    </li>
+                    <li class="commit-item" onclick="showCommit(5)">
+                        <div class="commit-hash">c1d8e9f</div>
+                        <div class="commit-message">Initial project setup</div>
+                        <div class="commit-author">by developer123 • 1 month ago</div>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="issues-tab" class="tab-content">
+                <div class="commit-item" onclick="showIssue(1)">
+                    <div style="color: #3fb950; font-weight: bold;">✓ #1 Database credentials leaked</div>
+                    <div class="commit-message">Fixed - credentials removed from repository</div>
+                    <div class="commit-author">opened by security-bot • closed 2 weeks ago</div>
+                </div>
+                <div class="commit-item" onclick="showIssue(2)">
+                    <div style="color: #f85149; font-weight: bold;">⚠️ #2 Config file contains encoded message</div>
+                    <div class="commit-message">Someone left a message in the config...</div>
+                    <div class="commit-author">opened by curious_user • open</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="answer-section">
+            <h3 style="color: #58a6ff; margin-bottom: 15px;">🔐 ป้อนรหัสที่คุณพบ</h3>
+            <p style="color: #8b949e; margin-bottom: 15px;">รวบรวมข้อมูลจาก commit history, ไฟล์ที่ถูกลบ, และ issues</p>
+            <input type="text" id="answer-input" class="answer-input" placeholder="ใส่คำตอบที่คุณค้นพบ...">
+            <button class="submit-btn" onclick="checkAnswer()">ตรวจสอบคำตอบ</button>
+            
+            <div class="hint-box hidden" id="hint1">
+                <strong>💡 คำใบ้ 1:</strong> ลองดู commit ที่มีข้อความว่า "Remove sensitive data"
+            </div>
+            <div class="hint-box hidden" id="hint2">
+                <strong>💡 คำใบ้ 2:</strong> config.json มี Base64 string ซ่อนอยู่
+            </div>
+            <div class="hint-box hidden" id="hint3">
+                <strong>💡 คำใบ้ 3:</strong> Issue #2 บอกว่ามีข้อความเข้ารหัสอยู่ใน config file
+            </div>
+        </div>
+
+        <div class="success-message" id="success">
+            <h2 style="color: white; font-size: 2em; margin-bottom: 10px;">🎉 ถูกต้อง!</h2>
+            <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p style="font-size: 1.8em; font-weight: bold; color: white;">INFORMATION</p>
+                <p style="color: rgba(255,255,255,0.9); margin-top: 10px;">คุณได้ค้นพบข้อมูลที่ซ่อนอยู่ใน Repository แล้ว!</p>
+            </div>
+            <p style="color: rgba(255,255,255,0.9); font-style: italic;">
+                "Git History เก็บทุกอย่างไว้ — การลบไฟล์ไม่ได้หมายความว่ามันหายไปจริงๆ"
+            </p>
+        </div>
+
+        <div class="theory-section">
+            <h3>📚 ทฤษฎีที่เกี่ยวข้อง</h3>
+            <div class="theory-item">
+                <strong>Git History Forensics:</strong> การตรวจสอบประวัติการเปลี่ยนแปลงใน repository เพื่อค้นหาข้อมูลที่อาจถูกลบหรือซ่อนไว้
+            </div>
+            <div class="theory-item">
+                <strong>Commit Analysis:</strong> การวิเคราะห์ commit messages และ diff เพื่อเข้าใจว่าเกิดอะไรขึ้นในแต่ละ version
+            </div>
+            <div class="theory-item">
+                <strong>Information Leak Detection:</strong> การตรวจจับข้อมูลสำคัญที่อาจรั่วไหลผ่าน version control systems
+            </div>
+            <div class="theory-item">
+                <strong>Digital Forensics:</strong> การรวบรวมและวิเคราะห์หลักฐานดิจิทัลจากแหล่งต่างๆ รวมถึง source code repositories
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let attempts = 0;
+        const correctAnswer = "INFORMATION";
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.closest('.tab').classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        function showFile(fileName) {
+            const display = document.getElementById('file-display');
+            
+            const files = {
+                'readme': `
+                    <div class="file-content">
+                        <h3 style="color: #58a6ff;">README.md</h3>
+                        <hr style="border-color: #30363d; margin: 15px 0;">
+                        <h4># Data Analysis Project</h4>
+                        <p>This is a simple data analysis project.</p>
+                        <p><strong>Installation:</strong></p>
+                        <p>npm install</p>
+                        <p><strong>Usage:</strong></p>
+                        <p>npm start</p>
+                        <p><em>Note: Make sure to check config.json before running.</em></p>
+                    </div>
+                `,
+                'config': `
+                    <div class="file-content">
+                        <h3 style="color: #58a6ff;">config.json</h3>
+                        <hr style="border-color: #30363d; margin: 15px 0;">
+                        <pre>{
+  "project": "data-analysis",
+  "version": "1.0.0",
+  "database": {
+    "host": "localhost",
+    "port": 5432
+  },
+  <span style="color: #f85149;">"_hidden": "SU5GT1JNQVRJT04=",</span>
+  "features": {
+    "analytics": true,
+    "reporting": true
+  }
+}</pre>
+                        <p style="color: #8b949e; margin-top: 15px; font-size: 0.9em;">
+                            <em>🤔 ข้อความแปลกๆ ใน "_hidden" field... ดูเหมือน Base64 encoding</em>
+                        </p>
+                    </div>
+                `,
+                'gitignore': `
+                    <div class="file-content">
+                        <h3 style="color: #58a6ff;">.gitignore</h3>
+                        <hr style="border-color: #30363d; margin: 15px 0;">
+                        <pre>node_modules/
+*.log
+.env
+.DS_Store
+credentials.txt
+secrets/</pre>
+                    </div>
+                `
+            };
+            
+            display.innerHTML = files[fileName] || '<p>File not found</p>';
+        }
+
+        function showCommit(commitNum) {
+            const display = document.getElementById('file-display');
+            
+            if (commitNum === 4) {
+                display.innerHTML = `
+                    <div class="file-content">
+                        <h3 style="color: #f85149;">Commit: e5f7b3c - Remove sensitive data</h3>
+                        <hr style="border-color: #30363d; margin: 15px 0;">
+                        <div style="color: #f85149;">
+                            <p><strong>- Deleted file:</strong> credentials.txt</p>
+                            <p><strong>- Content was:</strong></p>
+                            <pre style="background: #1c1917; padding: 10px; border-radius: 4px;">
+database_password: secret123
+api_key: REMOVED_FOR_SECURITY
+<span style="color: #3fb950;">master_keyword: INFORMATION</span>
+admin_token: [REDACTED]</pre>
+                        </div>
+                        <p style="color: #8b949e; margin-top: 15px;">
+                            <em>⚠️ ไฟล์นี้ถูกลบออกจาก repository แล้ว แต่ยังคงอยู่ใน git history!</em>
+                        </p>
+                    </div>
+                `;
+            } else {
+                display.innerHTML = `
+                    <div class="file-content">
+                        <p style="color: #8b949e;">No significant changes in this commit.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showIssue(issueNum) {
+            const display = document.getElementById('file-display');
+            
+            if (issueNum === 2) {
+                display.innerHTML = `
+                    <div class="file-content">
+                        <h3 style="color: #f85149;">Issue #2 - Config file contains encoded message</h3>
+                        <hr style="border-color: #30363d; margin: 15px 0;">
+                        <p><strong>curious_user</strong> commented:</p>
+                        <p style="margin: 15px 0;">I found something weird in config.json:</p>
+                        <pre style="background: #1c1917; padding: 10px; border-radius: 4px;">"_hidden": "SU5GT1JNQVRJT04="</pre>
+                        <p style="margin: 15px 0;">This looks like Base64 encoding. Did someone leave a message?</p>
+                        <p style="color: #8b949e; font-size: 0.9em; margin-top: 15px;">
+                            💡 <em>Hint: Try decoding the Base64 string</em>
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        function checkAnswer() {
+            const input = document.getElementById('answer-input').value.trim().toUpperCase();
+            attempts++;
+            
+            if (input === correctAnswer) {
+                document.getElementById('success').classList.add('show');
+                document.getElementById('answer-input').disabled = true;
+                document.querySelector('.submit-btn').disabled = true;
+            } else {
+                if (attempts >= 2) {
+                    document.getElementById('hint1').classList.remove('hidden');
+                }
+                if (attempts >= 3) {
+                    document.getElementById('hint2').classList.remove('hidden');
+                }
+                if (attempts >= 4) {
+                    document.getElementById('hint3').classList.remove('hidden');
+                }
+                
+                alert('❌ ไม่ถูกต้อง ลองอีกครั้ง! (ความพยายาม: ' + attempts + ')');
+            }
+        }
+
+        // เริ่มต้นด้วยการแสดง README
+        showFile('readme');
+    </script>
+</body>
+</html>
