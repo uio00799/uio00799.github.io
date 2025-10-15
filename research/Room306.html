@@ -1,682 +1,489 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ห้อง 306: ห้องปฏิบัติการนักเล่นแร่แปรธาตุ</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+import React, { useState, useEffect, useRef } from 'react';
+import { Terminal, Database, Shield, Lock, Unlock, AlertTriangle, Lightbulb, CheckCircle, XCircle, Zap, TrendingUp } from 'lucide-react';
 
-        body {
-            font-family: 'Georgia', serif;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #2d1b2e 100%);
-            color: #d4af37;
-            overflow-x: hidden;
-            position: relative;
-        }
+export default function Room306Puzzle() {
+  const [stage, setStage] = useState(1);
+  const [sqlInput, setSqlInput] = useState('');
+  const [logs, setLogs] = useState([]);
+  const [showHint, setShowHint] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [stageAttempts, setStageAttempts] = useState(0);
+  const [foundKeyword, setFoundKeyword] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [autoHintLevel, setAutoHintLevel] = useState(0);
+  const logsEndRef = useRef(null);
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="10" y="20" font-size="8" fill="rgba(212,175,55,0.05)" font-family="serif">⚗️🜁🜂🜃🜄</text></svg>') repeat;
-            opacity: 0.3;
-            pointer-events: none;
-            z-index: 0;
-        }
+  const hints = {
+    stage1: [
+      "SQL injection allows you to manipulate database queries by injecting malicious SQL code.",
+      "Try closing the password string with a single quote (') and then adding a condition that's always true.",
+      "Use the OR operator to bypass authentication. For example: '1'='1' is always true, which will return all records.",
+      "Complete payload: ' OR '1'='1\n\nThis closes the password field and adds an OR condition that's always true, bypassing authentication."
+    ],
+    stage2: [
+      "You need to discover what tables exist in the database schema.",
+      "UNION SELECT allows you to combine results from different queries. The number of columns must match.",
+      "The information_schema database contains metadata about all tables. Use information_schema.tables to enumerate them.",
+      "Full payload: ' UNION SELECT NULL, table_name FROM information_schema.tables--\n\nThis combines your query with a query that lists all table names."
+    ],
+    stage3: [
+      "The hidden_vault table has been discovered. It contains sensitive credentials.",
+      "Use UNION SELECT to extract data from the hidden_vault table. You need to retrieve both username and password.",
+      "The hidden_vault table has columns: id, username, password. Select the username and password fields.",
+      "Complete payload: ' UNION SELECT username, password FROM hidden_vault--\n\nOr more specific: ' UNION SELECT username, password FROM hidden_vault WHERE id=1--"
+    ]
+  };
 
-        .room-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
-            position: relative;
-            z-index: 1;
-        }
+  useEffect(() => {
+    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [logs]);
 
-        .room-header {
-            text-align: center;
-            padding: 40px 0;
-            border-bottom: 3px double #d4af37;
-            margin-bottom: 50px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 20px;
-            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
-        }
+  const addLog = (message, type = 'info') => {
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+    setLogs(prev => [...prev, { message, type, time: timestamp }]);
+  };
 
-        .room-number {
-            font-size: 5em;
-            color: #d4af37;
-            text-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
-            letter-spacing: 15px;
-            font-family: 'Times New Roman', serif;
-        }
+  const checkStage1 = (input) => {
+    const normalized = input.trim().toLowerCase();
+    if (normalized.includes("'") && normalized.includes("or") && 
+        (normalized.includes("'1'='1'") || normalized.includes("1=1") || normalized.includes("'1'='1"))) {
+      addLog("✓ Authentication bypassed successfully!", 'success');
+      addLog("System breach detected. Accessing database tables...", 'info');
+      setTimeout(() => {
+        setStage(2);
+        setStageAttempts(0);
+        setAutoHintLevel(0);
+        setSqlInput('');
+      }, 1500);
+      return true;
+    }
+    return false;
+  };
 
-        .room-title {
-            font-size: 1.8em;
-            color: #b8860b;
-            margin-top: 15px;
-            letter-spacing: 4px;
-            font-style: italic;
-        }
+  const checkStage2 = (input) => {
+    const normalized = input.trim().toLowerCase();
+    if (normalized.includes("union") && normalized.includes("select") && 
+        normalized.includes("information_schema") &&
+        (normalized.includes("table") || normalized.includes("tables"))) {
+      addLog("✓ Table enumeration successful!", 'success');
+      addLog("Discovered tables: users, products, sessions, hidden_vault", 'success');
+      addLog("Target identified: hidden_vault", 'warning');
+      addLog("Initiating data exfiltration...", 'info');
+      setTimeout(() => {
+        setStage(3);
+        setStageAttempts(0);
+        setAutoHintLevel(0);
+        setSqlInput('');
+      }, 1500);
+      return true;
+    }
+    return false;
+  };
 
-        .lab-description {
-            text-align: center;
-            font-size: 1.1em;
-            color: #999;
-            margin-top: 10px;
-            font-style: italic;
-        }
+  const checkStage3 = (input) => {
+    const normalized = input.trim().toLowerCase();
+    if (normalized.includes("union") && normalized.includes("select") && 
+        normalized.includes("hidden_vault") &&
+        (normalized.includes("username") || normalized.includes("password") || normalized.includes("*"))) {
+      addLog("✓ Data extraction complete!", 'success');
+      addLog("Raw data retrieved from hidden_vault:", 'info');
+      addLog("  → username: admin", 'success');
+      addLog("  → password: YW5k (Base64 encoded)", 'success');
+      addLog("Decoding password...", 'info');
+      setTimeout(() => {
+        addLog("Base64 decode: YW5k → and", 'success');
+        addLog("🔑 Final keyword extracted: AND", 'success');
+        setFoundKeyword('and');
+        setShowSuccess(true);
+      }, 2000);
+      return true;
+    }
+    return false;
+  };
 
-        .laboratory-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin: 50px 0;
-        }
+  const handleSubmit = () => {
+    if (sqlInput.trim() === '') {
+      addLog("⚠ Empty query - Please enter a SQL injection payload", 'error');
+      return;
+    }
 
-        .lab-section {
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid #8b7355;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
-        }
+    setAttempts(prev => prev + 1);
+    setStageAttempts(prev => prev + 1);
+    
+    addLog(`[EXEC] ${sqlInput}`, 'info');
 
-        .lab-section:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 50px rgba(212, 175, 55, 0.3);
-            border-color: #d4af37;
-        }
+    let success = false;
+    if (stage === 1) success = checkStage1(sqlInput);
+    else if (stage === 2) success = checkStage2(sqlInput);
+    else if (stage === 3) success = checkStage3(sqlInput);
 
-        .section-title {
-            font-size: 1.8em;
-            color: #d4af37;
-            text-align: center;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            border-bottom: 2px solid #8b7355;
-            padding-bottom: 15px;
-        }
+    if (!success) {
+      addLog("✗ Query failed or incomplete - Try again", 'error');
+      
+      const currentAttempts = stageAttempts + 1;
+      if (currentAttempts === 10 && autoHintLevel < 1) {
+        setAutoHintLevel(1);
+        addLog("💡 HINT LEVEL 1 UNLOCKED! Click 'SHOW HINTS' button.", 'warning');
+      } else if (currentAttempts === 25 && autoHintLevel < 2) {
+        setAutoHintLevel(2);
+        addLog("💡 HINT LEVEL 2 UNLOCKED! More detailed guidance available.", 'warning');
+      } else if (currentAttempts === 50 && autoHintLevel < 3) {
+        setAutoHintLevel(3);
+        addLog("💡 HINT LEVEL 3 UNLOCKED! Solution revealed!", 'warning');
+      }
+    } else {
+      setSqlInput('');
+    }
+  };
 
-        .alchemy-shelf {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin: 30px 0;
-        }
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
 
-        .potion-bottle {
-            background: linear-gradient(135deg, rgba(139, 115, 85, 0.3), rgba(0, 0, 0, 0.6));
-            border: 2px solid #8b7355;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
+  const stageInfo = {
+    1: {
+      title: "Stage 1: Authentication Bypass",
+      desc: "A vulnerable login form is exposed. The password field is injectable.",
+      code: "SELECT * FROM users WHERE username='admin' AND password='[YOUR_INPUT]'",
+      objective: "Bypass authentication to gain access to the system"
+    },
+    2: {
+      title: "Stage 2: Database Enumeration",
+      desc: "Discover hidden tables in the database schema using UNION injection.",
+      code: "SELECT id, name FROM users WHERE id='[YOUR_INPUT]'",
+      objective: "Find the hidden_vault table name"
+    },
+    3: {
+      title: "Stage 3: Data Exfiltration",
+      desc: "Extract sensitive credentials from the hidden_vault table.",
+      code: "SELECT * FROM products WHERE category='[YOUR_INPUT]'",
+      objective: "Retrieve username and password from hidden_vault"
+    }
+  };
 
-        .potion-bottle::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
-            transition: left 0.5s;
-        }
+  const getNextHintAttempts = () => {
+    if (autoHintLevel === 0) return Math.max(0, 10 - stageAttempts);
+    if (autoHintLevel === 1) return Math.max(0, 25 - stageAttempts);
+    if (autoHintLevel === 2) return Math.max(0, 50 - stageAttempts);
+    return 0;
+  };
 
-        .potion-bottle:hover::before {
-            left: 100%;
-        }
+  const getDifficultyStars = () => {
+    const levels = [8, 7, 6, 5];
+    const level = levels[autoHintLevel];
+    return '★'.repeat(level) + '☆'.repeat(10 - level);
+  };
 
-        .potion-bottle:hover {
-            transform: scale(1.05);
-            border-color: #d4af37;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
-        }
-
-        .element-symbol {
-            font-size: 3em;
-            margin: 15px 0;
-            color: #d4af37;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
-        }
-
-        .element-name {
-            font-size: 1.2em;
-            color: #b8860b;
-            margin: 10px 0;
-        }
-
-        .element-number {
-            font-size: 0.9em;
-            color: #999;
-            font-style: italic;
-        }
-
-        .ancient-scroll {
-            background: rgba(139, 115, 85, 0.2);
-            border: 3px double #8b7355;
-            border-radius: 10px;
-            padding: 30px;
-            margin: 30px 0;
-            font-family: 'Georgia', serif;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .scroll-text {
-            font-size: 1.3em;
-            line-height: 2;
-            color: #d4af37;
-            text-align: center;
-            letter-spacing: 2px;
-        }
-
-        .rune-sequence {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 25px 0;
-            flex-wrap: wrap;
-        }
-
-        .rune {
-            font-size: 2.5em;
-            color: #d4af37;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid #8b7355;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .rune:hover {
-            transform: rotate(15deg) scale(1.2);
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.7);
-        }
-
-        .formula-board {
-            background: rgba(0, 0, 0, 0.7);
-            border: 3px solid #8b7355;
-            border-radius: 15px;
-            padding: 30px;
-            margin: 30px 0;
-        }
-
-        .formula-title {
-            font-size: 1.5em;
-            color: #d4af37;
-            text-align: center;
-            margin-bottom: 20px;
-            text-decoration: underline;
-        }
-
-        .formula-line {
-            font-size: 1.8em;
-            color: #b8860b;
-            text-align: center;
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(139, 115, 85, 0.2);
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-        }
-
-        .cipher-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 25px 0;
-        }
-
-        .cipher-table th,
-        .cipher-table td {
-            border: 1px solid #8b7355;
-            padding: 15px;
-            text-align: center;
-            font-size: 1.1em;
-        }
-
-        .cipher-table th {
-            background: rgba(139, 115, 85, 0.3);
-            color: #d4af37;
-            font-weight: bold;
-        }
-
-        .cipher-table td {
-            background: rgba(0, 0, 0, 0.4);
-            color: #b8860b;
-        }
-
-        .cipher-table tr:hover td {
-            background: rgba(212, 175, 55, 0.2);
-        }
-
-        .answer-chamber {
-            background: linear-gradient(135deg, rgba(139, 115, 85, 0.3), rgba(0, 0, 0, 0.8));
-            border: 3px double #d4af37;
-            border-radius: 20px;
-            padding: 40px;
-            margin: 50px 0;
-            text-align: center;
-            box-shadow: 0 0 50px rgba(212, 175, 55, 0.4);
-        }
-
-        .answer-chamber h3 {
-            color: #d4af37;
-            font-size: 2em;
-            margin-bottom: 25px;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-        }
-
-        .transmutation-input {
-            width: 400px;
-            padding: 20px;
-            font-size: 1.8em;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.7);
-            border: 3px solid #8b7355;
-            border-radius: 15px;
-            color: #d4af37;
-            margin: 25px 0;
-            font-family: 'Georgia', serif;
-            transition: all 0.3s ease;
-        }
-
-        .transmutation-input:focus {
-            outline: none;
-            border-color: #d4af37;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
-        }
-
-        .transmute-btn {
-            padding: 20px 50px;
-            font-size: 1.4em;
-            background: linear-gradient(135deg, #8b7355, #d4af37);
-            border: none;
-            border-radius: 15px;
-            color: #1a1a2e;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: bold;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .transmute-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6);
-            background: linear-gradient(135deg, #d4af37, #ffd700);
-        }
-
-        .result-display {
-            margin-top: 30px;
-            font-size: 1.8em;
-            font-weight: bold;
-            min-height: 50px;
-        }
-
-        .success-text {
-            color: #00ff00;
-            text-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
-            animation: glow 1.5s infinite;
-        }
-
-        .fail-text {
-            color: #ff4444;
-            text-shadow: 0 0 20px rgba(255, 68, 68, 0.7);
-        }
-
-        @keyframes glow {
-            0%, 100% { text-shadow: 0 0 20px rgba(0, 255, 0, 0.7); }
-            50% { text-shadow: 0 0 40px rgba(0, 255, 0, 1); }
-        }
-
-        .hint-parchment {
-            background: rgba(139, 115, 85, 0.2);
-            border: 2px solid #8b7355;
-            border-radius: 10px;
-            padding: 25px;
-            margin: 30px 0;
-        }
-
-        .hint-title {
-            font-size: 1.5em;
-            color: #d4af37;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .hint-list {
-            list-style: none;
-            color: #b8860b;
-            font-size: 1.1em;
-            line-height: 1.8;
-        }
-
-        .hint-list li {
-            padding: 10px 0;
-            border-bottom: 1px dashed #8b7355;
-        }
-
-        .hint-list li:before {
-            content: "⚗️ ";
-            margin-right: 10px;
-        }
-
-        .constellation-map {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin: 30px 0;
-        }
-
-        .star-point {
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid #8b7355;
-            border-radius: 50%;
-            width: 80px;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8em;
-            color: #d4af37;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .star-point:hover {
-            transform: scale(1.2);
-            box-shadow: 0 0 25px rgba(212, 175, 55, 0.8);
-            background: rgba(212, 175, 55, 0.2);
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .floating {
-            animation: float 3s ease-in-out infinite;
-        }
-    </style>
-</head>
-<body>
-    <div class="room-container">
-        <div class="room-header">
-            <div class="room-number">306</div>
-            <div class="room-title">ห้องปฏิบัติการนักเล่นแร่แปรธาตุ</div>
-            <div class="lab-description">"จงค้นหาสัญลักษณ์ที่เชื่อมโยงทุกสิ่งเข้าด้วยกัน"</div>
-        </div>
-
-        <div class="laboratory-layout">
-            <div class="lab-section">
-                <div class="section-title">⚗️ ชั้นวางยาปรุงแต่ง</div>
-                <div class="alchemy-shelf">
-                    <div class="potion-bottle">
-                        <div class="element-symbol">Ag</div>
-                        <div class="element-name">เงิน</div>
-                        <div class="element-number">เลข 47</div>
-                    </div>
-                    <div class="potion-bottle">
-                        <div class="element-symbol">N</div>
-                        <div class="element-name">ไนโตรเจน</div>
-                        <div class="element-number">เลข 7</div>
-                    </div>
-                    <div class="potion-bottle">
-                        <div class="element-symbol">D</div>
-                        <div class="element-name">ดิวทีเรียม</div>
-                        <div class="element-number">ไอโซโทป 2H</div>
-                    </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 p-4 md:p-6 font-mono">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header */}
+        <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-2 border-cyan-400 rounded-lg p-4 md:p-6 mb-6 shadow-2xl shadow-cyan-500/20">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-cyan-500 p-2 rounded-lg">
+                <Database className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-cyan-400 tracking-wider">ROOM 306</h1>
+                <p className="text-sm md:text-base text-cyan-300">SQL Injection Forensics Challenge</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {showSuccess ? (
+                <div className="bg-green-500 p-3 rounded-full animate-pulse">
+                  <Unlock className="w-8 h-8 text-white" />
                 </div>
-                <div class="hint-parchment">
-                    <p style="text-align: center; color: #b8860b; font-style: italic;">
-                        "ธาตุสามประการ รวมกันเป็นหนึ่ง<br>
-                        จงเรียงลำดับตามแสงดาว<br>
-                        สัญลักษณ์จะปรากฏชัด"
-                    </p>
+              ) : (
+                <div className="bg-red-500 p-3 rounded-full">
+                  <Lock className="w-8 h-8 text-white" />
                 </div>
+              )}
             </div>
-
-            <div class="lab-section">
-                <div class="section-title">📜 ม้วนคัมภีร์โบราณ</div>
-                <div class="ancient-scroll">
-                    <div class="scroll-text">
-                        "ในภาษาของชาวโรมันโบราณ<br>
-                        สัญลักษณ์แห่งการเชื่อมโยง<br>
-                        คือ '⁊' หรือที่เรียกว่า..."
-                    </div>
-                </div>
-                <div class="rune-sequence">
-                    <div class="rune" title="Tironian Et">⁊</div>
-                    <div class="rune" title="Ampersand">⅋</div>
-                    <div class="rune" title="และ">&</div>
-                    <div class="rune" title="Plus">＋</div>
-                </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-3 md:p-4 mb-4 border border-cyan-500/30">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-5 h-5 text-yellow-400" />
+              <span className="text-yellow-400 font-bold text-sm md:text-base">MISSION BRIEFING</span>
             </div>
-        </div>
-
-        <div class="formula-board">
-            <div class="formula-title">สูตรการแปรธาตุ</div>
-            <div class="formula-line">
-                α + β = γ
-            </div>
-            <div class="formula-line">
-                🜁 ∩ 🜂 = 🜃
-            </div>
-            <div class="formula-line">
-                ☉ ⚬ ☽ = ?
-            </div>
-            <div style="text-align: center; color: #999; margin-top: 20px; font-style: italic;">
-                "เมื่อสองสิ่งรวมเป็นหนึ่ง จะใช้สัญลักษณ์ใด?"
-            </div>
-        </div>
-
-        <div class="lab-section" style="grid-column: 1 / -1;">
-            <div class="section-title">🌟 แผนที่กลุ่มดาว</div>
-            <div class="constellation-map">
-                <div class="star-point floating" style="animation-delay: 0s;">1</div>
-                <div class="star-point floating" style="animation-delay: 0.2s;">14</div>
-                <div class="star-point floating" style="animation-delay: 0.4s;">4</div>
-                <div class="star-point floating" style="animation-delay: 0.6s;">•</div>
-                <div class="star-point floating" style="animation-delay: 0.8s;">A</div>
-                <div class="star-point floating" style="animation-delay: 1s;">N</div>
-                <div class="star-point floating" style="animation-delay: 1.2s;">D</div>
-                <div class="star-point floating" style="animation-delay: 1.4s;">★</div>
-            </div>
-            <p style="text-align: center; color: #b8860b; margin-top: 20px; font-style: italic;">
-                "ดาวทั้งเจ็ด นำทางไปสู่ความจริง"
+            <p className="text-gray-300 text-sm md:text-base">
+              Exploit SQL vulnerabilities to extract the hidden keyword and unlock the door
             </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all">
+              <div className="text-gray-400 text-xs mb-1">Total Attempts</div>
+              <div className="text-white font-bold text-xl md:text-2xl">{attempts}</div>
+            </div>
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all">
+              <div className="text-gray-400 text-xs mb-1">Stage Attempts</div>
+              <div className="text-cyan-400 font-bold text-xl md:text-2xl">{stageAttempts}</div>
+            </div>
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-3 border border-gray-700 hover:border-yellow-500 transition-all">
+              <div className="text-gray-400 text-xs mb-1">Current Stage</div>
+              <div className="text-yellow-400 font-bold text-xl md:text-2xl">{stage}/3</div>
+            </div>
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-3 border border-gray-700 hover:border-yellow-500 transition-all">
+              <div className="text-gray-400 text-xs mb-1 flex items-center gap-1">
+                <Zap className="w-3 h-3" />
+                Hints Unlocked
+              </div>
+              <div className={`font-bold text-xl md:text-2xl ${autoHintLevel > 0 ? 'text-yellow-400' : 'text-gray-600'}`}>
+                {autoHintLevel}/3
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="lab-section" style="grid-column: 1 / -1;">
-            <div class="section-title">📊 ตารางการถอดรหัส</div>
-            <table class="cipher-table">
-                <thead>
-                    <tr>
-                        <th>สัญลักษณ์</th>
-                        <th>ความหมายในภาษาโบราณ</th>
-                        <th>การใช้งาน</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="font-size: 1.5em;">&</td>
-                        <td>Et (และในภาษาลาติน)</td>
-                        <td>เชื่อมสองสิ่งเข้าด้วยกัน</td>
-                    </tr>
-                    <tr>
-                        <td style="font-size: 1.5em;">⁊</td>
-                        <td>Tironian Et</td>
-                        <td>สัญลักษณ์โบราณของ "และ"</td>
-                    </tr>
-                    <tr>
-                        <td style="font-size: 1.5em;">+</td>
-                        <td>Plus</td>
-                        <td>บวก/รวม</td>
-                    </tr>
-                    <tr>
-                        <td style="font-size: 1.5em; color: #d4af37; font-weight: bold;">???</td>
-                        <td>คำในภาษาอังกฤษ</td>
-                        <td>สัญลักษณ์ที่มาจาก "et"</td>
-                    </tr>
-                </tbody>
-            </table>
+        {/* Success Screen */}
+        {showSuccess && (
+          <div className="bg-gradient-to-r from-green-900 via-emerald-900 to-green-900 border-2 border-green-400 rounded-lg p-6 mb-6 shadow-2xl shadow-green-500/30 animate-pulse">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="bg-green-500 p-3 rounded-full">
+                <Unlock className="w-12 h-12 text-white" />
+              </div>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-green-400 mb-1">MISSION COMPLETE!</h2>
+                <p className="text-green-300 text-lg">Outstanding work, security researcher!</p>
+              </div>
+            </div>
+            <div className="bg-black/50 rounded-lg p-5 mb-4 border-2 border-green-500">
+              <div className="flex items-center gap-3 justify-center">
+                <span className="text-green-300 text-xl">Extracted Keyword:</span>
+                <span className="font-bold text-4xl md:text-5xl text-white tracking-wider bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                  {foundKeyword.toUpperCase()}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-gray-300">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              <span>Door 306 is now unlocked. Proceed to next challenge.</span>
+            </div>
+          </div>
+        )}
+
+        {/* Stage Info */}
+        {!showSuccess && (
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-2 border-yellow-500 rounded-lg p-4 md:p-6 mb-6 shadow-xl">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="bg-yellow-500 p-2 rounded-lg flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-black" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg md:text-xl font-bold text-yellow-400 mb-2">{stageInfo[stage].title}</h2>
+                <p className="text-gray-300 text-sm md:text-base mb-3">{stageInfo[stage].desc}</p>
+                <div className="bg-blue-950 border-l-4 border-blue-500 rounded p-3 mb-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4 text-blue-400" />
+                    <span className="text-blue-400 text-xs md:text-sm font-bold">OBJECTIVE</span>
+                  </div>
+                  <div className="text-blue-200 text-sm">{stageInfo[stage].objective}</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-black/70 p-4 rounded-lg border border-cyan-500/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Terminal className="w-4 h-4 text-cyan-400" />
+                <span className="text-cyan-400 text-xs font-bold">VULNERABLE SQL QUERY</span>
+              </div>
+              <code className="text-cyan-300 text-xs md:text-sm block break-all font-mono">{stageInfo[stage].code}</code>
+            </div>
+          </div>
+        )}
+
+        {/* SQL Console */}
+        {!showSuccess && (
+          <div className="bg-black border-2 border-cyan-400 rounded-lg p-4 md:p-6 mb-6 shadow-2xl shadow-cyan-500/20">
+            <div className="flex items-center gap-2 mb-4">
+              <Terminal className="w-5 h-5 text-cyan-400" />
+              <span className="text-cyan-400 font-bold text-sm md:text-base tracking-wider">SQL INJECTION CONSOLE</span>
+              <div className="flex-1"></div>
+              <div className="bg-cyan-500/20 px-2 py-1 rounded text-cyan-400 text-xs">ACTIVE</div>
+            </div>
+            
+            <textarea
+              value={sqlInput}
+              onChange={(e) => setSqlInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Enter your SQL injection payload... (Press Enter to execute, Shift+Enter for new line)"
+              className="w-full bg-gray-950 text-green-400 border-2 border-cyan-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-400 font-mono text-sm md:text-base min-h-[100px] resize-y placeholder-gray-600 transition-all"
+              rows={4}
+            />
+
+            <div className="flex flex-col sm:flex-row gap-3 mt-4">
+              <button
+                onClick={handleSubmit}
+                className="flex-1 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white px-6 py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-cyan-500/50 transform hover:scale-105"
+              >
+                <Terminal className="w-5 h-5" />
+                EXECUTE QUERY
+              </button>
+              <button
+                onClick={() => setShowHint(!showHint)}
+                className={`flex-1 ${autoHintLevel > 0 ? 'bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400' : 'bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500'} ${autoHintLevel > 0 && !showHint ? 'animate-pulse' : ''} text-white px-6 py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-105`}
+              >
+                <Lightbulb className="w-5 h-5" />
+                {showHint ? 'HIDE HINTS' : `SHOW HINTS ${autoHintLevel > 0 ? `(${autoHintLevel})` : ''}`}
+              </button>
+            </div>
+
+            {/* Hint Panel */}
+            {showHint && (
+              <div className="mt-5 bg-gradient-to-r from-gray-900 to-gray-800 border-2 border-yellow-500 rounded-lg p-4 shadow-xl">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Lightbulb className="w-6 h-6 text-yellow-400" />
+                    <span className="text-yellow-400 font-bold">PROGRESSIVE HINT SYSTEM</span>
+                  </div>
+                  <div className="bg-yellow-500/20 px-3 py-1 rounded text-yellow-400 text-xs">
+                    Unlocks at 10, 25, 50 attempts
+                  </div>
+                </div>
+                
+                {autoHintLevel === 0 && (
+                  <div className="text-center py-8 bg-gray-950 rounded-lg border border-gray-700">
+                    <Lock className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+                    <div className="text-gray-400 text-lg mb-2">No Hints Available Yet</div>
+                    <div className="text-white font-bold text-2xl">
+                      {getNextHintAttempts()} <span className="text-gray-500 text-base">more attempts</span>
+                    </div>
+                    <div className="text-gray-500 text-sm mt-1">to unlock Level 1 Hint</div>
+                  </div>
+                )}
+
+                {autoHintLevel >= 1 && (
+                  <div className="mb-3 p-4 bg-yellow-900/30 rounded-lg border-l-4 border-yellow-500 shadow-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-5 h-5 text-yellow-400" />
+                      <span className="text-yellow-300 font-bold">Level 1 Hint</span>
+                      <span className="bg-yellow-500/30 px-2 py-0.5 rounded text-xs text-yellow-300">Unlocked at 10</span>
+                    </div>
+                    <div className="text-yellow-100 text-sm leading-relaxed">{hints[`stage${stage}`][0]}</div>
+                  </div>
+                )}
+
+                {autoHintLevel >= 2 && (
+                  <div className="mb-3 p-4 bg-orange-900/30 rounded-lg border-l-4 border-orange-500 shadow-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-5 h-5 text-orange-400" />
+                      <span className="text-orange-300 font-bold">Level 2 Hint</span>
+                      <span className="bg-orange-500/30 px-2 py-0.5 rounded text-xs text-orange-300">Unlocked at 25</span>
+                    </div>
+                    <div className="text-orange-100 text-sm leading-relaxed">{hints[`stage${stage}`][1]}</div>
+                  </div>
+                )}
+
+                {autoHintLevel >= 3 && (
+                  <div className="p-4 bg-red-900/30 rounded-lg border-l-4 border-red-500 shadow-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle className="w-5 h-5 text-red-400" />
+                      <span className="text-red-300 font-bold">Level 3 Hint</span>
+                      <span className="bg-red-500/30 px-2 py-0.5 rounded text-xs text-red-300">Unlocked at 50</span>
+                    </div>
+                    <div className="text-red-100 mb-3 text-sm leading-relaxed">{hints[`stage${stage}`][2]}</div>
+                    <div className="bg-black/70 p-4 rounded-lg border-2 border-red-500">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-4 h-4 text-red-400" />
+                        <span className="text-red-400 text-xs font-bold">FULL SOLUTION</span>
+                      </div>
+                      <pre className="text-red-200 font-mono text-xs md:text-sm whitespace-pre-wrap break-all">{hints[`stage${stage}`][3]}</pre>
+                    </div>
+                  </div>
+                )}
+
+                {autoHintLevel < 3 && stageAttempts < 50 && (
+                  <div className="mt-3 p-3 bg-gray-950 rounded-lg text-center border border-gray-700">
+                    <div className="text-gray-400 text-sm mb-1">Next hint unlocks in</div>
+                    <div className="text-white font-bold text-xl">{getNextHintAttempts()}</div>
+                    <div className="text-gray-500 text-xs">attempts</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Activity Logs */}
+        <div className="bg-black border-2 border-green-500 rounded-lg p-4 md:p-6 mb-6 shadow-2xl shadow-green-500/20 max-h-96 overflow-y-auto">
+          <div className="flex items-center gap-2 mb-4 sticky top-0 bg-black pb-2">
+            <Shield className="w-5 h-5 text-green-400" />
+            <span className="text-green-400 font-bold tracking-wider">SYSTEM ACTIVITY LOGS</span>
+            <div className="flex-1"></div>
+            <div className="bg-green-500/20 px-2 py-1 rounded text-green-400 text-xs">MONITORING</div>
+          </div>
+          
+          {logs.length === 0 ? (
+            <div className="text-center py-12 text-gray-600">
+              <Terminal className="w-16 h-16 mx-auto mb-4 opacity-30" />
+              <div className="text-sm">Awaiting query execution...</div>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {logs.slice().reverse().map((log, idx) => (
+                <div key={idx} className="flex gap-3 text-xs md:text-sm hover:bg-gray-900/50 p-2 rounded transition-all group">
+                  <span className="text-gray-600 flex-shrink-0 font-mono">[{log.time}]</span>
+                  <span className={`flex items-center gap-2 ${
+                    log.type === 'success' ? 'text-green-400' :
+                    log.type === 'error' ? 'text-red-400' :
+                    log.type === 'warning' ? 'text-yellow-400' :
+                    'text-gray-400'
+                  } group-hover:text-white transition-colors`}>
+                    {log.type === 'success' && <CheckCircle className="w-3 h-3 flex-shrink-0" />}
+                    {log.type === 'error' && <XCircle className="w-3 h-3 flex-shrink-0" />}
+                    {log.type === 'warning' && <AlertTriangle className="w-3 h-3 flex-shrink-0" />}
+                    <span className="break-all">{log.message}</span>
+                  </span>
+                </div>
+              ))}
+              <div ref={logsEndRef} />
+            </div>
+          )}
         </div>
 
-        <div class="hint-parchment" style="grid-column: 1 / -1;">
-            <div class="hint-title">🔮 คำใบ้จากนักเล่นแร่แปรธาตุ</div>
-            <ul class="hint-list">
-                <li>ธาตุ Ag, N, D เรียงตามลำดับจะได้อะไร?</li>
-                <li>สัญลักษณ์ & มาจากคำในภาษาลาตินว่า "Et" ซึ่งแปลว่า "และ"</li>
-                <li>ชื่อของสัญลักษณ์ & เรียกว่าอะไร?</li>
-                <li>มองหาคำที่เกี่ยวข้องกับการ "เชื่อมโยง" หรือ "รวมกัน"</li>
-                <li>แผนที่ดาวบอกใบ้ตัวอักษร: 1=A, 14=N, 4=D</li>
-                <li>คำตอบเป็นภาษาอังกฤษ 3 ตัวอักษร</li>
-                <li>คัมภีร์โบราณพูดถึงสัญลักษณ์ที่ใช้เชื่อมสองสิ่ง</li>
-            </ul>
+        {/* Knowledge Base */}
+        <div className="bg-gradient-to-r from-gray-800 to-gray-900 border border-cyan-500/30 rounded-lg p-4 md:p-6 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Database className="w-5 h-5 text-cyan-400" />
+            <h3 className="text-cyan-400 font-bold">Required IT Knowledge & Skills</h3>
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            {[
+              { title: "SQL Injection Fundamentals", desc: "Authentication bypass techniques" },
+              { title: "UNION-based Injection", desc: "Combining multiple query results" },
+              { title: "Database Enumeration", desc: "Using information_schema tables" },
+              { title: "Data Exfiltration", desc: "Extracting sensitive information" },
+              { title: "SQL Query Syntax", desc: "SELECT, FROM, WHERE, UNION" },
+              { title: "Web Security Concepts", desc: "OWASP Top 10 vulnerabilities" }
+            ].map((item, idx) => (
+              <div key={idx} className="bg-gray-900/70 rounded-lg p-3 border border-gray-700 hover:border-cyan-500 transition-all group">
+                <div className="text-cyan-300 font-bold text-sm mb-1 group-hover:text-cyan-400 transition-colors">• {item.title}</div>
+                <div className="text-gray-400 text-xs">{item.desc}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div class="answer-chamber">
-            <h3>⚱️ หีบแห่งการแปรธาตุ ⚱️</h3>
-            <p style="color: #b8860b; font-size: 1.2em; margin-bottom: 20px;">
-                "จงใส่คำสัญลักษณ์แห่งการเชื่อมโยง"
-            </p>
-            <input type="text" class="transmutation-input" id="alchemyInput" placeholder="...">
-            <br>
-            <button class="transmute-btn" onclick="performTransmutation()">แปรธาตุ</button>
-            <div class="result-display" id="resultDisplay"></div>
+        {/* Footer */}
+        <div className="text-center text-gray-500 text-xs md:text-sm space-y-2 pb-4">
+          <div className="flex items-center justify-center gap-2">
+            <Shield className="w-4 h-4" />
+            <span>Room 306: SQL Injection Forensics Challenge</span>
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <span>Difficulty:</span>
+            <span className="text-yellow-400 font-mono">{getDifficultyStars()}</span>
+            <span className="text-white font-bold">
+              ({autoHintLevel === 0 ? '8/10' : autoHintLevel === 1 ? '7/10' : autoHintLevel === 2 ? '6/10' : '5/10'})
+            </span>
+          </div>
         </div>
+      </div>
     </div>
-
-    <script>
-        function performTransmutation() {
-            const input = document.getElementById('alchemyInput').value.trim().toLowerCase();
-            const resultDisplay = document.getElementById('resultDisplay');
-            
-            const correctAnswers = ['and', '&', 'และ', 'et'];
-            
-            if (correctAnswers.includes(input)) {
-                resultDisplay.textContent = '✨ สำเร็จ! คำตอบคือ "AND" (สัญลักษณ์ &) ✨';
-                resultDisplay.className = 'result-display success-text';
-                createAlchemyEffect();
-                celebrateSuccess();
-            } else {
-                resultDisplay.textContent = '❌ การแปรธาตุล้มเหลว... ลองใหม่อีกครั้ง';
-                resultDisplay.className = 'result-display fail-text';
-                shakeEffect();
-            }
-        }
-
-        function createAlchemyEffect() {
-            const colors = ['#d4af37', '#ffd700', '#00ff00', '#00ffff'];
-            for (let i = 0; i < 100; i++) {
-                setTimeout(() => {
-                    const particle = document.createElement('div');
-                    particle.style.position = 'fixed';
-                    particle.style.width = Math.random() * 15 + 5 + 'px';
-                    particle.style.height = particle.style.width;
-                    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    particle.style.borderRadius = '50%';
-                    particle.style.left = Math.random() * window.innerWidth + 'px';
-                    particle.style.top = Math.random() * window.innerHeight + 'px';
-                    particle.style.opacity = '0.8';
-                    particle.style.zIndex = '1000';
-                    particle.style.pointerEvents = 'none';
-                    particle.style.boxShadow = '0 0 20px currentColor';
-                    document.body.appendChild(particle);
-                    
-                    particle.animate([
-                        { transform: 'scale(0) rotate(0deg)', opacity: 0 },
-                        { transform: 'scale(1.5) rotate(360deg)', opacity: 0.8 },
-                        { transform: 'scale(0) rotate(720deg)', opacity: 0 }
-                    ], {
-                        duration: 2000,
-                        easing: 'ease-out'
-                    });
-                    
-                    setTimeout(() => particle.remove(), 2000);
-                }, i * 20);
-            }
-        }
-
-        function celebrateSuccess() {
-            const answerChamber = document.querySelector('.answer-chamber');
-            answerChamber.style.animation = 'glow 1s ease-in-out 3';
-        }
-
-        function shakeEffect() {
-            const input = document.getElementById('alchemyInput');
-            input.style.animation = 'shake 0.5s';
-            setTimeout(() => {
-                input.style.animation = '';
-            }, 500);
-        }
-
-        document.getElementById('alchemyInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performTransmutation();
-            }
-        });
-
-        // Interactive potion bottles
-        document.querySelectorAll('.potion-bottle').forEach(bottle => {
-            bottle.addEventListener('click', function() {
-                this.style.animation = 'float 0.5s ease-in-out';
-                setTimeout(() => {
-                    this.style.animation = '';
-                }, 500);
-            });
-        });
-
-        // Hover effects for runes
-        document.querySelectorAll('.rune').forEach(rune => {
-            rune.addEventListener('mouseenter', function() {
-                const title = this.getAttribute('title');
-                const tooltip = document.createElement('div');
-                tooltip.textContent = title;
-                tooltip.style.position = 'absolute';
-                tooltip.style.background = 'rgba(0,0,0,0.8)';
-                tooltip.style.color = '#d4af37';
-                tooltip.style.padding = '5px 10px';
-                tooltip.style.borderRadius = '5px';
-                tooltip.style.fontSize = '0.9em';
-                tooltip.style.marginTop = '-40px';
-                tooltip.className = 'rune-tooltip';
-                this.appendChild(tooltip);
-            });
-            
-            rune.addEventListener('mouseleave', function() {
-                const tooltip = this.querySelector('.rune-tooltip');
-                if (tooltip) tooltip.remove();
-            });
-        });
-
-        // Add shake animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-10px); }
-                75% { transform: translateX(10px); }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
-</body>
-</html>
+  );
+}
