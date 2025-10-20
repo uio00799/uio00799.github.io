@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAB-AI-F1 — The Core of Digital Mind</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tahoma', 'MS Sans Serif', sans-serif;
+            background: linear-gradient(to bottom, #5a7fcc 0%, #3e6bb3 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .desktop {
+            height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .folder {
+            width: 90px;
+            text-align: center;
+            cursor: pointer;
+            margin: 10px;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .folder img {
+            width: 48px;
+            height: 48px;
+        }
+
+        .folder-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #ffd54f 0%, #ffb74d 100%);
+            margin: 0 auto 5px;
+            border-radius: 3px;
+            position: relative;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .folder-icon::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 0;
+            width: 30px;
+            height: 8px;
+            background: linear-gradient(135deg, #ffd54f 0%, #ffb74d 100%);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .folder-name {
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            font-size: 12px;
+            padding: 3px;
+            word-wrap: break-word;
+        }
+
+        .folder.selected .folder-name {
+            background: rgba(49, 106, 197, 0.7);
+            border: 1px dotted rgba(255,255,255,0.5);
+        }
+
+        .window {
+            position: absolute;
+            background: #ece9d8;
+            border: 2px solid;
+            border-color: #0054e3 #0054e3 #0054e3 #0054e3;
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.4);
+            min-width: 500px;
+            min-height: 300px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .window.active {
+            display: block;
+        }
+
+        .title-bar {
+            background: linear-gradient(to bottom, #0997ff 0%, #0053ee 100%);
+            padding: 3px 5px;
+            color: white;
+            font-weight: bold;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: move;
+        }
+
+        .title-bar-text {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .title-bar-icon {
+            width: 16px;
+            height: 16px;
+            background: white;
+            border: 1px solid #000;
+        }
+
+        .title-bar-controls {
+            display: flex;
+            gap: 2px;
+        }
+
+        .title-bar-controls button {
+            width: 21px;
+            height: 21px;
+            border: 1px solid;
+            border-color: white #000 #000 white;
+            background: #ece9d8;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .title-bar-controls button:hover {
+            background: #e6e3d8;
+        }
+
+        .title-bar-controls button:active {
+            border-color: #000 white white #000;
+        }
+
+        .window-content {
+            padding: 20px;
+            background: white;
+            height: calc(100% - 30px);
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .window-content h3 {
+            color: #0054e3;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .window-content pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(to bottom, #245edb 0%, #1941a5 100%);
+            border-top: 2px solid #5a7fcc;
+            display: flex;
+            align-items: center;
+            padding: 0 5px;
+            z-index: 2000;
+        }
+
+        .start-button {
+            height: 24px;
+            padding: 0 20px 0 5px;
+            background: linear-gradient(to bottom, #3c8d3c 0%, #2b6b2b 100%);
+            color: white;
+            border: 1px solid;
+            border-color: white #000 #000 white;
+            border-radius: 3px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .start-button:active {
+            border-color: #000 white white #000;
+        }
+
+        .clock {
+            margin-left: auto;
+            color: white;
+            font-size: 11px;
+            padding: 0 10px;
+        }
+
+        .answer-box {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ece9d8;
+            border: 2px solid #0054e3;
+            padding: 15px;
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.4);
+            z-index: 3000;
+        }
+
+        .answer-box input {
+            padding: 5px;
+            font-size: 14px;
+            border: 1px solid #7f9db9;
+            width: 250px;
+            margin-right: 10px;
+        }
+
+        .answer-box button {
+            padding: 5px 20px;
+            background: linear-gradient(to bottom, #ece9d8 0%, #d8d5c8 100%);
+            border: 1px solid;
+            border-color: white #000 #000 white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .answer-box button:active {
+            border-color: #000 white white #000;
+        }
+
+        .success-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ece9d8;
+            border: 3px solid #0054e3;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 6px 6px 12px rgba(0,0,0,0.5);
+            z-index: 4000;
+            min-width: 400px;
+        }
+
+        .success-message h2 {
+            color: #0054e3;
+            margin-bottom: 15px;
+        }
+
+        .success-message p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .keycard {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            padding: 20px;
+            margin: 15px 0;
+            border: 2px solid #ff9800;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop">
+        <div class="folder" onclick="openFile('readme')">
+            <div class="folder-icon"></div>
+            <div class="folder-name">00_README.txt</div>
+        </div>
+
+        <div class="folder" onclick="openFile('ascii')">
+            <div class="folder-icon"></div>
+            <div class="folder-name">ASCII_to_Thai.txt</div>
+        </div>
+
+        <div class="folder" onclick="openFile('final')">
+            <div class="folder-icon"></div>
+            <div class="folder-name">Final_Clue.txt</div>
+        </div>
+    </div>
+
+    <!-- Windows -->
+    <div id="readme-window" class="window">
+        <div class="title-bar">
+            <div class="title-bar-text">
+                <div class="title-bar-icon"></div>
+                00_README.txt - Notepad
+            </div>
+            <div class="title-bar-controls">
+                <button onclick="closeWindow('readme')">✕</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <pre>AI SYSTEM LOG:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ข้อมูลบนจอคอมพิวเตอร์ทั้ง 28 เครื่อง
+คือ Binary Code 8 บิตต่อ 1 ตัวอักษร
+
+เมื่อรวมกันและแปลงเป็น ASCII จะได้ประโยคหนึ่ง:
+
+<strong>"Knowledge is Data Flow Logic"</strong>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 คำแนะนำ:
+1. ให้เปิดไฟล์ ASCII_to_Thai.txt 
+   เพื่อดูความหมายของมันในภาษาไทย
+
+2. จากนั้นใช้ไฟล์ Final_Clue.txt 
+   เพื่อหาคำตอบสุดท้ายที่แท้จริง
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</pre>
+        </div>
+    </div>
+
+    <div id="ascii-window" class="window">
+        <div class="title-bar">
+            <div class="title-bar-text">
+                <div class="title-bar-icon"></div>
+                ASCII_to_Thai.txt - Notepad
+            </div>
+            <div class="title-bar-controls">
+                <button onclick="closeWindow('ascii')">✕</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <pre>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🧠 การแปลความหมาย
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"Knowledge is Data Flow Logic"
+
+แปลเป็นภาษาไทย:
+
+<strong>ความรู้คือกระแสของข้อมูลที่มีตรรกะ</strong>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 คำสำคัญ:
+
+การทำงานของสมองคอมพิวเตอร์คล้ายกับ
+กระบวนการนี้
+
+→ ทุกข้อมูลเคลื่อนที่ตามตรรกะอย่างมีเหตุผล
+→ มันไม่ใช่แค่ข้อมูล แต่เป็น "ข้อมูลที่มีเหตุผล"
+→ มันไหลไปตาม "กฎเกณฑ์" ที่กำหนดไว้
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 คำถามต่อไป:
+→ แล้วสิ่งที่ทำให้ข้อมูลไหลตามตรรกะคืออะไร?
+
+เปิดไฟล์ Final_Clue.txt เพื่อหาคำตอบ!</pre>
+        </div>
+    </div>
+
+    <div id="final-window" class="window">
+        <div class="title-bar">
+            <div class="title-bar-text">
+                <div class="title-bar-icon"></div>
+                Final_Clue.txt - Notepad
+            </div>
+            <div class="title-bar-controls">
+                <button onclick="closeWindow('final')">✕</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <pre>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🎯 FINAL CLUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🤖 AI Question:
+
+"สิ่งที่ทำให้ข้อมูลไหลอย่างมีเหตุผล
+ และเกิดการคิดคำนวณคืออะไร?"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💭 คิดให้ดี...
+
+• ไม่ใช่ "ข้อมูล" (Data)
+• ไม่ใช่ "ตรรกะ" (Logic) 
+• ไม่ใช่ "โปรแกรม" (Program)
+
+แต่มันคือ...
+
+<strong>ขั้นตอนที่ทำให้ทุกอย่างทำงาน</strong>
+<strong>กฎเกณฑ์ที่ทำให้เกิดการคำนวณ</strong>
+<strong>หัวใจของ AI และคอมพิวเตอร์ทุกเครื่อง</strong>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ คำตอบที่แท้จริง (True Answer):
+
+<strong style="font-size: 16px; color: #ff0000;">ALGORITHM</strong>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+กรอกคำตอบด้านล่างเพื่อปลดล็อก KEYCARD-F2</pre>
+        </div>
+    </div>
+
+    <!-- Answer Box -->
+    <div class="answer-box">
+        <input type="text" id="answer-input" placeholder="กรอกคำตอบที่นี่..." />
+        <button onclick="checkAnswer()">ส่งคำตอบ</button>
+    </div>
+
+    <!-- Success Message -->
+    <div id="success-message" class="success-message">
+        <h2>✅ ACCESS GRANTED</h2>
+        <p><strong>YOU UNDERSTAND THE CORE OF INTELLIGENCE</strong></p>
+        <div class="keycard">🔑 KEYCARD-F2 UNLOCKED</div>
+        <p style="margin-top: 15px;">
+            <strong>ALGORITHM</strong> คือหัวใจของการทำงาน<br>
+            ของคอมพิวเตอร์และ AI ทุกเครื่อง<br><br>
+            มันคือ "ตรรกะของข้อมูล" ที่ทำให้เกิด<br>
+            การคิด ตัดสินใจ และเรียนรู้ได้
+        </p>
+        <button onclick="closeSuccess()" style="margin-top: 20px; padding: 8px 30px;">ปิด</button>
+    </div>
+
+    <!-- Taskbar -->
+    <div class="taskbar">
+        <button class="start-button">
+            <strong>start</strong>
+        </button>
+        <div class="clock" id="clock"></div>
+    </div>
+
+    <script>
+        let draggedWindow = null;
+        let offsetX, offsetY;
+
+        function openFile(type) {
+            const window = document.getElementById(type + '-window');
+            window.classList.add('active');
+            
+            const left = 50 + (Math.random() * 100);
+            const top = 50 + (Math.random() * 100);
+            window.style.left = left + 'px';
+            window.style.top = top + 'px';
+
+            const titleBar = window.querySelector('.title-bar');
+            titleBar.onmousedown = function(e) {
+                draggedWindow = window;
+                offsetX = e.clientX - window.offsetLeft;
+                offsetY = e.clientY - window.offsetTop;
+            };
+        }
+
+        function closeWindow(type) {
+            document.getElementById(type + '-window').classList.remove('active');
+        }
+
+        document.addEventListener('mousemove', function(e) {
+            if (draggedWindow) {
+                draggedWindow.style.left = (e.clientX - offsetX) + 'px';
+                draggedWindow.style.top = (e.clientY - offsetY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            draggedWindow = null;
+        });
+
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('clock').textContent = hours + ':' + minutes;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function checkAnswer() {
+            const input = document.getElementById('answer-input').value.trim().toLowerCase();
+            if (input === 'algorithm') {
+                document.getElementById('success-message').style.display = 'block';
+            } else {
+                alert('❌ คำตอบไม่ถูกต้อง\n\nลองอ่านไฟล์ทั้ง 3 ตัวอีกครั้ง!');
+            }
+        }
+
+        function closeSuccess() {
+            document.getElementById('success-message').style.display = 'none';
+        }
+
+        document.getElementById('answer-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+    </script>
+</body>
+</html>
