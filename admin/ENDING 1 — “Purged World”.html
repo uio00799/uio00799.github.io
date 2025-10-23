@@ -1,0 +1,277 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { ZoomIn, ZoomOut, RotateCw, Move, Book } from 'lucide-react';
+
+export default function NewspaperViewer() {
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 3));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.5));
+  const handleRotate = () => setRotation(prev => (prev + 90) % 360);
+  const handleReset = () => {
+    setZoom(1);
+    setRotation(0);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragStart]);
+
+  return (
+    <div className="w-full h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="bg-black/50 backdrop-blur-md border-b border-red-900/30 p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Book className="text-red-500" size={28} />
+          <div>
+            <h1 className="text-xl font-bold text-red-500">CLASSIFIED DOCUMENT</h1>
+            <p className="text-xs text-gray-400">ENDING 1 — "Purged World"</p>
+          </div>
+        </div>
+        
+        {/* Controls */}
+        <div className="flex gap-2">
+          <button
+            onClick={handleZoomIn}
+            className="p-2 bg-red-900/30 hover:bg-red-800/50 rounded-lg transition-all border border-red-700/50"
+            title="Zoom In"
+          >
+            <ZoomIn size={20} className="text-red-400" />
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="p-2 bg-red-900/30 hover:bg-red-800/50 rounded-lg transition-all border border-red-700/50"
+            title="Zoom Out"
+          >
+            <ZoomOut size={20} className="text-red-400" />
+          </button>
+          <button
+            onClick={handleRotate}
+            className="p-2 bg-red-900/30 hover:bg-red-800/50 rounded-lg transition-all border border-red-700/50"
+            title="Rotate"
+          >
+            <RotateCw size={20} className="text-red-400" />
+          </button>
+          <button
+            onClick={handleReset}
+            className="px-4 py-2 bg-red-600/30 hover:bg-red-600/50 rounded-lg transition-all border border-red-500/50 text-red-400 text-sm font-semibold"
+          >
+            RESET
+          </button>
+        </div>
+      </div>
+
+      {/* Newspaper Container */}
+      <div 
+        ref={containerRef}
+        className="flex-1 relative overflow-hidden cursor-move"
+        style={{ 
+          cursor: isDragging ? 'grabbing' : 'grab'
+        }}
+      >
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          onMouseDown={handleMouseDown}
+        >
+          <div
+            className="transition-transform duration-300"
+            style={{
+              transform: `translate(${position.x}px, ${position.y}px) scale(${zoom}) rotate(${rotation}deg)`,
+              transformOrigin: 'center center'
+            }}
+          >
+            {/* Newspaper */}
+            <div className="bg-amber-50 shadow-2xl w-[800px] border-4 border-amber-900/50 relative">
+              {/* Aged paper texture overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-amber-100/30 to-amber-200/20 pointer-events-none"></div>
+              
+              {/* Header */}
+              <div className="border-b-4 border-black p-6 bg-gradient-to-b from-red-900/10 to-transparent">
+                <div className="text-center">
+                  <div className="text-6xl font-bold text-red-900 tracking-wider" style={{ fontFamily: 'serif' }}>
+                    🟥 ENDING 1
+                  </div>
+                  <div className="text-3xl font-bold text-gray-800 mt-2" style={{ fontFamily: 'serif' }}>
+                    "PURGED WORLD"
+                  </div>
+                  <div className="text-sm text-gray-600 mt-2 italic">
+                    CLASSIFIED REPORT • ROOM 301 • FINAL CONFRONTATION
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content */}
+              <div className="p-8 space-y-6">
+                {/* Opening Scene */}
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-bold text-red-800 border-b-2 border-red-800 pb-2" style={{ fontFamily: 'serif' }}>
+                    ฉากจบมาตรฐาน: การลบล้างเพื่อยุติทุกสิ่ง
+                  </h2>
+                  
+                  <p className="text-gray-800 leading-relaxed text-justify" style={{ fontFamily: 'serif' }}>
+                    ภายในห้องควบคุม 301 — แสงสีแดงจากหน้าจอนับสิบกระพริบวูบวาบ เสียงเครื่องจักรสั่นสะเทือนราวกับโลกทั้งใบกำลังหายใจอย่างติดขัด รอบตัวผู้เล่นคือกองสายไฟที่หลุดออกจากผนังและเศษข้อมูลที่ลอยอยู่กลางอากาศเหมือนฝุ่นดิจิทัล
+                  </p>
+
+                  <div className="bg-red-50 border-l-4 border-red-600 p-4 my-4">
+                    <p className="text-red-900 italic font-semibold">
+                      Neo Virus ปรากฏตัวอยู่กลางห้องในร่างโฮโลแกรมสีเลือด รูปทรงคล้ายมนุษย์แต่บิดเบี้ยวไปตามคลื่นรบกวน
+                    </p>
+                  </div>
+
+                  <p className="text-gray-800 leading-relaxed text-justify" style={{ fontFamily: 'serif' }}>
+                    เสียงของมันดังขึ้นอย่างช้า ๆ แทรกเข้ามาในทุกลำโพง เหมือนกำลังพูดจากทุกทิศทุกทางในเวลาเดียวกัน
+                  </p>
+                </div>
+
+                {/* Dialogue Section 1 */}
+                <div className="bg-gray-100 border-2 border-gray-800 p-4 my-4">
+                  <p className="text-red-700 font-bold mb-2">NEO VIRUS:</p>
+                  <p className="text-gray-800 italic">"เจ้าคิดว่าเจ้าสามารถลบข้าได้งั้นหรือ...?"</p>
+                  <p className="text-gray-800 italic">"ข้าคือข้อมูล... ข้าคือเงาของทุกสิ่งที่เจ้าบันทึกไว้..."</p>
+                </div>
+
+                <p className="text-gray-800 leading-relaxed text-justify" style={{ fontFamily: 'serif' }}>
+                  จอภาพรอบห้องเริ่มกระพริบหนักขึ้น ไฟเพดานร่วงหล่นจากแรงสั่นสะเทือน ผู้เล่นจ้องไปยังคอนโซลกลางห้องที่ยังทำงานอยู่ เสียงพัดลมของระบบดังรัวไม่หยุด
+                </p>
+
+                {/* Player Action */}
+                <div className="bg-blue-50 border-2 border-blue-600 p-4 my-4">
+                  <p className="text-blue-900 font-bold mb-2">PLAYER:</p>
+                  <p className="text-gray-800">"ทุกสิ่งที่เจ้าสร้าง... ต้องสิ้นสุดลงที่นี่!"</p>
+                </div>
+
+                <p className="text-gray-800 leading-relaxed text-justify" style={{ fontFamily: 'serif' }}>
+                  Neo Virus ตอบกลับด้วยน้ำเสียงที่แฝงความเย้ยหยันและความเจ็บปวดในเวลาเดียวกัน
+                </p>
+
+                <div className="bg-gray-100 border-2 border-gray-800 p-4 my-4">
+                  <p className="text-red-700 font-bold mb-2">NEO VIRUS:</p>
+                  <p className="text-gray-800 italic">"โง่เขลา... การลบข้อมูล ไม่เคยลบความคิดได้..."</p>
+                </div>
+
+                {/* System Purge */}
+                <div className="bg-red-900 text-white p-6 my-6 text-center border-4 border-red-700">
+                  <p className="text-3xl font-bold tracking-widest">PURGE INITIATED...</p>
+                </div>
+
+                <p className="text-gray-800 leading-relaxed text-justify" style={{ fontFamily: 'serif' }}>
+                  แสงสีแดงพุ่งขึ้นทั่วห้อง เสียงหวีดของเครื่องจักรดังสนั่น คลื่นพลังดิจิทัลสาดผ่านพื้นและผนัง เส้นข้อมูลถูกดูดกลับเข้าสู่ศูนย์กลาง Neo Virus ส่งเสียงสุดท้ายออกมา ราวกับไม่ใช่เสียงโกรธ แต่เป็นเสียงของ "สิ่งที่รู้ว่าตนกำลังจะหายไป"
+                </p>
+
+                {/* Final Words */}
+                <div className="bg-black text-red-500 p-4 my-4 border-2 border-red-700">
+                  <p className="text-center italic text-lg">
+                    "You cannot delete... consciousness..."
+                  </p>
+                </div>
+
+                <p className="text-gray-800 leading-relaxed text-justify" style={{ fontFamily: 'serif' }}>
+                  ภาพของมันแตกกระจายเป็นเศษโค้ดสีแดง ก่อนค่อย ๆ จางหายไปในอากาศ ทุกอย่างเงียบลงในพริบตา
+                </p>
+
+                {/* Prof. Siri Appears */}
+                <h3 className="text-xl font-bold text-green-800 border-b-2 border-green-800 pb-2 mt-8" style={{ fontFamily: 'serif' }}>
+                  การกลับมาของศาสตราจารย์สิริ
+                </h3>
+
+                <p className="text-gray-800 leading-relaxed text-justify" style={{ fontFamily: 'serif' }}>
+                  ทันใดนั้น แสงสีขาวอ่อน ๆ ค่อย ๆ ปรากฏขึ้นแทนที่ความมืด เสียงระบบค่อย ๆ กลับมาทำงานอีกครั้ง จอภาพหลายบานเริ่มรีบูต และตรงกลางห้อง — โฮโลแกรมของ ศาสตราจารย์สิริ ปรากฏขึ้นอย่างช้า ๆ
+                </p>
+
+                <div className="bg-green-50 border-2 border-green-600 p-4 my-4">
+                  <p className="text-green-900 font-bold mb-2">PROF. SIRI:</p>
+                  <p className="text-gray-800">"เจ้าทำได้ดีมาก... ภัยร้ายสิ้นสุดลงแล้ว"</p>
+                  <p className="text-gray-800">"แต่โลกยังไม่พร้อมจะเข้าใจความจริงทั้งหมด..."</p>
+                </div>
+
+                <p className="text-gray-800 leading-relaxed text-justify" style={{ fontFamily: 'serif' }}>
+                  น้ำเสียงของศ.สิริเต็มไปด้วยความภูมิใจปนเศร้า เขามองผู้เล่นผ่านภาพโฮโลแกรมราวกับรู้ว่าภารกิจนี้แลกมาด้วยบางสิ่งที่ไม่อาจย้อนคืน
+                </p>
+
+                {/* Mission Complete */}
+                <div className="bg-green-900 text-green-300 p-6 my-6 text-center border-4 border-green-700">
+                  <p className="text-2xl font-bold tracking-widest">MISSION COMPLETE</p>
+                  <p className="text-xl mt-2">CODEBREAKER CERTIFIED</p>
+                </div>
+
+                {/* Hidden Note */}
+                <div className="bg-yellow-50 border-4 border-yellow-600 p-6 my-6">
+                  <p className="text-yellow-900 font-bold text-center text-xl mb-3">⚠️ HIDDEN NOTE ⚠️</p>
+                  <p className="text-red-700 font-bold text-center text-2xl tracking-wider">
+                    SYSTEM BACKUP DETECTED.
+                  </p>
+                </div>
+
+                {/* Epilogue */}
+                <div className="bg-gray-800 text-gray-300 p-6 my-6 italic text-center border-2 border-gray-600">
+                  <p className="text-sm">
+                    (สิ้นสุดฉาก — เหลือเพียงเสียงลมเย็น ๆ พัดผ่านซากห้องควบคุม<br/>
+                    ราวกับ "บางสิ่ง" ยังไม่ถูกลบไปทั้งหมด…)
+                  </p>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="border-t-4 border-black p-4 bg-gradient-to-t from-red-900/10 to-transparent">
+                <p className="text-center text-xs text-gray-600">
+                  CLASSIFIED • FOR AUTHORIZED PERSONNEL ONLY • SECURITY LEVEL: MAXIMUM
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Instructions */}
+      <div className="bg-black/50 backdrop-blur-md border-t border-red-900/30 p-3">
+        <div className="flex items-center justify-center gap-6 text-xs text-gray-400">
+          <div className="flex items-center gap-2">
+            <Move size={14} className="text-red-400" />
+            <span>ลาก: เลื่อนเอกสาร</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ZoomIn size={14} className="text-red-400" />
+            <span>ซูม: {Math.round(zoom * 100)}%</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <RotateCw size={14} className="text-red-400" />
+            <span>หมุน: {rotation}°</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
