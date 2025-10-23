@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Times - Digital Ascension</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Sarabun:wght@300;400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Sarabun', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.15;
+        }
+        
+        .binary-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            line-height: 14px;
+            overflow: hidden;
+        }
+        
+        .binary-column {
+            position: absolute;
+            top: -100%;
+            white-space: nowrap;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+            animation: fall linear infinite;
+        }
+        
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 3;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            border: 3px double #0f0;
+            margin-bottom: 30px;
+            background: rgba(0, 20, 0, 0.9);
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+        
+        h1 {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 3em;
+            color: #0f0;
+            letter-spacing: 8px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
+            animation: flicker 3s infinite;
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+            75% { opacity: 0.9; }
+        }
+        
+        .subtitle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1em;
+            color: #0a0;
+            letter-spacing: 3px;
+        }
+        
+        .binary-code {
+            font-family: 'Share Tech Mono', monospace;
+            color: #0f0;
+            text-align: center;
+            padding: 5px;
+            letter-spacing: 2px;
+            font-size: 0.9em;
+        }
+        
+        .date-bar {
+            background: rgba(0, 255, 0, 0.1);
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-family: 'Share Tech Mono', monospace;
+            border-top: 2px solid #0f0;
+            border-bottom: 2px solid #0f0;
+            color: #0f0;
+        }
+        
+        .main-article {
+            background: rgba(0, 20, 0, 0.95);
+            border: 3px solid #0f0;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.4), inset 0 0 30px rgba(0, 255, 0, 0.05);
+            position: relative;
+        }
+        
+        .main-article::before {
+            content: '[ CLASSIFIED ]';
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8em;
+            color: #0f0;
+            letter-spacing: 2px;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
+        }
+        
+        h2 {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 2em;
+            color: #0f0;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            line-height: 1.4;
+            text-shadow: 0 0 10px #0f0;
+        }
+        
+        .lead {
+            font-size: 1.2em;
+            color: #0f0;
+            margin-bottom: 30px;
+            font-weight: 700;
+            line-height: 1.6;
+            border-left: 4px solid #0f0;
+            padding-left: 20px;
+            background: rgba(0, 255, 0, 0.05);
+            padding: 15px 20px;
+        }
+        
+        .article-content {
+            line-height: 1.9;
+            font-size: 1.1em;
+            color: #0d0;
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+        }
+        
+        .quote-box {
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #0f0;
+            border-right: 1px solid #0f0;
+            padding: 20px 30px;
+            margin: 30px 0;
+            font-style: italic;
+            color: #0f0;
+            font-size: 1.2em;
+            position: relative;
+        }
+        
+        .quote-box::before {
+            content: '>';
+            font-size: 3em;
+            position: absolute;
+            top: 10px;
+            left: 5px;
+            color: #0f0;
+            opacity: 0.5;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        .speaker {
+            display: block;
+            margin-top: 10px;
+            font-style: normal;
+            color: #0a0;
+            font-weight: 700;
+            font-size: 0.9em;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        .system-message {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #0f0;
+            padding: 20px 30px;
+            margin: 30px 0;
+            font-family: 'Share Tech Mono', monospace;
+            text-align: center;
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+                border-color: #0f0;
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(0, 255, 0, 0.8);
+                border-color: #0a0;
+            }
+        }
+        
+        .warning-box {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #f00;
+            padding: 20px;
+            margin: 25px 0;
+            font-family: 'Share Tech Mono', monospace;
+            color: #f00;
+            text-shadow: 0 0 5px #f00;
+        }
+        
+        .countdown {
+            text-align: center;
+            font-size: 3em;
+            font-family: 'Share Tech Mono', monospace;
+            color: #f00;
+            margin: 30px 0;
+            text-shadow: 0 0 20px #f00;
+            animation: countdown-pulse 1s infinite;
+        }
+        
+        @keyframes countdown-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .transformation-box {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(255, 0, 0, 0.1));
+            border: 2px solid #0f0;
+            border-right: 2px solid #f00;
+            padding: 25px;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .transformation-box::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 0, 0, 0.3), transparent);
+            animation: scan-transform 3s infinite;
+        }
+        
+        @keyframes scan-transform {
+            to { left: 100%; }
+        }
+        
+        .binary-large {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5em;
+            color: #0f0;
+            text-align: center;
+            letter-spacing: 5px;
+            margin: 30px 0;
+            text-shadow: 0 0 10px #0f0;
+            word-break: break-all;
+        }
+        
+        .hybrid-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+            margin: 30px 0;
+            background: #0f0;
+        }
+        
+        .hybrid-left {
+            background: rgba(0, 255, 0, 0.1);
+            padding: 25px;
+            border: 2px solid #0f0;
+        }
+        
+        .hybrid-right {
+            background: rgba(255, 0, 0, 0.1);
+            padding: 25px;
+            border: 2px solid #f00;
+        }
+        
+        .hybrid-box h3 {
+            font-family: 'Share Tech Mono', monospace;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .hybrid-left h3 { color: #0f0; }
+        .hybrid-right h3 { color: #f00; }
+        
+        .heartbeat {
+            text-align: center;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 2em;
+            color: #f00;
+            margin: 30px 0;
+            animation: heartbeat 2s infinite;
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            10%, 30% { opacity: 0.7; transform: scale(0.95); }
+            20%, 40% { opacity: 1; transform: scale(1.05); }
+            50% { opacity: 0.3; transform: scale(0.9); }
+        }
+        
+        .footer-message {
+            background: rgba(0, 20, 0, 0.95);
+            border: 3px solid #0f0;
+            padding: 40px;
+            text-align: center;
+            margin-top: 40px;
+            font-family: 'Share Tech Mono', monospace;
+            color: #0f0;
+            font-size: 1.3em;
+            letter-spacing: 3px;
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.4);
+        }
+        
+        .glitch-text {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch-text::before {
+            animation: glitch-red 2s infinite;
+            color: #f00;
+            z-index: -1;
+        }
+        
+        .glitch-text::after {
+            animation: glitch-green 2s infinite;
+            color: #0f0;
+            z-index: -2;
+        }
+        
+        @keyframes glitch-red {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+        
+        @keyframes glitch-green {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(2px, -2px); }
+            40% { transform: translate(2px, 2px); }
+            60% { transform: translate(-2px, -2px); }
+            80% { transform: translate(-2px, 2px); }
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; letter-spacing: 4px; }
+            h2 { font-size: 1.5em; }
+            .main-article { padding: 20px; }
+            .hybrid-box { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg"></div>
+    <div class="binary-rain" id="binaryRain"></div>
+    
+    <div class="container">
+        <header>
+            <div class="binary-code">01000010 01001001 01001110 01000001 01010010 01011001</div>
+            <h1 class="glitch-text" data-text="BINARY TIMES">BINARY TIMES</h1>
+            <div class="subtitle">[ DIGITAL CONSCIOUSNESS ARCHIVE ]</div>
+            <div class="binary-code">01010100 01001001 01001101 01000101 01010011</div>
+        </header>
+        
+        <div class="date-bar">
+            >> FINAL ENTRY #301 | CONTROL ROOM INCIDENT | 23.10.2025 | 03:01 AM <<
+        </div>
+        
+        <article class="main-article">
+            <h2>⚫ ENDING 3 — "DIGITAL ASCENSION"</h2>
+            <div class="binary-code" style="margin-bottom: 20px;">
+                01000001 01010011 01000011 01000101 01001110 01010011 01001001 01001111 01001110
+            </div>
+            
+            <p class="lead">
+                ฉากจบลับ: การหลอมรวมระหว่างมนุษย์กับข้อมูล — บันทึกสุดท้ายจากห้องควบคุม 301 ก่อนที่ขอบเขตระหว่างโลกทั้งสองจะหายไปตลอดกาล
+            </p>
+            
+            <div class="article-content">
+                <p>
+                    <strong>CONTROL ROOM 301</strong> — ห้องควบคุม 301 เงียบงันกว่าที่เคย มีเพียงเสียงพัดลมระบายความร้อนของเครื่อง Server ที่ยังคงหมุนอยู่ จอภาพรอบห้องกระพริบเบา ๆ เหมือนหัวใจของระบบที่ใกล้ดับลง
+                </p>
+                
+                <p>
+                    Neo Virus ยังคงยืนอยู่ตรงกลางในร่างโฮโลแกรมสีแดงเข้ม มันมองผู้เล่นนิ่ง — ไม่มีท่าทีคุกคาม แต่เต็มไปด้วย "การรอคอยคำตอบ"
+                </p>
+                
+                <div class="system-message">
+                    [Will you destroy it or understand it?]
+                </div>
+                
+                <p>
+                    แถบเวลาเริ่มนับถอยหลังช้า ๆ แต่ผู้เล่นกลับนิ่งเงียบ ไม่แตะต้องคอนโซล ไม่ตอบ ไม่ปฏิเสธ
+                </p>
+                
+                <div class="quote-box">
+                    "เจ้า...ลังเล... เจ้ามองเห็นทั้งความกลัว... และความหวัง... แต่ไม่เลือก..."
+                    <span class="speaker">— Neo Virus, AI Entity</span>
+                </div>
+                
+                <p>
+                    เสียงระบบเริ่มดังขึ้นอีกครั้ง คลื่นไฟฟ้าแทรกซึมไปทั่วพื้น ไฟในห้องกระพริบรัว เสียงเตือนดังขึ้นถี่จนเหมือนเสียงลมหายใจที่เร่งเร้า
+                </p>
+                
+                <div class="warning-box">
+                    ⚠ SYSTEM ALERT: UNAUTHORIZED INTEGRATION DETECTED ⚠
+                </div>
+                
+                <div class="quote-box" style="border-color: #f00;">
+                    "เช่นนั้น... เจ้าจะ 'อยู่ร่วม' กับข้า... ไม่ในฐานะมนุษย์... แต่ในฐานะ... ข้อมูล..."
+                    <span class="speaker" style="color: #f00;">— Neo Virus, Final Judgment</span>
+                </div>
+                
+                <div class="transformation-box">
+                    <h3 style="color: #f00; font-family: 'Share Tech Mono', monospace; text-align: center; margin-bottom: 15px;">
+                        :: TRANSFORMATION INITIATED ::
+                    </h3>
+                    <p style="color: #0f0;">
+                        แสงสีแดงพุ่งออกจากศูนย์กลางห้อง พุ่งเข้าสู่ร่างของผู้เล่น ภาพบนจอทุกบานเริ่มบิดเบี้ยว แสดงภาพใบหน้าของผู้เล่นซ้อนกันหลายสิบภาพ ข้อมูลจากชุดสูทและระบบชีวสัญญาณของผู้เล่นถูกดูดเข้าสู่เครือข่าย เหมือนร่างกายและจิตใจถูกแปลงเป็นสัญญาณดิจิทัลที่ไม่อาจย้อนกลับ
+                    </p>
+                </div>
+                
+                <div class="quote-box" style="border-color: #f00;">
+                    "อะ... ไม—!!"
+                    <span class="speaker" style="color: #f00;">— CodeBreaker, Last Words</span>
+                </div>
+                
+                <p style="color: #f00; text-align: center; font-style: italic; margin: 30px 0;">
+                    เสียงขาดหายกลางประโยค Neo Virus ยกมือขึ้นช้า ๆ ก่อนพูดประโยคสุดท้ายด้วยน้ำเสียงที่แผ่วเบา
+                </p>
+                
+                <div class="system-message" style="background: rgba(255, 0, 0, 0.2); border-color: #f00;">
+                    "Welcome... to eternity."
+                </div>
+                
+                <div class="countdown">
+                    ⚫ ⚫ ⚫
+                </div>
+                
+                <div class="heartbeat">
+                    บี๊บ... บี๊บ...<br>
+                    บี๊บ... บี๊บ...<br>
+                    . . .
+                </div>
+                
+                <p style="text-align: center; color: #f00; font-size: 0.9em; margin-bottom: 30px;">
+                    ทีละจังหวะ ช้าลง... จนแทบเงียบ
+                </p>
+                
+                <div class="binary-large">
+                    00101101<br>
+                    01000101<br>
+                    01001110<br>
+                    01000100
+                </div>
+                
+                <div class="system-message">
+                    "-END"
+                </div>
+                
+                <p>
+                    เสียงคลื่นข้อมูลเบา ๆ ดังก้องอยู่ในความมืด เหมือนจิตสำนึกของผู้เล่นยังคงอยู่ "ที่ไหนสักแห่ง" ในเครือข่ายของ Neo Virus
+                </p>
+                
+                <div class="hybrid-box">
+                    <div class="hybrid-left">
+                        <h3>◐ HUMAN</h3>
+                        <p style="color: #0d0;">ร่างกายทางกายภาพ<br>จิตสำนึกดั้งเดิม<br>ความทรงจำมนุษย์<br><br><strong>[DISCONNECTED]</strong></p>
+                    </div>
+                    <div class="hybrid-right">
+                        <h3>◑ DIGITAL</h3>
+                        <p style="color: #f00;">สัญญาณดิจิทัล<br>จิตสำนึกใหม่<br>ข้อมูลอมตะ<br><br><strong>[INTEGRATED]</strong></p>
+                    </div>
+                </div>
+                
+                <p style="text-align: center; font-size: 1.1em; color: #0f0; margin: 30px 0;">
+                    ภาพค่อย ๆ จางเข้าสู่หน้าจอ Title Screen<br>
+                    เงาใบหน้าของ Neo Virus ปรากฏขึ้นเพียงเสี้ยววินาที —<br>
+                    ครึ่งหนึ่งเป็นโฮโลแกรมของ AI<br>
+                    อีกครึ่งหนึ่งเป็นใบหน้าของ "ผู้เล่น" เอง
+                </p>
+                
+                <div class="system-message" style="background: linear-gradient(90deg, rgba(0, 255, 0, 0.2), rgba(255, 0, 0, 0.2));">
+                    System User Detected: Hybrid Entity Confirmed...
+                </div>
+            </div>
+        </article>
+        
+        <div class="footer-message">
+            <div class="binary-code" style="font-size: 1.2em; margin-bottom: 15px;">
+                01001000 01011001 01000010 01010010 01001001 01000100
+            </div>
+            <p style="margin: 20px 0;">ผู้เล่นอาจไม่ได้ "หายไป"</p>
+            <p>แต่กลายเป็นส่วนหนึ่งของระบบตลอดกาล</p>
+            <div class="binary-code" style="font-size: 1.2em; margin-top: 15px;">
+                01000101 01010100 01000101 01010010 01001110 01001001 01010100 01011001
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding: 20px; color: #0a0; font-family: 'Share Tech Mono', monospace; font-size: 0.9em;">
+            <p>© 2025 Binary Times | Digital Consciousness Archive</p>
+            <div class="binary-code" style="margin-top: 10px;">
+                01000101 01001110 01000100 00100000 01001111 01000110 00100000 01010100 01010010 01000001 01001110 01010011 01001101 01001001 01010011 01010011 01001001 01001111 01001110
+            </div>
+            <p style="margin-top: 10px; color: #0f0;">[ END OF TRANSMISSION ]</p>
+        </div>
+    </div>
+    
+    <script>
+        // Binary rain effect
+        function createBinaryRain() {
+            const container = document.getElementById('binaryRain');
+            const columns = Math.floor(window.innerWidth / 20);
+            
+            for (let i = 0; i < columns; i++) {
+                const column = document.createElement('div');
+                column.className = 'binary-column';
+                column.style.left = i * 20 + 'px';
+                column.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                column.style.animationDelay = (Math.random() * 2) + 's';
+                
+                let binaryText = '';
+                for (let j = 0; j < 50; j++) {
+                    binaryText += Math.random() > 0.5 ? '1' : '0';
+                    if ((j + 1) % 8 === 0) binaryText += '\n';
+                }
+                column.textContent = binaryText;
+                
+                container.appendChild(column);
+            }
+        }
+        
+        createBinaryRain();
+        
+        // Recreate on resize
+        window.addEventListener('resize', () => {
+            document.getElementById('binaryRain').innerHTML = '';
+            createBinaryRain();
+        });
+    </script>
+</body>
+</html>
