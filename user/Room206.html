@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ห้อง 206 - Full Code Typing Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .game-area {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            min-height: 200px;
+        }
+        
+        .target-text {
+            font-size: 1.5em;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            color: #333;
+            word-wrap: break-word;
+        }
+        
+        .target-text span.correct {
+            color: #28a745;
+            background: #d4edda;
+        }
+        
+        .target-text span.incorrect {
+            color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .target-text span.current {
+            background: #fff3cd;
+            border-bottom: 3px solid #ffc107;
+        }
+        
+        .input-area {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.3em;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            outline: none;
+        }
+        
+        .input-area:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .input-area:disabled {
+            background: #e9ecef;
+            cursor: not-allowed;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .message {
+            text-align: center;
+            font-size: 1.3em;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .answer-reveal {
+            background: #d4edda;
+            border: 3px solid #28a745;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #155724;
+            animation: reveal 0.5s ease-out;
+        }
+        
+        @keyframes reveal {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .progress-bar {
+            background: #e9ecef;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #28a745, #20c997);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 ห้อง 206 - Full Code</h1>
+            <p>เกมฝึกพิมพ์ดีด 5 รอบ | พิมพ์ผิดเกิน 5 ครั้ง = แพ้</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">รอบ</div>
+                <div class="stat-value" id="round">1/5</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">เวลา (วินาที)</div>
+                <div class="stat-value" id="timer">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">ผิด</div>
+                <div class="stat-value" id="errors">0/5</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress" style="width: 0%"></div>
+        </div>
+        
+        <div id="messageBox"></div>
+        
+        <div class="game-area" id="gameArea">
+            <div class="target-text" id="targetText"></div>
+            <input type="text" class="input-area" id="inputArea" placeholder="เริ่มพิมพ์ที่นี่..." disabled>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="startBtn" onclick="startGame()">เริ่มเกม</button>
+            <button class="btn" id="restartBtn" onclick="restartRound()" style="display: none;">เริ่มรอบใหม่</button>
+        </div>
+    </div>
+
+    <script>
+        const sentences = {
+            1: [
+                "The quick brown fox jumps over the lazy dog",
+                "Hello world this is a simple typing test",
+                "Practice makes perfect in every single way",
+                "Learning to type faster takes some time",
+                "Keep calm and type on without any stress"
+            ],
+            2: [
+                "JavaScript is a powerful programming language used for web development",
+                "The early bird catches the worm but the second mouse gets the cheese",
+                "Success is not final and failure is not fatal courage to continue counts",
+                "Technology moves forward at an incredible pace changing our daily lives",
+                "Programming requires patience practice and persistence to master well"
+            ],
+            3: [
+                "Artificial intelligence and machine learning are revolutionizing the way we interact with technology in our modern world",
+                "The most successful people are those who never stop learning adapting and growing throughout their entire lifetime",
+                "Web development combines creativity technical skills and problem solving to build amazing experiences online",
+                "Cybersecurity has become increasingly important as our lives become more connected through digital platforms",
+                "Data science helps us extract meaningful insights from massive amounts of information to make better decisions"
+            ],
+            4: [
+                "In the digital age information technology has transformed every aspect of human civilization from communication to commerce creating unprecedented opportunities and challenges that require constant adaptation and innovation",
+                "Mastering the art of programming requires dedication discipline and determination combined with creative problem solving skills analytical thinking and the ability to learn continuously from mistakes and successes alike",
+                "The intersection of biology technology and engineering has given rise to revolutionary breakthroughs in healthcare biotechnology and medical research improving quality of life for millions around the globe",
+                "Cloud computing has fundamentally changed how organizations store process and analyze data enabling scalability flexibility and cost efficiency while introducing new security considerations"
+            ],
+            5: [
+                "The exponential growth of technology particularly in fields such as quantum computing blockchain cryptocurrency and artificial intelligence presents both extraordinary possibilities and complex ethical dilemmas that society must carefully navigate through thoughtful regulation international cooperation and responsible innovation",
+                "Throughout human history the greatest achievements have resulted from collaboration between diverse teams of individuals who bring unique perspectives experiences and expertise together to solve complex problems that no single person could tackle alone requiring effective communication trust and shared vision",
+                "Climate change represents one of the most significant challenges facing humanity requiring immediate coordinated global action combining technological innovation policy reform behavioral changes and sustainable practices to protect our planet for future generations"
+            ]
+        };
+        
+        let currentRound = 1;
+        let currentSentence = '';
+        let currentPosition = 0;
+        let errors = 0;
+        let timerInterval = null;
+        let startTime = 0;
+        let isGameActive = false;
+        
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.innerHTML = `<div class="message ${type}">${text}</div>`;
+            setTimeout(() => {
+                messageBox.innerHTML = '';
+            }, 3000);
+        }
+        
+        function updateStats() {
+            document.getElementById('round').textContent = `${currentRound}/5`;
+            document.getElementById('errors').textContent = `${errors}/5`;
+            const progress = ((currentRound - 1) / 5 * 100);
+            document.getElementById('progress').style.width = progress + '%';
+        }
+        
+        function selectRandomSentence(round) {
+            const options = sentences[round];
+            return options[Math.floor(Math.random() * options.length)];
+        }
+        
+        function displayTarget() {
+            const targetDiv = document.getElementById('targetText');
+            const chars = currentSentence.split('');
+            targetDiv.innerHTML = chars.map((char, index) => {
+                let className = '';
+                if (index < currentPosition) {
+                    className = 'correct';
+                } else if (index === currentPosition) {
+                    className = 'current';
+                }
+                return `<span class="${className}">${char}</span>`;
+            }).join('');
+        }
+        
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('timer').textContent = elapsed;
+            }, 1000);
+        }
+        
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+        
+        function startGame() {
+            currentRound = 1;
+            errors = 0;
+            startRound();
+        }
+        
+        function startRound() {
+            currentSentence = selectRandomSentence(currentRound);
+            currentPosition = 0;
+            isGameActive = true;
+            
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('restartBtn').style.display = 'none';
+            
+            const inputArea = document.getElementById('inputArea');
+            inputArea.value = '';
+            inputArea.disabled = false;
+            inputArea.focus();
+            
+            displayTarget();
+            updateStats();
+            startTimer();
+            
+            showMessage(`รอบที่ ${currentRound} เริ่มแล้ว! พิมพ์ให้ถูกต้อง`, 'info');
+        }
+        
+        function restartRound() {
+            errors = 0;
+            startRound();
+        }
+        
+        function gameOver() {
+            isGameActive = false;
+            stopTimer();
+            document.getElementById('inputArea').disabled = true;
+            document.getElementById('restartBtn').style.display = 'inline-block';
+            showMessage('❌ แพ้! พิมพ์ผิดเกิน 5 ครั้ง กดเริ่มรอบใหม่', 'error');
+        }
+        
+        function nextRound() {
+            currentRound++;
+            if (currentRound <= 5) {
+                stopTimer();
+                setTimeout(() => {
+                    errors = 0;
+                    startRound();
+                }, 1500);
+            } else {
+                completeGame();
+            }
+        }
+        
+        function completeGame() {
+            isGameActive = false;
+            stopTimer();
+            document.getElementById('inputArea').disabled = true;
+            document.getElementById('gameArea').innerHTML = '<div class="answer-reveal">🎉 ผ่านทั้ง 5 รอบ!<br><br>คำตอบ = K</div>';
+            document.getElementById('startBtn').style.display = 'inline-block';
+            document.getElementById('startBtn').textContent = 'เล่นใหม่';
+        }
+        
+        document.getElementById('inputArea').addEventListener('input', function(e) {
+            if (!isGameActive) return;
+            
+            const input = e.target.value;
+            const expectedChar = currentSentence[currentPosition];
+            const inputChar = input[input.length - 1];
+            
+            if (inputChar === expectedChar) {
+                currentPosition++;
+                displayTarget();
+                
+                if (currentPosition === currentSentence.length) {
+                    showMessage(`✅ รอบที่ ${currentRound} สำเร็จ!`, 'success');
+                    e.target.disabled = true;
+                    nextRound();
+                }
+            } else {
+                errors++;
+                updateStats();
+                e.target.value = input.slice(0, -1);
+                
+                const targetDiv = document.getElementById('targetText');
+                const chars = targetDiv.children;
+                if (chars[currentPosition]) {
+                    chars[currentPosition].classList.add('incorrect');
+                    setTimeout(() => {
+                        chars[currentPosition].classList.remove('incorrect');
+                    }, 300);
+                }
+                
+                if (errors > 5) {
+                    gameOver();
+                }
+            }
+        });
+        
+        document.getElementById('inputArea').addEventListener('paste', function(e) {
+            e.preventDefault();
+            showMessage('⚠️ ห้ามวาง (Paste)!', 'error');
+        });
+        
+        updateStats();
+    </script>
+</body>
+</html>
