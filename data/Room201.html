@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ห้อง 207 – Hint Station</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Desktop Background */
+        .desktop {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><rect fill="%23667eea" width="1920" height="1080"/><circle cx="960" cy="540" r="400" fill="%23764ba2" opacity="0.3"/></svg>');
+            background-size: cover;
+        }
+
+        /* Taskbar Windows 11 */
+        .taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: rgba(243, 243, 243, 0.7);
+            backdrop-filter: blur(30px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .start-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #0078d4, #00bcf2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .start-icon:hover {
+            transform: scale(1.1);
+        }
+
+        /* Desktop Icons */
+        .desktop-icon {
+            position: absolute;
+            width: 90px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .desktop-icon:hover {
+            transform: translateY(-3px);
+        }
+
+        .icon-image {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 5px;
+            background: linear-gradient(145deg, #ffd89b, #19547b);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+            50% { box-shadow: 0 4px 25px rgba(255, 215, 0, 0.5); }
+        }
+
+        .icon-label {
+            color: white;
+            font-size: 12px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .folder-icon {
+            top: 50px;
+            left: 50px;
+        }
+
+        /* File Explorer Window */
+        .window {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 550px;
+            background: #f3f3f3;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .window.active {
+            display: flex;
+        }
+
+        /* Title Bar */
+        .title-bar {
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+
+        .title-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .control-btn {
+            width: 46px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .control-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .close-btn:hover {
+            background: #e81123;
+            color: white;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            height: 40px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .address-bar {
+            flex: 1;
+            padding: 6px 12px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: white;
+        }
+
+        /* File List */
+        .file-list {
+            display: none;
+        }
+
+        .file-list.active {
+            display: block;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .file-item:hover {
+            background: #f0f0f0;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: linear-gradient(145deg, #e6e6e6, #ffffff);
+            border-radius: 8px;
+        }
+
+        .file-name {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* File Content View */
+        .file-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .file-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .file-header {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .file-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .file-subtitle {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .file-body {
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .file-body h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin: 20px 0 10px 0;
+        }
+
+        .file-body p {
+            margin: 10px 0;
+        }
+
+        .warning-text {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-style: italic;
+            color: #856404;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .cipher-visual {
+            background: #f9f9f9;
+            border: 2px solid #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: background 0.2s;
+        }
+
+        .back-button:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop">
+        <!-- Desktop Icon -->
+        <div class="desktop-icon folder-icon" onclick="openWindow()">
+            <div class="icon-image">📁</div>
+            <div class="icon-label">Clue</div>
+        </div>
+
+        <!-- File Explorer Window -->
+        <div class="window" id="explorerWindow">
+            <!-- Title Bar -->
+            <div class="title-bar">
+                <div class="title-text">
+                    <span>📁</span>
+                    <span id="windowTitle">Clue</span>
+                </div>
+                <div class="window-controls">
+                    <div class="control-btn">─</div>
+                    <div class="control-btn">□</div>
+                    <div class="control-btn close-btn" onclick="closeWindow()">✕</div>
+                </div>
+            </div>
+
+            <!-- Navigation Bar -->
+            <div class="nav-bar">
+                <div class="nav-btn" onclick="goBack()">◄</div>
+                <div class="nav-btn" onclick="goForward()">►</div>
+                <input class="address-bar" id="addressBar" value="C:\Desktop\Clue" readonly>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- File List -->
+                <div class="file-list active" id="fileList">
+                    <div class="file-item" onclick="openFile('index')">
+                        <div class="file-icon">📄</div>
+                        <div class="file-name">00_INDEX.txt</div>
+                    </div>
+                    <div class="file-item" onclick="openFile('pigpen')">
+                        <div class="file-icon">🔐</div>
+                        <div class="file-name">pigpen_mirror_key.txt</div>
+                    </div>
+                    <div class="file-item" onclick="openFile('network')">
+                        <div class="file-icon">📡</div>
+                        <div class="file-name">network_correlation_guide.txt</div>
+                    </div>
+                    <div class="file-item" onclick="openFile('logic')">
+                        <div class="file-icon">⚙️</div>
+                        <div class="file-name">logic_truth_table.txt</div>
+                    </div>
+                    <div class="file-item" onclick="openFile('webdev')">
+                        <div class="file-icon">🌐</div>
+                        <div class="file-name">webdev_visibility_note.txt</div>
+                    </div>
+                </div>
+
+                <!-- File Contents -->
+                <div class="file-content" id="content-index">
+                    <div class="back-button" onclick="backToList()">◄ กลับ</div>
+                    <div class="file-header">
+                        <div class="file-title">📄 00_INDEX.txt</div>
+                        <div class="file-subtitle">ไฟล์ดัชนี — ศูนย์รวมคำใบ้</div>
+                    </div>
+                    <div class="file-body">
+                        <h2>🗂️ โครงสร้างไฟล์ใน Clue/</h2>
+                        <p>ภายในโฟลเดอร์นี้ประกอบด้วยไฟล์สำคัญ 5 ไฟล์:</p>
+                        <ul style="list-style: none; padding-left: 20px;">
+                            <li>📄 00_INDEX.txt</li>
+                            <li>🔐 pigpen_mirror_key.txt</li>
+                            <li>📡 network_correlation_guide.txt</li>
+                            <li>⚙️ logic_truth_table.txt</li>
+                            <li>🌐 webdev_visibility_note.txt</li>
+                        </ul>
+
+                        <div class="warning-text">
+                            ⚠️ ใช้ไฟล์เหล่านี้เพื่อทบทวน...<br>
+                            <strong>อย่ามองหาคำตอบตรง ๆ</strong><br>
+                            เพราะความจริงอยู่ใน <strong>การเชื่อมโยงระหว่างบรรทัด</strong>
+                        </div>
+
+                        <h2>🎯 แนวทางการใช้งาน</h2>
+                        <p>• ไฟล์แต่ละไฟล์เป็นเพียง "หลักการ" ไม่ใช่คำตอบโดยตรง</p>
+                        <p>• ความจริงอยู่ใน "การเชื่อมโยง" ระหว่างข้อมูล</p>
+                        <p>• บางครั้งสิ่งที่มองไม่เห็น สำคัญกว่าสิ่งที่มองเห็น</p>
+                        <p>• จงใช้ตรรกะและความเข้าใจในการวิเคราะห์</p>
+                    </div>
+                </div>
+
+                <div class="file-content" id="content-pigpen">
+                    <div class="back-button" onclick="backToList()">◄ กลับ</div>
+                    <div class="file-header">
+                        <div class="file-title">🔐 pigpen_mirror_key.txt</div>
+                        <div class="file-subtitle">Pigpen Cipher — การเข้ารหัสแบบกรงนกพิราบ</div>
+                    </div>
+                    <div class="file-body">
+                        <h2>🔤 Pigpen Cipher คืออะไร?</h2>
+                        <p>เป็นระบบเข้ารหัสทดแทนตัวอักษร (Substitution Cipher) โดยใช้สัญลักษณ์รูปทรงเรขาคณิตแทนตัวอักษร A-Z</p>
+
+                        <div class="cipher-visual">
+                            <p style="font-size: 18px; margin-bottom: 10px;"><strong>🔑 Pigpen Cipher Grid</strong></p>
+                            <pre style="font-family: monospace; font-size: 14px; line-height: 1.5;">
+    A B C │ J K L       N O P │ W X Y
+    D E F │ M         Q R S │ Z
+    G H I │           T U V │
+                            </pre>
+                            <p style="margin-top: 15px; color: #666;">ใช้กรอบรูปทรงต่างๆ แทนตัวอักษร</p>
+                        </div>
+
+                        <div class="warning-text">
+                            💭 "สิ่งที่เจ้ามองเห็นตรงหน้า อาจไม่ใช่สิ่งที่มันเป็น...<br>
+                            บางครั้ง คำตอบต้องมอง <strong>'ผ่านกระจก'</strong> จึงจะเห็นความจริง"
+                        </div>
+
+                        <h2>🪞 Mirror Reading</h2>
+                        <p>• บางครั้งสัญลักษณ์ต้อง "สะท้อนกลับ" (Mirror/Reverse) ก่อนถอดรหัส</p>
+                        <p>• การอ่านจากซ้ายไปขวา อาจให้ผลต่างจากขวาไปซ้าย</p>
+                        <p>• ลองพลิกข้อความ หรือมองผ่านกระจก</p>
+                    </div>
+                </div>
+
+                <div class="file-content" id="content-network">
+                    <div class="back-button" onclick="backToList()">◄ กลับ</div>
+                    <div class="file-header">
+                        <div class="file-title">📡 network_correlation_guide.txt</div>
+                        <div class="file-subtitle">คู่มือการวิเคราะห์สหสัมพันธ์สัญญาณเครือข่าย</div>
+                    </div>
+                    <div class="file-body">
+                        <h2>📊 การจับคู่รูปแบบกับช่วงสัญญาณ</h2>
+                        <p>เทคนิคการวิเคราะห์สัญญาณในระบบเครือข่าย ที่ไม่ได้มองแค่ข้อมูล แต่มองที่ "โครงสร้าง" และ "ช่วงเวลา"</p>
+
+                        <div class="warning-text">
+                            🔇 "ข้อมูลไม่ได้อยู่ในเสียง... แต่อยู่ใน<strong>ช่วงที่เงียบ</strong>"
+                        </div>
+
+                        <h2>🎯 หลักการสำคัญ</h2>
+                        <p><strong>1. Silent Intervals Matter</strong></p>
+                        <p style="padding-left: 20px;">ช่วงว่าง หรือช่วงที่ไม่มีสัญญาณ มักเป็นตัวแบ่งข้อมูลที่สำคัญ</p>
+
+                        <p><strong>2. Pattern Grouping</strong></p>
+                        <p style="padding-left: 20px;">สัญญาณมักถูกจัดกลุ่ม ดูช่วงห่างระหว่างกลุ่มเป็นตัวบอกโครงสร้าง</p>
+
+                        <div class="warning-text">
+                            4️⃣ "กลุ่มสัญญาณ <strong>4 กลุ่ม</strong> — คือ <strong>4 หลักของความจริง</strong>"
+                        </div>
+
+                        <h2>💡 แนวทางการวิเคราะห์</h2>
+                        <p>• มองหาช่วงเงียบที่แบ่กลุ่มสัญญาณ</p>
+                        <p>• นับจำนวนกลุ่ม และจำนวนสัญญาณในแต่ละกลุ่ม</p>
+                        <p>• หากมี 4 กลุ่ม = 4 หลัก (เช่น รหัส PIN, เลขประจำตัว)</p>
+                        <p>• ความถี่ของสัญญาณอาจบ่งบอกค่าตัวเลข</p>
+                    </div>
+                </div>
+
+                <div class="file-content" id="content-logic">
+                    <div class="back-button" onclick="backToList()">◄ กลับ</div>
+                    <div class="file-header">
+                        <div class="file-title">⚙️ logic_truth_table.txt</div>
+                        <div class="file-subtitle">ตารางความจริงทางตรรกศาสตร์</div>
+                    </div>
+                    <div class="file-body">
+                        <h2>🔢 Boolean Logic Gates</h2>
+                        <p>หลักการพื้นฐานของตรรกะดิจิทัล ที่ใช้ในระบบคอมพิวเตอร์ทุกระบบ</p>
+
+                        <h2>📋 Truth Tables</h2>
+                        
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <p><strong>AND Gate (และ)</strong></p>
+                            <pre style="font-family: monospace;">
+A  B  |  Output
+0  0  |    0
+0  1  |    0
+1  0  |    0
+1  1  |    1    ← เป็นจริงเฉพาะเมื่อทั้งคู่เป็น 1
+                            </pre>
+                        </div>
+
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <p><strong>OR Gate (หรือ)</strong></p>
+                            <pre style="font-family: monospace;">
+A  B  |  Output
+0  0  |    0
+0  1  |    1
+1  0  |    1
+1  1  |    1    ← เป็นจริงเมื่ออย่างน้อย 1 ตัวเป็น 1
+                            </pre>
+                        </div>
+
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <p><strong>XOR Gate (Exclusive OR)</strong></p>
+                            <pre style="font-family: monospace;">
+A  B  |  Output
+0  0  |    0
+0  1  |    1
+1  0  |    1
+1  1  |    0    ← เป็นจริงเฉพาะเมื่อต่างกัน
+                            </pre>
+                        </div>
+
+                        <div class="warning-text">
+                            💭 <em>"ตรรกะคือหัวใจของทุกระบบ<br>
+                            แต่<strong>ความเข้าใจ</strong>คือสิ่งที่ทำให้มันมีชีวิต"</em><br>
+                            — ศ.ดร.สิริ
+                        </div>
+
+                        <h2>💡 การประยุกต์ใช้</h2>
+                        <p>• ใช้วิเคราะห์เงื่อนไขที่ซับซ้อน</p>
+                        <p>• เข้าใจความสัมพันธ์ระหว่างข้อมูลหลายชิ้น</p>
+                        <p>• สร้างกฎเกณฑ์ในการตัดสินใจ</p>
+                        <p>• ถอดรหัสข้อมูลที่เข้ารหัสแบบ Binary</p>
+                    </div>
+                </div>
+
+                <div class="file-content" id="content-webdev">
+                    <div class="back-button" onclick="backToList()">◄ กลับ</div>
+                    <div class="file-header">
+                        <div class="file-title">🌐 webdev_visibility_note.txt</div>
+                        <div class="file-subtitle">บันทึกเกี่ยวกับการมองเห็นในโค้ด Web</div>
+                    </div>
+                    <div class="file-body">
+                        <h2>👁️ Visibility in Code</h2>
+                        <p>ในโลกของ Web Development ไม่ใช่ทุกอย่างที่แสดงบนหน้าจอจะเป็น "ทั้งหมด" ของเว็บไซต์</p>
+
+                        <div class="code-block">
+&lt;!-- Visibility begins in code --&gt;
+&lt;!-- Inspect what you cannot see --&gt;
+&lt;!-- Data hides behind design --&gt;
+                        </div>
+
+                        <h2>🔍 Inspect Element</h2>
+                        <p>เครื่องมือสำคัญของนักพัฒนาเว็บ ที่ช่วยให้เห็น "สิ่งที่ซ่อนอยู่" เบื้องหลังการออกแบบ</p>
+
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107;">
+                            <p><strong>💡 วิธีการ Inspect Element:</strong></p>
+                            <p>• คลิกขวาบนหน้าเว็บ → เลือก "Inspect" หรือ "ตรวจสอบองค์ประกอบ"</p>
+                            <p>• กด F12 บน Windows/Linux หรือ Cmd+Option+I บน Mac</p>
+                            <p>• คลิกขวาบนองค์ประกอบ → "Inspect Element"</p>
+                        </div>
+
+                        <h2>🕵️ Hidden Data</h2>
+                        <p><strong>สิ่งที่อาจซ่อนอยู่ในโค้ด HTML:</strong></p>
+                        <ul style="padding-left: 30px; line-height: 2;">
+                            <li><strong>HTML Comments</strong> - ข้อความใน &lt;!-- ... --&gt;</li>
+                            <li><strong>Hidden Attributes</strong> - data-*, id, class ที่มีข้อมูลพิเศษ</li>
+                            <li><strong>CSS Display Properties</strong> - display: none, visibility: hidden</li>
+                            <li><strong>JavaScript Variables</strong> - ค่าที่ถูกเก็บไว้ในโค้ด</li>
+                            <li><strong>Metadata</strong> - &lt;meta&gt; tags ในส่วนหัว</li>
+                        </ul>
+
+                        <div class="warning-text">
+                            🎯 <strong>จงจำไว้:</strong><br>
+                            "ข้อมูลซ่อนอยู่เบื้องหลังการออกแบบ"<br>
+                            บางครั้งคำตอบไม่ได้อยู่ในสิ่งที่เห็น แต่อยู่ในสิ่งที่<strong>มองไม่เห็น</strong>
+                        </div>
+
+                        <h2>🛠️ เครื่องมือเพิ่มเติม</h2>
+                        <p>• <strong>View Page Source</strong> (Ctrl+U) - ดูโค้ด HTML ทั้งหมด</p>
+                        <p>• <strong>Console Tab</strong> - ตรวจสอบ JavaScript และ log</p>
+                        <p>• <strong>Network Tab</strong> - ดูการส่งข้อมูลระหว่าง client-server</p>
+                        <p>• <strong>Application Tab</strong> - ดู cookies, storage, database</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Taskbar -->
+        <div class="taskbar">
+            <div class="start-icon">⊞</div>
+        </div>
+    </div>
+
+    <script>
+        let currentView = 'list';
+        let history = ['list'];
+        let historyIndex = 0;
+
+        function openWindow() {
+            document.getElementById('explorerWindow').classList.add('active');
+        }
+
+        function closeWindow() {
+            document.getElementById('explorerWindow').classList.remove('active');
+        }
+
+        function openFile(fileId) {
+            // Hide file list
+            document.getElementById('fileList').classList.remove('active');
+            
+            // Hide all file contents
+            const allContents = document.querySelectorAll('.file-content');
+            allContents.forEach(content => content.classList.remove('active'));
+            
+            // Show selected file content
+            document.getElementById('content-' + fileId).classList.add('active');
+            
+            // Update address bar and window title
+            const fileNames = {
+                'index': '00_INDEX.txt',
+                'pigpen': 'pigpen_mirror_key.txt',
+                'network': 'network_correlation_guide.txt',
+                'logic': 'logic_truth_table.txt',
+                'webdev': 'webdev_visibility_note.txt'
+            };
+            
+            document.getElementById('addressBar').value = 'C:\\Desktop\\Clue\\' + fileNames[fileId];
+            document.getElementById('windowTitle').textContent = fileNames[fileId];
+            
+            currentView = fileId;
+            history.push(fileId);
+            historyIndex = history.length - 1;
+        }
+
+        function backToList() {
+            // Hide all file contents
+            const allContents = document.querySelectorAll('.file-content');
+            allContents.forEach(content => content.classList.remove('active'));
+            
+            // Show file list
+            document.getElementById('fileList').classList.add('active');
+            
+            // Reset address bar and title
+            document.getElementById('addressBar').value = 'C:\\Desktop\\Clue';
+            document.getElementById('windowTitle').textContent = 'Clue';
+            
+            currentView = 'list';
+            history.push('list');
+            historyIndex = history.length - 1;
+        }
+
+        function goBack() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                const previousView = history[historyIndex];
+                
+                if (previousView === 'list') {
+                    backToList();
+                } else {
+                    openFile(previousView);
+                }
+            }
+        }
+
+        function goForward() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                const nextView = history[historyIndex];
+                
+                if (nextView === 'list') {
+                    backToList();
+                } else {
+                    openFile(nextView);
+                }
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Escape to close window
+            if (e.key === 'Escape') {
+                closeWindow();
+            }
+            
+            // Alt + Left Arrow to go back
+            if (e.altKey && e.key === 'ArrowLeft') {
+                e.preventDefault();
+                goBack();
+            }
+            
+            // Alt + Right Arrow to go forward
+            if (e.altKey && e.key === 'ArrowRight') {
+                e.preventDefault();
+                goForward();
+            }
+        });
+
+        // Double click on desktop to open
+        document.querySelector('.folder-icon').addEventListener('dblclick', function() {
+            openWindow();
+        });
+    </script>
