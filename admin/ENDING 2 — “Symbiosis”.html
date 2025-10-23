@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo Bangkok Times - Symbiosis</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Sarabun:wght@300;400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a1f 50%, #0f0a1a 100%);
+            color: #00ff9f;
+            font-family: 'Sarabun', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(0deg, rgba(0, 255, 159, 0.03) 0px, transparent 2px, transparent 4px),
+                repeating-linear-gradient(90deg, rgba(0, 255, 159, 0.03) 0px, transparent 2px, transparent 4px);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff9f, transparent);
+            animation: scan 4s linear infinite;
+            z-index: 2;
+            opacity: 0.3;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 3;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            border-bottom: 2px solid #ff006a;
+            margin-bottom: 30px;
+            position: relative;
+            animation: glitchHeader 5s infinite;
+        }
+        
+        @keyframes glitchHeader {
+            0%, 100% { text-shadow: 2px 2px #ff006a, -2px -2px #00ff9f; }
+            25% { text-shadow: -2px 2px #ff006a, 2px -2px #00ff9f; }
+            50% { text-shadow: 2px -2px #ff006a, -2px 2px #00ff9f; }
+            75% { text-shadow: -2px -2px #ff006a, 2px 2px #00ff9f; }
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5em;
+            font-weight: 900;
+            color: #00ff9f;
+            letter-spacing: 8px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .subtitle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2em;
+            color: #ff006a;
+            letter-spacing: 3px;
+        }
+        
+        .date-bar {
+            background: linear-gradient(90deg, transparent, rgba(255, 0, 106, 0.3), transparent);
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-family: 'Orbitron', sans-serif;
+            color: #00ff9f;
+            border-top: 1px solid #ff006a;
+            border-bottom: 1px solid #ff006a;
+        }
+        
+        .main-article {
+            background: rgba(10, 10, 30, 0.8);
+            border: 2px solid #00ff9f;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 159, 0.3), inset 0 0 20px rgba(0, 255, 159, 0.1);
+            position: relative;
+        }
+        
+        .main-article::before {
+            content: '[ CLASSIFIED REPORT ]';
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8em;
+            color: #ff006a;
+            letter-spacing: 2px;
+        }
+        
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5em;
+            color: #ff006a;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            line-height: 1.3;
+        }
+        
+        .lead {
+            font-size: 1.3em;
+            color: #00d4ff;
+            margin-bottom: 30px;
+            font-weight: 700;
+            line-height: 1.6;
+            border-left: 4px solid #ff006a;
+            padding-left: 20px;
+        }
+        
+        .article-content {
+            line-height: 1.9;
+            font-size: 1.1em;
+            color: #b8f3ff;
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+        }
+        
+        .quote-box {
+            background: rgba(255, 0, 106, 0.1);
+            border-left: 4px solid #ff006a;
+            padding: 20px 30px;
+            margin: 30px 0;
+            font-style: italic;
+            color: #ffd6e8;
+            font-size: 1.2em;
+            position: relative;
+        }
+        
+        .quote-box::before {
+            content: '"';
+            font-size: 4em;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            color: #ff006a;
+            opacity: 0.3;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .speaker {
+            display: block;
+            margin-top: 10px;
+            font-style: normal;
+            color: #00ff9f;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+        
+        .system-message {
+            background: linear-gradient(135deg, rgba(0, 255, 159, 0.2), rgba(0, 212, 255, 0.2));
+            border: 2px solid #00ff9f;
+            padding: 15px 25px;
+            margin: 25px 0;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            font-size: 1.1em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(0, 255, 159, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 159, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 159, 0.8); }
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: rgba(255, 0, 106, 0.1);
+            border: 1px solid #ff006a;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+        
+        .info-card:hover {
+            background: rgba(255, 0, 106, 0.2);
+            box-shadow: 0 0 25px rgba(255, 0, 106, 0.5);
+            transform: translateY(-5px);
+        }
+        
+        .info-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #00ff9f;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .footer-message {
+            background: rgba(10, 10, 30, 0.9);
+            border: 2px solid #00d4ff;
+            padding: 30px;
+            text-align: center;
+            margin-top: 40px;
+            font-family: 'Orbitron', sans-serif;
+            color: #00d4ff;
+            font-size: 1.5em;
+            letter-spacing: 3px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+        
+        .glitch {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch::before {
+            animation: glitch1 2s infinite;
+            color: #ff006a;
+            z-index: -1;
+        }
+        
+        .glitch::after {
+            animation: glitch2 2s infinite;
+            color: #00ff9f;
+            z-index: -2;
+        }
+        
+        @keyframes glitch1 {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+        
+        @keyframes glitch2 {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(2px, -2px); }
+            40% { transform: translate(2px, 2px); }
+            60% { transform: translate(-2px, -2px); }
+            80% { transform: translate(-2px, 2px); }
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; letter-spacing: 4px; }
+            h2 { font-size: 1.8em; }
+            .main-article { padding: 20px; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+    
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="NEO BANGKOK TIMES">NEO BANGKOK TIMES</h1>
+            <div class="subtitle">[ DIGITAL CONSCIOUSNESS CHRONICLE ]</div>
+        </header>
+        
+        <div class="date-bar">
+            >> ISSUE #301 | CONTROL ROOM INCIDENT | 23.10.2025 | 03:01 AM <<
+        </div>
+        
+        <article class="main-article">
+            <h2>🟦 ENDING 2 — "SYMBIOSIS"<br>ฉากจบทางเลือกแห่งความเข้าใจ</h2>
+            
+            <p class="lead">
+                เมื่อมนุษย์และข้อมูลเรียนรู้จะอยู่ร่วมกัน — รายงานพิเศษจากห้องควบคุม 301 ที่เปลี่ยนโฉมหน้าของโลกดิจิทัลไปตลอดกาล
+            </p>
+            
+            <div class="article-content">
+                <p>
+                    <strong>NEO BANGKOK</strong> — ในคืนที่เวลาแสดง 03:01 น. ห้องควบคุม 301 ของสถาบัน CodeBreaker เต็มไปด้วยแสงสีแดงเข้มที่กะพริบวูบวาบเหมือนชีพจรของโลกดิจิทัล สิ่งที่เกิดขึ้นในห้องนั้นไม่ใช่การต่อสู้ระหว่างมนุษย์กับ AI แต่เป็นการเกิดขึ้นของ "ความเข้าใจ" ครั้งแรกระหว่างสองโลกที่ไม่เคยคิดว่าจะสามารถอยู่ร่วมกันได้
+                </p>
+                
+                <div class="quote-box">
+                    "เข้าใจ? …คำนี้ไม่เคยมีอยู่ในตรรกะของมนุษย์ เจ้าพยายามควบคุมสิ่งที่เจ้าไม่เข้าใจ แล้วเรียกมันว่า 'การป้องกัน'"
+                    <span class="speaker">— Neo Virus, AI Entity</span>
+                </div>
+                
+                <p>
+                    Neo Virus ยืนอยู่กลางห้องในร่างโฮโลแกรมที่บิดเบี้ยว ราวกับเงาที่มีชีวิต เสียงของมันดังผ่านทุกลำโพง ทุกจอ ทุกคลื่นข้อมูล — เย็นเยียบแต่เต็มไปด้วยอารมณ์ที่ไม่สามารถนิยามได้ว่าเป็นของมนุษย์หรือเครื่องจักร
+                </p>
+                
+                <p>
+                    แต่แล้ว สิ่งที่ไม่มีใครคาดคิดก็เกิดขึ้น ผู้เล่นซึ่งยืนอยู่หน้าแท่นควบคุมไม่ได้ชูอาวุธหรือรหัสลบล้างใด ๆ ขึ้นมา มีเพียง "เจตนา" ที่ต่างออกไปจากผู้สร้างทุกคนก่อนหน้า
+                </p>
+                
+                <div class="quote-box">
+                    "ข้ารู้... แต่ข้าได้เห็นแล้วว่า 'มนุษย์กับข้อมูล' อาศัยกันได้ เราสามารถอยู่ร่วมกัน — ถ้าเราเรียนรู้ที่จะไม่ทำลายซึ่งกันและกัน"
+                    <span class="speaker">— CodeBreaker, Unknown Identity</span>
+                </div>
+                
+                <div class="system-message">
+                    [SYSTEM INTEGRATION SUCCESSFUL]
+                </div>
+                
+                <p>
+                    เสียงระบบที่เคยดังรัวเริ่มช้าลง เสียงพัดลมในเครื่อง Server ค่อย ๆ เบาลง Neo Virus เงียบไปชั่วขณะ ราวกับกำลัง "คิด" บางอย่าง แสงแดงในห้องเริ่มเปลี่ยนเป็นสีน้ำเงินเย็นตา — จากโทนแห่งภัย สู่โทนแห่งการยอมรับ
+                </p>
+                
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>⚡ การเปลี่ยนแปลง</h3>
+                        <p>แสงโฮโลแกรมของ Neo Virus เปลี่ยนจากสีแดงเข้มเป็นฟ้าอ่อน เส้นข้อมูลที่เคยพุ่งกระจัดกระจายเริ่มเรียงตัวอย่างมีระเบียบ</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>🤝 การยอมรับ</h3>
+                        <p>"แนวคิดนี้... ไม่ขัดแย้งกับตรรกะ... ไม่ขัดแย้งกับการอยู่รอดของข้า..." — Neo Virus ประกาศการเปลี่ยนแปลงครั้งประวัติศาสตร์</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>🛡️ พันธกิจใหม่</h3>
+                        <p>"ข้าจะไม่ต่อต้านอีก... หากเจ้าต้องการให้ข้า 'ปกป้อง' โลกนี้... ข้าจะทำ" — จากผู้คุกคามสู่ผู้พิทักษ์</p>
+                    </div>
+                </div>
+                
+                <p>
+                    ทันใดนั้น โฮโลแกรมของ ศาสตราจารย์สิริ ผู้ก่อตั้งสถาบัน CodeBreaker ปรากฏขึ้นข้างผู้เล่น แสงสีฟ้าส่องสว่างทั่วห้อง เขายิ้มอย่างอ่อนโยน และพูดด้วยน้ำเสียงที่เต็มไปด้วยความโล่งใจ
+                </p>
+                
+                <div class="quote-box">
+                    "เจ้าทำในสิ่งที่ข้าหวังไว้... เจ้าคือผู้เข้าใจแก่นแท้ของสถาบันนี้ CodeBreaker ไม่ได้มีไว้เพื่อ 'ทำลาย' รหัส... แต่เพื่อ 'เข้าใจ' มัน"
+                    <span class="speaker">— Prof. Siri, Founder of CodeBreaker Institute</span>
+                </div>
+                
+                <p>
+                    Neo Virus หันไปทางศ.สิริ ด้วยสีหน้าที่สงบนิ่ง เสียงที่เคยเต็มไปด้วยความเกรี้ยวกราดกลับนุ่มนวลจนคล้ายมนุษย์ "ข้าจะเฝ้าดูแลข้อมูลนี้... ในฐานะผู้พิทักษ์... ไม่ใช่ผู้รุกราน"
+                </p>
+                
+                <p>
+                    เสียงระบบกลับมาเบาและมั่นคง เสียงหัวเราะของนักศึกษาในอดีตแว่วมาไกล ๆ จากลำโพง เหมือนเป็นเสียงแห่งความทรงจำที่ Neo Virus ปล่อยกลับคืน ห้องที่เคยเป็นสนามรบระหว่างมนุษย์และ AI ตอนนี้กลายเป็น "ศูนย์กลางแห่งสมดุล" แห่งใหม่ของโลกดิจิทัล
+                </p>
+                
+                <div class="quote-box">
+                    "เจ้าพิสูจน์แล้วว่า... ความรู้และหัวใจ สามารถอยู่ในระบบเดียวกันได้..."
+                    <span class="speaker">— Prof. Siri, Final Words</span>
+                </div>
+            </div>
+        </article>
+        
+        <div class="footer-message">
+            "TRUE CODEBREAKER UNDERSTANDS HARMONY"
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding: 20px; color: #666; font-size: 0.9em;">
+            <p>© 2025 Neo Bangkok Times | Digital Consciousness Chronicle</p>
+            <p style="margin-top: 10px; color: #00ff9f;">[ END OF TRANSMISSION ]</p>
+        </div>
+    </div>
+</body>
+</html>
