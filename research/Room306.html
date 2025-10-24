@@ -1,785 +1,588 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Room 306 — SQL Injection Forensics Challenge</title>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    :root{
-      --bg-a:#0f172a;          /* slate-900 */
-      --bg-b:#0b1445;          /* blue-950ish */
-      --panel:#111827;         /* gray-900 */
-      --panel-2:#1f2937;       /* gray-800 */
-      --text:#e5e7eb;          /* gray-200 */
-      --muted:#9ca3af;         /* gray-400 */
-      --muted-2:#6b7280;       /* gray-500 */
-      --cyan:#22d3ee;
-      --cyan-2:#06b6d4;
-      --yellow:#fbbf24;
-      --yellow-2:#f59e0b;
-      --green:#22c55e;
-      --red:#ef4444;
-      --blue:#2563eb;
-      --border:#334155;        /* slate-700 */
-      --shadow-cyan: 0 20px 45px rgba(34,211,238,.2);
-      --shadow-green: 0 20px 45px rgba(34,197,94,.25);
-      --radius:14px;
-      --radius-sm:10px;
-      --radius-lg:18px;
-      --mono: JetBrainsMono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-    @font-face {
-      font-family: "JetBrainsMono";
-      src: local("JetBrains Mono"), local("JetBrainsMono");
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;padding:16px;
-      min-height:100vh;
-      font-family: var(--mono);
-      color:var(--text);
-      background:
-        radial-gradient(1200px 800px at 20% -10%, #0b2a59 0%, transparent 60%),
-        radial-gradient(1200px 800px at 120% 110%, #0b2a59 0%, transparent 60%),
-        linear-gradient(135deg, var(--bg-a), var(--bg-b));
-    }
-    a{color:var(--cyan)}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROOM 306 - SQL Debug Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .container{max-width:1200px;margin:0 auto}
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: #00ff41;
+            overflow-x: hidden;
+        }
 
-    .card{
-      background: linear-gradient(90deg, var(--panel-2), var(--panel));
-      border:2px solid rgba(34,211,238,.4);
-      border-radius:var(--radius);
-      padding:16px;
-      margin-bottom:24px;
-      box-shadow: var(--shadow-cyan);
-    }
-    .card.alt{border-color:#eab30866; box-shadow:none}
-    .card.soft{border:1px solid rgba(34,211,238,.3); box-shadow:none}
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-    .row{display:flex;gap:12px;align-items:center}
-    .between{justify-content:space-between}
-    .col{display:flex;flex-direction:column;gap:6px}
-    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    @media(min-width:768px){ .stats{grid-template-columns:repeat(4,1fr);} }
+        .room-header {
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+        }
 
-    .stat{background: linear-gradient(135deg, #0b1220, #0f172a);
-      border:1px solid #334155; border-radius:12px; padding:12px; transition:.2s border}
-    .stat:hover{border-color:var(--cyan)}
-    .muted{color:var(--muted); font-size:12px}
-    .big{font-weight:700; font-size:24px}
-    .big.cyan{color:var(--cyan)}
-    .big.yellow{color:var(--yellow)}
-    .big.gray{color:#475569}
+        .room-number {
+            font-size: 80px;
+            font-weight: bold;
+            color: #00ff41;
+            text-shadow: 0 0 20px #00ff41, 0 0 40px #00ff41;
+            animation: glow 2s ease-in-out infinite;
+            letter-spacing: 10px;
+        }
 
-    .chip{display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px}
-    .chip.cyan{background:rgba(34,211,238,.15); color:var(--cyan)}
-    .chip.green{background:rgba(34,197,94,.15); color:var(--green)}
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px #00ff41, 0 0 40px #00ff41; }
+            50% { text-shadow: 0 0 30px #00ff41, 0 0 60px #00ff41, 0 0 80px #00ff41; }
+        }
 
-    .hdr-icon{background:var(--cyan); padding:10px; border-radius:12px; display:grid; place-items:center}
-    .lock{background:var(--red); padding:12px; border-radius:999px}
-    .unlock{background:var(--green); padding:12px; border-radius:999px}
+        .room-subtitle {
+            font-size: 24px;
+            color: #0ff;
+            margin-top: 10px;
+            text-shadow: 0 0 10px #0ff;
+        }
 
-    .panel{background: linear-gradient(90deg, #0b1220, #111827);
-      border:1px solid rgba(34,211,238,.3); border-radius:12px; padding:12px}
+        .door-animation {
+            width: 300px;
+            height: 400px;
+            margin: 30px auto;
+            position: relative;
+            perspective: 1000px;
+        }
 
-    h1{margin:0; color:var(--cyan); letter-spacing:.08em}
-    h2{margin:0 0 4px 0}
-    .title{font-size:28px; font-weight:800}
-    .subtitle{color:#67e8f9}
+        .door {
+            width: 100%;
+            height: 100%;
+            border: 4px solid #00ff41;
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
+            border-radius: 10px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: doorOpen 3s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+        }
 
-    .objective{background:#0b2250; border-left:4px solid var(--blue); border-radius:8px; padding:12px}
-    .objective .label{color:#93c5fd; font-weight:700; font-size:12px}
-    .objective .text{color:#bfdbfe; font-size:14px}
+        @keyframes doorOpen {
+            0%, 100% { transform: rotateY(0deg); }
+            50% { transform: rotateY(-45deg); }
+        }
 
-    .code{background:#020617bb; border:1px solid rgba(34,211,238,.3);
-      padding:12px; border-radius:10px; color:#a5f3fc; font-size:13px; word-break:break-all}
+        .door-handle {
+            width: 60px;
+            height: 15px;
+            background: gold;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            border-radius: 10px;
+            box-shadow: 0 0 10px gold;
+        }
 
-    textarea{
-      width:100%; min-height:110px; resize:vertical;
-      background:#0a0f1a; color:#34d399; border:2px solid #155e75;
-      border-radius:12px; padding:12px; outline:none;
-    }
-    textarea:focus{border-color:var(--cyan)}
+        .door-number {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: gold;
+            text-shadow: 0 0 20px gold;
+        }
 
-    .btns{display:flex; gap:12px; flex-wrap:wrap}
-    .btn{
-      appearance:none; border:0; padding:12px 16px; border-radius:12px;
-      font-weight:800; letter-spacing:.02em;
-      color:white; cursor:pointer; transition:transform .08s ease, box-shadow .2s ease, filter .15s ease;
-      display:flex; align-items:center; justify-content:center; gap:8px;
-      box-shadow:0 6px 18px rgba(0,0,0,.25);
-    }
-    .btn:active{transform:scale(.98)}
-    .btn-primary{background:linear-gradient(90deg, var(--cyan-2), var(--cyan)); box-shadow: var(--shadow-cyan)}
-    .btn-secondary{background:linear-gradient(90deg, #485262, #4b5563)}
-    .btn-warning{background:linear-gradient(90deg, #b45309, #f59e0b)}
-    .btn-primary:hover{filter:brightness(1.05)}
-    .btn-secondary:hover{filter:brightness(1.05)}
-    .btn-warning:hover{filter:brightness(1.08)}
+        .challenge-container {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
 
-    .hint{background:linear-gradient(90deg,#0b1220,#111827); border:2px solid #f59e0b66; border-radius:12px; padding:16px}
-    .hint-card{border-left:4px solid var(--yellow); background:rgba(234,179,8,.15); border-radius:8px; padding:12px; margin-bottom:10px}
-    .hint-card.l2{border-color:#fb923c; background:rgba(251,146,60,.15)}
-    .hint-card.l3{border-color:#ef4444; background:rgba(239,68,68,.15)}
+        .challenge-header {
+            font-size: 28px;
+            color: #ff0;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 10px #ff0;
+        }
 
-    .locked{
-      text-align:center; padding:28px; background:#0a0f1a; border:1px solid #374151; border-radius:10px;
-      color:var(--muted);
-    }
-    .next-box{margin-top:8px; text-align:center; background:#0a0f1a; border:1px solid #374151; border-radius:10px; padding:10px}
+        .challenge-round {
+            margin-bottom: 40px;
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
 
-    .logs{max-height:380px; overflow:auto; background:#000; border:2px solid #22c55e; border-radius:14px; padding:16px; box-shadow: var(--shadow-green)}
-    .log-empty{color:#64748b; text-align:center; padding:40px 0}
-    .logrow{display:flex; gap:12px; font-size:13px; padding:8px; border-radius:8px; transition:.15s background}
-    .logrow:hover{background:rgba(148,163,184,.08)}
-    .logtime{color:#64748b; flex-shrink:0}
-    .logmsg{display:flex; gap:8px; align-items:center}
-    .logmsg.info{color:#9ca3af}
-    .logmsg.success{color:#22c55e}
-    .logmsg.error{color:#ef4444}
-    .logmsg.warning{color:#f59e0b}
+        .challenge-round.active {
+            opacity: 1;
+        }
 
-    .success{background:linear-gradient(90deg,#064e3b,#065f46,#064e3b);
-      border:2px solid #34d399; border-radius:16px; padding:24px; box-shadow: var(--shadow-green)}
+        .challenge-round.completed {
+            opacity: 0.5;
+            border-left: 4px solid #0f0;
+        }
 
-    .badge{display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; background:rgba(16,185,129,.2); color:#34d399}
-    .center{display:flex; justify-content:center; align-items:center; gap:10px}
-    .key{font-size:44px; font-weight:900; background: linear-gradient(90deg, #34d399, #10b981); -webkit-background-clip:text; background-clip:text; color:transparent}
+        .round-title {
+            font-size: 22px;
+            color: #0ff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    .kb .item{background:rgba(17,24,39,.8); border:1px solid #374151; border-radius:10px; padding:12px}
-    .kb .item:hover{border-color:var(--cyan)}
+        .round-number {
+            background: #0ff;
+            color: #000;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
 
-    .footer{color:#94a3b8; text-align:center; font-size:12px; padding-bottom:16px}
-    .difficulty{color:var(--yellow); font-family:var(--mono)}
-    .is-hidden{display:none !important}
+        .code-block {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #fff;
+            position: relative;
+            overflow-x: auto;
+        }
 
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-    .animate-pulse{animation:pulse 1.2s ease-in-out infinite}
-  </style>
+        .code-label {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .error-line {
+            background: rgba(255, 0, 0, 0.2);
+            border-left: 3px solid #f00;
+            padding-left: 10px;
+        }
+
+        .problem-description {
+            background: rgba(255, 107, 107, 0.1);
+            border-left: 4px solid #ff6b6b;
+            padding: 15px;
+            margin: 15px 0;
+            color: #ffb3b3;
+        }
+
+        .hint-section {
+            background: rgba(255, 255, 0, 0.1);
+            border-left: 4px solid #ff0;
+            padding: 15px;
+            margin: 15px 0;
+            color: #ffff99;
+        }
+
+        .solution-input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 2px solid #00ff41;
+            border-radius: 5px;
+            padding: 15px;
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .solution-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ff41, #00cc33);
+            border: none;
+            padding: 12px 30px;
+            color: #000;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 255, 65, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 65, 0.5);
+        }
+
+        .btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.success {
+            background: rgba(0, 255, 65, 0.2);
+            border: 2px solid #0f0;
+            color: #0f0;
+            display: block;
+        }
+
+        .feedback.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #f00;
+            color: #ff6b6b;
+            display: block;
+        }
+
+        .reward-container {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border: 3px solid #ff0;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+            text-align: center;
+            display: none;
+            animation: rewardAppear 1s ease-out;
+        }
+
+        @keyframes rewardAppear {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .reward-container.show {
+            display: block;
+        }
+
+        .reward-title {
+            font-size: 36px;
+            color: #000;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .reward-code {
+            font-size: 72px;
+            color: #ff0000;
+            font-weight: bold;
+            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+            letter-spacing: 20px;
+            margin: 20px 0;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .reward-instruction {
+            font-size: 20px;
+            color: #000;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .terminal-hint {
+            color: #0ff;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ff41;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff41, #0ff);
+            width: 0%;
+            transition: width 0.5s;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.8);
+        }
+
+        .keyword {
+            color: #569cd6;
+        }
+
+        .string {
+            color: #ce9178;
+        }
+
+        .comment {
+            color: #6a9955;
+        }
+
+        .function {
+            color: #dcdcaa;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
+    <div class="container">
+        <div class="room-header">
+            <div class="room-number">ROOM 306</div>
+            <div class="room-subtitle">🔓 SQL DEBUG CHALLENGE 🔓</div>
+        </div>
 
-    <!-- Header -->
-    <div class="card">
-      <div class="row between" style="margin-bottom:14px">
-        <div class="row">
-          <div class="hdr-icon"><i data-lucide="database" class="w-8 h-8" style="width:32px;height:32px;color:#fff"></i></div>
-          <div class="col">
-            <h1 class="title">ROOM 306</h1>
-            <div class="subtitle">SQL Injection Forensics Challenge</div>
-          </div>
-        </div>
-        <div class="row">
-          <div id="headerLocked" class="lock">
-            <i data-lucide="lock" style="width:32px;height:32px;color:#fff"></i>
-          </div>
-          <div id="headerUnlocked" class="unlock animate-pulse is-hidden">
-            <i data-lucide="unlock" style="width:32px;height:32px;color:#fff"></i>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel" style="margin-bottom:14px">
-        <div class="row" style="gap:8px; margin-bottom:6px">
-          <i data-lucide="shield" style="width:18px;height:18px;color:var(--yellow)"></i>
-          <span style="color:var(--yellow);font-weight:800;font-size:14px">MISSION BRIEFING</span>
-        </div>
-        <div style="color:#d1d5db; font-size:14px">
-          Exploit SQL vulnerabilities to extract the hidden keyword and unlock the door
-        </div>
-      </div>
-
-      <div class="stats">
-        <div class="stat">
-          <div class="muted">Total Attempts</div>
-          <div id="attemptsCount" class="big">0</div>
-        </div>
-        <div class="stat">
-          <div class="muted">Stage Attempts</div>
-          <div id="stageAttemptsCount" class="big cyan">0</div>
-        </div>
-        <div class="stat">
-          <div class="muted">Current Stage</div>
-          <div id="currentStageCount" class="big yellow">1/3</div>
-        </div>
-        <div class="stat">
-          <div class="row muted" style="gap:6px">
-            <i data-lucide="zap" style="width:14px;height:14px"></i>
-            Hints Unlocked
-          </div>
-          <div id="hintsUnlockedCount" class="big gray">0/3</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Success Screen -->
-    <div id="successPanel" class="success is-hidden">
-      <div class="row" style="gap:16px; margin-bottom:12px">
-        <div class="unlock">
-          <i data-lucide="unlock" style="width:48px;height:48px;color:#fff"></i>
-        </div>
-        <div class="col">
-          <h2 style="color:#34d399; font-size:32px; font-weight:900; margin:0">MISSION COMPLETE!</h2>
-          <div style="color:#86efac; font-size:18px">Outstanding work, security researcher!</div>
-        </div>
-      </div>
-      <div class="panel" style="border:2px solid #34d399; background:#0008; margin-bottom:10px">
-        <div class="center">
-          <span style="color:#86efac; font-size:18px">Extracted Keyword:</span>
-          <span id="foundKeyword" class="key">AND</span>
-        </div>
-      </div>
-      <div class="center" style="color:#d1fae5">
-        <i data-lucide="check-circle" style="width:18px;height:18px;color:#34d399"></i>
-        <span>Door 306 is now unlocked. Proceed to next challenge.</span>
-      </div>
-    </div>
-
-    <!-- Stage Info -->
-    <div id="stageInfoContainer" class="card alt">
-      <div class="row" style="gap:12px; margin-bottom:14px">
-        <div style="background:var(--yellow); padding:10px; border-radius:10px"><i data-lucide="alert-triangle" style="width:24px;height:24px;color:#000"></i></div>
-        <div class="col" style="gap:8px; flex:1">
-          <h2 id="stageTitle" style="color:var(--yellow); margin:0">Stage 1: Authentication Bypass</h2>
-          <div id="stageDesc" style="color:#e5e7eb">A vulnerable login form is exposed. The password field is injectable.</div>
-          <div class="objective">
-            <div class="row" style="gap:8px; margin-bottom:4px">
-              <i data-lucide="trending-up" style="width:16px;height:16px;color:#60a5fa"></i>
-              <span class="label">OBJECTIVE</span>
+        <div class="door-animation">
+            <div class="door">
+                <div class="door-number">306</div>
+                <div class="door-handle"></div>
             </div>
-            <div id="stageObjective" class="text">Bypass authentication to gain access to the system</div>
-          </div>
-        </div>
-      </div>
-      <div class="code">
-        <div class="row" style="gap:8px; margin-bottom:6px">
-          <i data-lucide="terminal" style="width:16px;height:16px;color:#67e8f9"></i>
-          <span style="color:#67e8f9; font-weight:800; font-size:12px">VULNERABLE SQL QUERY</span>
-        </div>
-        <code id="stageCode">SELECT * FROM users WHERE username='admin' AND password='[YOUR_INPUT]'</code>
-      </div>
-    </div>
-
-    <!-- Console -->
-    <div id="consoleContainer" class="card soft">
-      <div class="row" style="gap:8px; margin-bottom:10px">
-        <i data-lucide="terminal" style="width:18px;height:18px;color:#67e8f9"></i>
-        <span style="color:#67e8f9; font-weight:800">SQL INJECTION CONSOLE</span>
-        <div style="flex:1"></div>
-        <span class="chip cyan">ACTIVE</span>
-      </div>
-
-      <textarea id="sqlInput" placeholder="Enter your SQL injection payload... (Press Enter to execute, Shift+Enter for new line)"></textarea>
-
-      <div class="btns" style="margin-top:12px">
-        <button id="executeBtn" class="btn btn-primary">
-          <i data-lucide="terminal"></i> EXECUTE QUERY
-        </button>
-        <button id="hintBtn" class="btn btn-secondary">
-          <i data-lucide="lightbulb"></i> <span id="hintBtnLabel">SHOW HINTS</span>
-        </button>
-      </div>
-
-      <!-- Hints -->
-      <div id="hintPanel" class="hint is-hidden" style="margin-top:16px">
-        <div class="row between" style="margin-bottom:10px">
-          <div class="row" style="gap:8px">
-            <i data-lucide="lightbulb" style="width:22px;height:22px;color:var(--yellow)"></i>
-            <span style="color:var(--yellow);font-weight:800">PROGRESSIVE HINT SYSTEM</span>
-          </div>
-          <span class="chip" style="background:rgba(245,158,11,.15);color:var(--yellow)">Unlocks at 10, 25, 50 attempts</span>
         </div>
 
-        <div id="hintsLocked" class="locked">
-          <i data-lucide="lock" style="width:44px;height:44px;color:#64748b"></i>
-          <div style="font-size:18px; color:#9aa5b1; margin-top:4px">No Hints Available Yet</div>
-          <div style="font-weight:900; font-size:22px; color:white">
-            <span id="nextHintCount">10</span> <span style="color:#94a3b8; font-size:14px">more attempts</span>
-          </div>
-          <div style="color:#94a3b8; font-size:13px; margin-top:4px">to unlock Level 1 Hint</div>
-        </div>
-
-        <div id="hintLevel1" class="hint-card is-hidden">
-          <div class="row" style="gap:8px; margin-bottom:6px">
-            <i data-lucide="check-circle" style="width:18px;height:18px;color:var(--yellow)"></i>
-            <span style="color:#fde68a; font-weight:800">Level 1 Hint</span>
-            <span class="chip" style="background:rgba(245,158,11,.2); color:#fbbf24">Unlocked at 10</span>
-          </div>
-          <div id="hintL1Text" style="color:#fff; opacity:.9; font-size:14px"></div>
-        </div>
-
-        <div id="hintLevel2" class="hint-card l2 is-hidden">
-          <div class="row" style="gap:8px; margin-bottom:6px">
-            <i data-lucide="check-circle" style="width:18px;height:18px;color:#fb923c"></i>
-            <span style="color:#fdba74; font-weight:800">Level 2 Hint</span>
-            <span class="chip" style="background:rgba(251,146,60,.2); color:#fb923c">Unlocked at 25</span>
-          </div>
-          <div id="hintL2Text" style="color:#fff; opacity:.9; font-size:14px"></div>
-        </div>
-
-        <div id="hintLevel3" class="hint-card l3 is-hidden">
-          <div class="row" style="gap:8px; margin-bottom:6px">
-            <i data-lucide="check-circle" style="width:18px;height:18px;color:#ef4444"></i>
-            <span style="color:#fecaca; font-weight:800">Level 3 Hint</span>
-            <span class="chip" style="background:rgba(239,68,68,.2); color:#ef4444">Unlocked at 50</span>
-          </div>
-          <div id="hintL3Text" style="color:#fff; opacity:.9; font-size:14px; margin-bottom:8px"></div>
-          <div class="code" style="border:2px solid #ef4444">
-            <div class="row" style="gap:6px; margin-bottom:6px">
-              <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#ef4444"></i>
-              <span style="color:#ef4444; font-weight:800; font-size:12px">FULL SOLUTION</span>
+        <div class="challenge-container">
+            <div class="challenge-header">⚠️ แก้ไขโค้ด SQL ที่ผิดพลาด ⚠️</div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
             </div>
-            <pre id="hintFullSolution" style="white-space:pre-wrap; margin:0"></pre>
-          </div>
+
+            <!-- Round 1 -->
+            <div class="challenge-round active" id="round1">
+                <div class="round-title">
+                    <div class="round-number">1</div>
+                    <span>WHERE Clause Missing Quotes</span>
+                </div>
+
+                <div class="problem-description">
+                    <strong>🐛 ปัญหา:</strong> Query นี้พยายามค้นหาผู้ใช้ชื่อ 'John' แต่รันไม่ได้<br>
+                    <strong>💡 สาเหตุ:</strong> ตรวจสอบการใช้เครื่องหมาย quotes ใน WHERE clause
+                </div>
+
+                <div class="code-block">
+                    <div class="code-label">❌ โค้ดที่ผิด:</div>
+                    <pre><code><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> users
+<span class="keyword">WHERE</span> <span class="error-line">username = John;</span></code></pre>
+                </div>
+
+                <div class="hint-section">
+                    <strong>💭 คำแนะนำ:</strong><br>
+                    • ค่าที่เป็น string/text ต้องใส่เครื่องหมาย single quotes (' ') หรือ double quotes (" ")<br>
+                    • ตัวอย่าง: WHERE column_name = 'value'<br>
+                    • ถ้าไม่ใส่ quotes SQL จะคิดว่า John เป็นชื่อ column ไม่ใช่ค่าที่ต้องการค้นหา
+                </div>
+
+                <textarea class="solution-input" id="solution1" placeholder="พิมพ์ SQL ที่แก้ไขแล้วที่นี่...
+
+ตัวอย่าง:
+SELECT * FROM users
+WHERE username = 'John';"></textarea>
+
+                <button class="btn" onclick="checkSolution(1)">ตรวจสอบคำตอบ</button>
+                <div class="feedback" id="feedback1"></div>
+            </div>
+
+            <!-- Round 2 -->
+            <div class="challenge-round" id="round2">
+                <div class="round-title">
+                    <div class="round-number">2</div>
+                    <span>Missing JOIN Condition</span>
+                </div>
+
+                <div class="problem-description">
+                    <strong>🐛 ปัญหา:</strong> Query นี้พยายาม join ตาราง 2 ตาราง แต่ได้ผลลัพธ์ผิดพลาด<br>
+                    <strong>💡 สาเหตุ:</strong> ขาดเงื่อนไขในการ join ทำให้เกิด Cartesian Product
+                </div>
+
+                <div class="code-block">
+                    <div class="code-label">❌ โค้ดที่ผิด:</div>
+                    <pre><code><span class="keyword">SELECT</span> orders.order_id, customers.customer_name
+<span class="keyword">FROM</span> orders, customers;</code></pre>
+                </div>
+
+                <div class="hint-section">
+                    <strong>💭 คำแนะนำ:</strong><br>
+                    • การ join ตาราง 2 ตารางต้องระบุเงื่อนไข (ON clause) ว่าจะ match กันยังไง<br>
+                    • ใช้ INNER JOIN แทนการใส่ comma (,) ระหว่างตาราง<br>
+                    • ต้องระบุว่า column ไหนจาก table ไหนจะเชื่อมกัน<br>
+                    • ตัวอย่าง: FROM table1 INNER JOIN table2 ON table1.id = table2.foreign_id
+                </div>
+
+                <textarea class="solution-input" id="solution2" placeholder="พิมพ์ SQL ที่แก้ไขแล้วที่นี่...
+
+ตัวอย่าง:
+SELECT orders.order_id, customers.customer_name
+FROM orders
+INNER JOIN customers ON orders.customer_id = customers.customer_id;"></textarea>
+
+                <button class="btn" onclick="checkSolution(2)" disabled id="btn2">ตรวจสอบคำตอบ</button>
+                <div class="feedback" id="feedback2"></div>
+            </div>
+
+            <!-- Round 3 -->
+            <div class="challenge-round" id="round3">
+                <div class="round-title">
+                    <div class="round-number">3</div>
+                    <span>Aggregate Function with GROUP BY</span>
+                </div>
+
+                <div class="problem-description">
+                    <strong>🐛 ปัญหา:</strong> Query นี้พยายามนับจำนวนออเดอร์ของแต่ละลูกค้า แต่เกิด error<br>
+                    <strong>💡 สาเหตุ:</strong> ใช้ aggregate function แต่ไม่มี GROUP BY
+                </div>
+
+                <div class="code-block">
+                    <div class="code-label">❌ โค้ดที่ผิด:</div>
+                    <pre><code><span class="keyword">SELECT</span> customer_id, <span class="error-line"><span class="function">COUNT</span>(order_id)</span>
+<span class="keyword">FROM</span> orders;</code></pre>
+                </div>
+
+                <div class="hint-section">
+                    <strong>💭 คำแนะนำ:</strong><br>
+                    • เมื่อใช้ aggregate functions (COUNT, SUM, AVG, MAX, MIN) กับ column อื่น<br>
+                    • ต้องใช้ GROUP BY เพื่อบอก SQL ว่าจะจัดกลุ่มข้อมูลตาม column ใด<br>
+                    • Column ที่ไม่ได้อยู่ใน aggregate function ต้องอยู่ใน GROUP BY<br>
+                    • ตัวอย่าง: SELECT column1, COUNT(column2) FROM table GROUP BY column1
+                </div>
+
+                <textarea class="solution-input" id="solution3" placeholder="พิมพ์ SQL ที่แก้ไขแล้วที่นี่...
+
+ตัวอย่าง:
+SELECT customer_id, COUNT(order_id)
+FROM orders
+GROUP BY customer_id;"></textarea>
+
+                <button class="btn" onclick="checkSolution(3)" disabled id="btn3">ตรวจสอบคำตอบ</button>
+                <div class="feedback" id="feedback3"></div>
+            </div>
         </div>
 
-        <div id="nextHintAttemptsBox" class="next-box">
-          <div class="muted" style="margin-bottom:2px">Next hint unlocks in</div>
-          <div id="nextHintAttempts" style="font-weight:900; font-size:22px">10</div>
-          <div class="muted">attempts</div>
+        <div class="reward-container" id="rewardContainer">
+            <div class="reward-title">🎉 ยินดีด้วย! คุณผ่านทุกด่านแล้ว! 🎉</div>
+            <div class="reward-code">AND</div>
+            <div class="reward-instruction">
+                🔑 นี่คือรางวัลของคุณ!<br>
+                <div class="terminal-hint">📍 นำคำว่า "AND" ไปใส่ที่ <strong>Terminal-F3</strong></div>
+                <br>
+                💡 <strong>คำแนะนำเพิ่มเติม:</strong><br>
+                • เรียนรู้เพิ่มเติมจาก <a href="https://www.w3schools.com/sql/" target="_blank" style="color: #000; text-decoration: underline;">W3Schools SQL Tutorial</a><br>
+                • ฝึกเขียน SQL ที่ <a href="https://sqliteonline.com/" target="_blank" style="color: #000; text-decoration: underline;">SQLite Online</a><br>
+                • ศึกษา SQL best practices เพื่อป้องกัน SQL Injection
+            </div>
         </div>
-      </div>
     </div>
 
-    <!-- Logs -->
-    <div class="logs" id="logsWrapper">
-      <div class="row" style="gap:8px; margin-bottom:12px; position:sticky; top:0; background:#000; padding-bottom:8px">
-        <i data-lucide="shield" style="width:18px;height:18px;color:#34d399"></i>
-        <span style="color:#34d399; font-weight:800; letter-spacing:.08em">SYSTEM ACTIVITY LOGS</span>
-        <div style="flex:1"></div>
-        <span class="chip green">MONITORING</span>
-      </div>
-      <div id="logsEmpty" class="log-empty">
-        <i data-lucide="terminal" style="width:64px;height:64px;opacity:.3"></i>
-        <div>Awaiting query execution...</div>
-      </div>
-      <div id="logsContainer"></div>
-    </div>
+    <script>
+        let completedRounds = 0;
+        const totalRounds = 3;
 
-    <!-- Knowledge Base -->
-    <div class="card soft">
-      <div class="row" style="gap:8px; margin-bottom:10px">
-        <i data-lucide="database" style="width:18px;height:18px;color:#67e8f9"></i>
-        <h3 style="margin:0;color:#67e8f9">Required IT Knowledge & Skills</h3>
-      </div>
-      <div class="kb" style="display:grid; gap:10px; grid-template-columns:1fr; margin-top:6px">
-        <div class="item">
-          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• SQL Injection Fundamentals</div>
-          <div class="muted">Authentication bypass techniques</div>
-        </div>
-        <div class="item">
-          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• UNION-based Injection</div>
-          <div class="muted">Combining multiple query results</div>
-        </div>
-        <div class="item">
-          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• Database Enumeration</div>
-          <div class="muted">Using information_schema tables</div>
-        </div>
-        <div class="item">
-          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• Data Exfiltration</div>
-          <div class="muted">Extracting sensitive information</div>
-        </div>
-        <div class="item">
-          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• SQL Query Syntax</div>
-          <div class="muted">SELECT, FROM, WHERE, UNION</div>
-        </div>
-        <div class="item">
-          <div style="color:#67e8f9; font-weight:800; font-size:14px; margin-bottom:4px">• Web Security Concepts</div>
-          <div class="muted">OWASP Top 10 vulnerabilities</div>
-        </div>
-      </div>
-    </div>
+        const solutions = {
+            1: {
+                keywords: ['username', '=', "'john'", 'users'],
+                requiredPatterns: [/'john'/i, /where\s+username\s*=/i]
+            },
+            2: {
+                keywords: ['inner join', 'join', 'on', 'customer_id'],
+                requiredPatterns: [/join\s+customers/i, /on\s+.*customer_id/i]
+            },
+            3: {
+                keywords: ['group by', 'customer_id', 'count'],
+                requiredPatterns: [/group\s+by\s+customer_id/i, /count\s*\(/i]
+            }
+        };
 
-    <!-- Footer -->
-    <div class="footer">
-      <div class="center">
-        <i data-lucide="shield" style="width:16px;height:16px"></i>
-        <span>Room 306: SQL Injection Forensics Challenge</span>
-      </div>
-      <div class="center" style="margin-top:6px">
-        <span>Difficulty:</span>
-        <span id="difficultyStars" class="difficulty">★★★★★★★★☆☆</span>
-        <span id="difficultyNumeric" style="color:white; font-weight:900">(8/10)</span>
-      </div>
-    </div>
+        function checkSolution(round) {
+            const input = document.getElementById('solution' + round).value.trim().toLowerCase();
+            const feedback = document.getElementById('feedback' + round);
+            const solution = solutions[round];
 
-  </div>
+            if (input.length < 10) {
+                feedback.className = 'feedback error';
+                feedback.textContent = '❌ กรุณาพิมพ์โค้ด SQL ที่สมบูรณ์';
+                return;
+            }
 
-  <script>
-    // ---------------------------
-    // State
-    // ---------------------------
-    let stage = 1;
-    let logs = [];
-    let showHint = false;
-    let attempts = 0;
-    let stageAttempts = 0;
-    let foundKeyword = "";
-    let showSuccess = false;
-    let autoHintLevel = 0; // 0..3
+            let isCorrect = true;
+            let missingElements = [];
 
-    const hints = {
-      stage1: [
-        "SQL injection allows you to manipulate database queries by injecting malicious SQL code.",
-        "Try closing the password string with a single quote (') and then adding a condition that's always true.",
-        "Use the OR operator to bypass authentication. For example: '1'='1' is always true, which will return all records.",
-        "Complete payload: ' OR '1'='1\\n\\nThis closes the password field and adds an OR condition that's always true, bypassing authentication."
-      ],
-      stage2: [
-        "You need to discover what tables exist in the database schema.",
-        "UNION SELECT allows you to combine results from different queries. The number of columns must match.",
-        "The information_schema database contains metadata about all tables. Use information_schema.tables to enumerate them.",
-        "Full payload: ' UNION SELECT NULL, table_name FROM information_schema.tables--\\n\\nThis combines your query with a query that lists all table names."
-      ],
-      stage3: [
-        "The hidden_vault table has been discovered. It contains sensitive credentials.",
-        "Use UNION SELECT to extract data from the hidden_vault table. You need to retrieve both username and password.",
-        "The hidden_vault table has columns: id, username, password. Select the username and password fields.",
-        "Complete payload: ' UNION SELECT username, password FROM hidden_vault--\\n\\nOr more specific: ' UNION SELECT username, password FROM hidden_vault WHERE id=1--"
-      ]
-    };
+            // Check for required patterns
+            for (let pattern of solution.requiredPatterns) {
+                if (!pattern.test(input)) {
+                    isCorrect = false;
+                }
+            }
 
-    const stageInfo = {
-      1: {
-        title: "Stage 1: Authentication Bypass",
-        desc: "A vulnerable login form is exposed. The password field is injectable.",
-        code: "SELECT * FROM users WHERE username='admin' AND password='[YOUR_INPUT]'",
-        objective: "Bypass authentication to gain access to the system"
-      },
-      2: {
-        title: "Stage 2: Database Enumeration",
-        desc: "Discover hidden tables in the database schema using UNION injection.",
-        code: "SELECT id, name FROM users WHERE id='[YOUR_INPUT]'",
-        objective: "Find the hidden_vault table name"
-      },
-      3: {
-        title: "Stage 3: Data Exfiltration",
-        desc: "Extract sensitive credentials from the hidden_vault table.",
-        code: "SELECT * FROM products WHERE category='[YOUR_INPUT]'",
-        objective: "Retrieve username and password from hidden_vault"
-      }
-    };
+            // Check for keywords
+            for (let keyword of solution.keywords) {
+                if (!input.includes(keyword.toLowerCase())) {
+                    missingElements.push(keyword);
+                }
+            }
 
-    // ---------------------------
-    // DOM Refs
-    // ---------------------------
-    const attemptsCount = document.getElementById('attemptsCount');
-    const stageAttemptsCount = document.getElementById('stageAttemptsCount');
-    const currentStageCount = document.getElementById('currentStageCount');
-    const hintsUnlockedCount = document.getElementById('hintsUnlockedCount');
+            if (isCorrect && missingElements.length === 0) {
+                feedback.className = 'feedback success';
+                feedback.textContent = '✅ ถูกต้อง! คุณแก้ไขโค้ดได้สำเร็จ!';
+                
+                document.getElementById('round' + round).classList.add('completed');
+                document.getElementById('round' + round).classList.remove('active');
+                
+                completedRounds++;
+                updateProgress();
 
-    const headerLocked = document.getElementById('headerLocked');
-    const headerUnlocked = document.getElementById('headerUnlocked');
-
-    const successPanel = document.getElementById('successPanel');
-    const keywordSpan = document.getElementById('foundKeyword');
-
-    const stageInfoContainer = document.getElementById('stageInfoContainer');
-    const stageTitle = document.getElementById('stageTitle');
-    const stageDesc = document.getElementById('stageDesc');
-    const stageObjective = document.getElementById('stageObjective');
-    const stageCode = document.getElementById('stageCode');
-
-    const consoleContainer = document.getElementById('consoleContainer');
-    const sqlInputEl = document.getElementById('sqlInput');
-    const executeBtn = document.getElementById('executeBtn');
-    const hintBtn = document.getElementById('hintBtn');
-    const hintBtnLabel = document.getElementById('hintBtnLabel');
-
-    const hintPanel = document.getElementById('hintPanel');
-    const hintsLocked = document.getElementById('hintsLocked');
-    const hintLevel1 = document.getElementById('hintLevel1');
-    const hintLevel2 = document.getElementById('hintLevel2');
-    const hintLevel3 = document.getElementById('hintLevel3');
-    const hintL1Text = document.getElementById('hintL1Text');
-    const hintL2Text = document.getElementById('hintL2Text');
-    const hintL3Text = document.getElementById('hintL3Text');
-    const hintFullSolution = document.getElementById('hintFullSolution');
-
-    const nextHintAttemptsBox = document.getElementById('nextHintAttemptsBox');
-    const nextHintAttempts = document.getElementById('nextHintAttempts');
-    const nextHintCount = document.getElementById('nextHintCount');
-
-    const logsWrapper = document.getElementById('logsWrapper');
-    const logsEmpty = document.getElementById('logsEmpty');
-    const logsContainer = document.getElementById('logsContainer');
-
-    const difficultyStars = document.getElementById('difficultyStars');
-    const difficultyNumeric = document.getElementById('difficultyNumeric');
-
-    // ---------------------------
-    // Helpers
-    // ---------------------------
-    function timeNow() {
-      return new Intl.DateTimeFormat('en-GB', {
-        hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
-      }).format(new Date());
-    }
-
-    function addLog(message, type = 'info') {
-      const entry = { message, type, time: timeNow() };
-      logs.push(entry);
-      renderLogs();
-    }
-
-    function renderLogs() {
-      if (logs.length === 0) {
-        logsEmpty.classList.remove('is-hidden');
-        logsContainer.innerHTML = '';
-        return;
-      }
-      logsEmpty.classList.add('is-hidden');
-      const frag = document.createDocumentFragment();
-      logs.forEach((log) => {
-        const row = document.createElement('div');
-        row.className = 'logrow';
-
-        const time = document.createElement('span');
-        time.className = 'logtime';
-        time.textContent = `[${log.time}]`;
-
-        const msg = document.createElement('span');
-        msg.className = 'logmsg ' + (log.type || 'info');
-
-        // icon + text
-        let icon = '';
-        if (log.type === 'success') {
-          icon = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
-        } else if (log.type === 'error') {
-          icon = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
-        } else if (log.type === 'warning') {
-          icon = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+                if (round < totalRounds) {
+                    setTimeout(() => {
+                        document.getElementById('round' + (round + 1)).classList.add('active');
+                        document.getElementById('btn' + (round + 1)).disabled = false;
+                    }, 1000);
+                } else {
+                    setTimeout(() => {
+                        document.getElementById('rewardContainer').classList.add('show');
+                        document.querySelector('.challenge-container').style.opacity = '0.5';
+                    }, 1500);
+                }
+            } else {
+                feedback.className = 'feedback error';
+                let hint = '❌ ยังไม่ถูกต้อง ';
+                
+                if (missingElements.length > 0) {
+                    hint += 'คุณลืม: ' + missingElements.join(', ');
+                } else {
+                    hint += 'ลองตรวจสอบไวยากรณ์อีกครั้ง';
+                }
+                
+                feedback.textContent = hint;
+            }
         }
-        msg.innerHTML = (icon ? icon + ' ' : '') + '<span class="break-all"></span>';
-        msg.querySelector('span').textContent = log.message;
 
-        row.appendChild(time);
-        row.appendChild(msg);
-        frag.appendChild(row);
-      });
-      logsContainer.innerHTML = '';
-      logsContainer.appendChild(frag);
-      logsWrapper.scrollTop = logsWrapper.scrollHeight;
-    }
-
-    function getNextHintAttempts() {
-      if (autoHintLevel === 0) return Math.max(0, 10 - stageAttempts);
-      if (autoHintLevel === 1) return Math.max(0, 25 - stageAttempts);
-      if (autoHintLevel === 2) return Math.max(0, 50 - stageAttempts);
-      return 0;
-    }
-
-    function getDifficultyStars() {
-      const levels = [8, 7, 6, 5];
-      const level = levels[autoHintLevel];
-      return '★'.repeat(level) + '☆'.repeat(10 - level);
-    }
-
-    function updateDifficulty() {
-      difficultyStars.textContent = getDifficultyStars();
-      const numeric = (autoHintLevel === 0) ? '8/10' : (autoHintLevel === 1) ? '7/10' : (autoHintLevel === 2) ? '6/10' : '5/10';
-      difficultyNumeric.textContent = `(${numeric})`;
-    }
-
-    function updateHeaderLock() {
-      headerLocked.classList.toggle('is-hidden', showSuccess);
-      headerUnlocked.classList.toggle('is-hidden', !showSuccess);
-    }
-
-    function updateCounters() {
-      attemptsCount.textContent = attempts;
-      stageAttemptsCount.textContent = stageAttempts;
-      currentStageCount.textContent = `${stage}/3`;
-      hintsUnlockedCount.textContent = `${autoHintLevel}/3`;
-      if (autoHintLevel === 0) {
-        hintsUnlockedCount.style.color = '#475569';
-      } else {
-        hintsUnlockedCount.style.color = 'var(--yellow)';
-      }
-    }
-
-    function updateStageInfo() {
-      const info = stageInfo[stage];
-      stageTitle.textContent = info.title;
-      stageDesc.textContent = info.desc;
-      stageObjective.textContent = info.objective;
-      stageCode.textContent = info.code;
-    }
-
-    function updateSuccessPanel() {
-      successPanel.classList.toggle('is-hidden', !showSuccess);
-      stageInfoContainer.classList.toggle('is-hidden', showSuccess);
-      consoleContainer.classList.toggle('is-hidden', showSuccess);
-      if (foundKeyword) keywordSpan.textContent = foundKeyword.toUpperCase();
-    }
-
-    function updateHintPanel() {
-      // change hintBtn style depending on state
-      if (autoHintLevel > 0 && !showHint) {
-        hintBtn.classList.add('animate-pulse');
-        hintBtn.classList.remove('btn-secondary');
-        hintBtn.classList.add('btn-warning');
-      } else {
-        hintBtn.classList.remove('animate-pulse');
-        if (autoHintLevel > 0) {
-          hintBtn.classList.remove('btn-secondary');
-          hintBtn.classList.add('btn-warning');
-        } else {
-          hintBtn.classList.remove('btn-warning');
-          hintBtn.classList.add('btn-secondary');
+        function updateProgress() {
+            const percentage = (completedRounds / totalRounds) * 100;
+            document.getElementById('progressFill').style.width = percentage + '%';
         }
-      }
-      hintBtnLabel.textContent = showHint ? 'HIDE HINTS' : `SHOW HINTS${autoHintLevel > 0 ? ` (${autoHintLevel})` : ''}`;
-
-      hintPanel.classList.toggle('is-hidden', !showHint);
-
-      const bucket = hints[`stage${stage}`];
-      hintL1Text.textContent = bucket[0];
-      hintL2Text.textContent = bucket[1];
-      hintL3Text.textContent = bucket[2];
-      hintFullSolution.textContent = bucket[3];
-
-      // Levels visibility
-      hintsLocked.classList.toggle('is-hidden', autoHintLevel > 0);
-      hintLevel1.classList.toggle('is-hidden', autoHintLevel < 1);
-      hintLevel2.classList.toggle('is-hidden', autoHintLevel < 2);
-      hintLevel3.classList.toggle('is-hidden', autoHintLevel < 3);
-
-      // Next hint box
-      const remaining = getNextHintAttempts();
-      nextHintAttempts.textContent = remaining;
-      nextHintCount.textContent = remaining;
-      nextHintAttemptsBox.classList.toggle('is-hidden', autoHintLevel >= 3 || stageAttempts >= 50);
-    }
-
-    function resetForNextStage(nextStage) {
-      stage = nextStage;
-      stageAttempts = 0;
-      autoHintLevel = 0;
-      sqlInputEl.value = '';
-      updateStageInfo();
-      updateCounters();
-      updateHintPanel();
-      updateDifficulty();
-    }
-
-    // ---------------------------
-    // Stage Checks
-    // ---------------------------
-    function checkStage1(input) {
-      const normalized = input.trim().toLowerCase();
-      if (normalized.includes("'") && normalized.includes("or") && (normalized.includes("'1'='1'") || normalized.includes("1=1"))) {
-        addLog("✓ Authentication bypassed successfully!", 'success');
-        addLog("System breach detected. Accessing database tables...", 'info');
-        setTimeout(() => { resetForNextStage(2); }, 1500);
-        return true;
-      }
-      return false;
-    }
-
-    function checkStage2(input) {
-      const normalized = input.trim().toLowerCase();
-      if (normalized.includes("union") && normalized.includes("select") && normalized.includes("information_schema") && (normalized.includes("table"))) {
-        addLog("✓ Table enumeration successful!", 'success');
-        addLog("Discovered tables: users, products, sessions, hidden_vault", 'success');
-        addLog("Target identified: hidden_vault", 'warning');
-        addLog("Initiating data exfiltration...", 'info');
-        setTimeout(() => { resetForNextStage(3); }, 1500);
-        return true;
-      }
-      return false;
-    }
-
-    function checkStage3(input) {
-      const normalized = input.trim().toLowerCase();
-      if (normalized.includes("union") && normalized.includes("select") && normalized.includes("hidden_vault") && (normalized.includes("username") || normalized.includes("password") || normalized.includes("*"))) {
-        addLog("✓ Data extraction complete!", 'success');
-        addLog("Raw data retrieved from hidden_vault:", 'info');
-        addLog("  → username: admin", 'success');
-        addLog("  → password: YW5k (Base64 encoded)", 'success');
-        addLog("Decoding password...", 'info');
-        setTimeout(() => {
-          const decoded = atob('YW5k'); // 'and'
-          addLog(`Base64 decode: YW5k → ${decoded}`, 'success');
-          addLog("🔐 Final keyword extracted: AND", 'success');
-          foundKeyword = decoded;
-          showSuccess = true;
-          updateHeaderLock();
-          updateSuccessPanel();
-        }, 2000);
-        return true;
-      }
-      return false;
-    }
-
-    // ---------------------------
-    // Submit / Keyboard
-    // ---------------------------
-    function handleSubmit() {
-      const value = sqlInputEl.value || '';
-      if (value.trim() === '') {
-        addLog("⚠ Empty query - Please enter a SQL injection payload", 'error');
-        return;
-      }
-
-      attempts += 1;
-      stageAttempts += 1;
-      addLog(`[EXEC] ${value}`, 'info');
-
-      let success = false;
-      if (stage === 1) success = checkStage1(value);
-      else if (stage === 2) success = checkStage2(value);
-      else if (stage === 3) success = checkStage3(value);
-
-      if (!success) {
-        addLog("✗ Query failed or incomplete - Try again", 'error');
-        const currentAttempts = stageAttempts;
-        if (currentAttempts === 10 && autoHintLevel < 1) {
-          autoHintLevel = 1;
-          addLog("💡 HINT LEVEL 1 UNLOCKED! Click 'SHOW HINTS' button.", 'warning');
-        } else if (currentAttempts === 25 && autoHintLevel < 2) {
-          autoHintLevel = 2;
-          addLog("💡 HINT LEVEL 2 UNLOCKED! More detailed guidance available.", 'warning');
-        } else if (currentAttempts === 50 && autoHintLevel < 3) {
-          autoHintLevel = 3;
-          addLog("💡 HINT LEVEL 3 UNLOCKED! Solution revealed!", 'warning');
-        }
-      } else {
-        sqlInputEl.value = '';
-      }
-
-      updateCounters();
-      updateHintPanel();
-      updateDifficulty();
-    }
-
-    sqlInputEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        handleSubmit();
-      }
-    });
-    executeBtn.addEventListener('click', handleSubmit);
-    hintBtn.addEventListener('click', () => { showHint = !showHint; updateHintPanel(); });
-
-    // ---------------------------
-    // Initial Render
-    // ---------------------------
-    function initialRender() {
-      updateHeaderLock();
-      updateCounters();
-      updateStageInfo();
-      updateHintPanel();
-      updateDifficulty();
-      renderLogs();
-      if (window.lucide) lucide.createIcons();
-    }
-    document.addEventListener('DOMContentLoaded', initialRender);
-  </script>
+    </script>
 </body>
 </html>
