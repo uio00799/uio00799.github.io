@@ -1,1 +1,743 @@
-Hello
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Directory Scanner - BIOS [SECURED]</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#000;color:#0f0;font-family:'Courier New',monospace;padding:20px;line-height:1.4}
+        .container{max-width:1400px;margin:0 auto;border:2px solid #0f0;padding:20px;background:#001100}
+        .header{text-align:center;border-bottom:2px solid #0f0;padding-bottom:15px;margin-bottom:20px}
+        .header h1{font-size:24px;margin-bottom:5px;text-shadow:0 0 10px #0f0}
+        .header .subtitle{font-size:12px;color:#0a0}
+        .login-screen{max-width:500px;margin:50px auto;border:2px solid #0f0;padding:30px;background:#000}
+        .login-title{color:#0f0;text-align:center;margin-bottom:20px;font-size:20px;text-shadow:0 0 10px #0f0}
+        .config-section{border:1px solid #0f0;padding:15px;margin-bottom:20px;background:#000}
+        .config-title{color:#0f0;margin-bottom:10px;font-weight:bold;text-decoration:underline}
+        .input-group{margin-bottom:10px}
+        label{display:inline-block;width:150px;color:#0a0}
+        input[type="text"],input[type="password"]{background:#000;border:1px solid #0f0;color:#0f0;padding:5px 10px;font-family:'Courier New',monospace;width:300px}
+        input[type="text"]:focus,input[type="password"]:focus{outline:none;box-shadow:0 0 5px #0f0}
+        button{background:#0f0;color:#000;border:none;padding:8px 20px;font-family:'Courier New',monospace;font-weight:bold;cursor:pointer;margin-right:10px}
+        button:hover{background:#0a0;box-shadow:0 0 10px #0f0}
+        button:active{background:#050}
+        button.danger{background:#f00;color:#fff}
+        button.danger:hover{background:#c00}
+        .status{padding:10px;margin:10px 0;border:1px solid #0f0;background:#000;min-height:40px}
+        .loading{color:#ff0;animation:blink 1s infinite}
+        @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:.3}}
+        .error{color:#f00}
+        .success{color:#0ff}
+        .warning{color:#ff0}
+        .filter-section{display:flex;gap:15px;margin-bottom:15px;flex-wrap:wrap}
+        .stats{border:1px solid #0f0;padding:10px;margin-bottom:15px;background:#000;display:flex;gap:30px;flex-wrap:wrap}
+        .stat-item{color:#0ff}.stat-item span{color:#0f0;font-weight:bold}
+        .table-container{overflow-x:auto;border:1px solid #0f0;max-height:600px;overflow-y:auto}
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th{background:#0f0;color:#000;padding:8px;text-align:left;position:sticky;top:0;font-weight:bold}
+        td{padding:6px 8px;border-bottom:1px solid #003300}
+        tr:hover{background:#002200}
+        tr.restricted{opacity:0.5}
+        tr.restricted td{color:#666}
+        a{color:#0ff;text-decoration:none}
+        a:hover{color:#0f0;text-decoration:underline}
+        .path{color:#0a0;word-break:break-all}
+        .size{color:#ff0;text-align:right}
+        .type{color:#f0f}
+        .no-data{text-align:center;padding:40px;color:#0a0}
+        select{background:#000;border:1px solid #0f0;color:#0f0;padding:5px 10px;font-family:'Courier New',monospace}
+        .footer{margin-top:20px;padding-top:15px;border-top:1px solid #0f0;text-align:center;color:#0a0;font-size:11px}
+        .link-group{display:flex;gap:8px;flex-wrap:wrap}
+        .user-info{border:1px solid #0f0;padding:10px;margin-bottom:15px;background:#000;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+        .user-badge{color:#0ff;font-weight:bold}
+        .level-badge{display:inline-block;padding:2px 8px;border:1px solid;margin-left:10px;font-size:11px}
+        .level-admin{border-color:#f00;color:#f00}
+        .level-user{border-color:#0ff;color:#0ff}
+        .level-guest{border-color:#ff0;color:#ff0}
+        .level-researcher{border-color:#f0f;color:#f0f}
+        .locked-icon{color:#f00;margin-right:5px}
+        .access-denied{color:#f00;font-style:italic}
+        .admin-panel{border:1px solid #f00;padding:15px;margin-bottom:20px;background:#110000}
+        .admin-title{color:#f00;margin-bottom:10px;font-weight:bold}
+        .user-list{max-height:200px;overflow-y:auto;border:1px solid #0f0;padding:10px;background:#000;margin-top:10px}
+        .user-item{padding:5px;margin:3px 0;border-bottom:1px solid #003300}
+        .session-timer{color:#ff0;font-size:14px;margin-left:15px;animation:blink 1s infinite}
+        .path-rules{border:1px solid #f0f;padding:10px;margin-bottom:15px;background:#000}
+        .rule-item{padding:3px 0;color:#0a0;font-size:11px}
+    </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen" class="login-screen">
+    <div class="login-title">
+        ╔═══════════════════════════╗<br>
+        ║   SYSTEM AUTHENTICATION   ║<br>
+        ╚═══════════════════════════╝
+    </div>
+    <div class="input-group" style="text-align:center">
+        <label style="width:100%;text-align:left">Username:</label>
+        <input type="text" id="loginUsername" style="width:100%;margin-top:5px" placeholder="Enter username">
+    </div>
+    <div class="input-group" style="text-align:center">
+        <label style="width:100%;text-align:left">Password:</label>
+        <input type="password" id="loginPassword" style="width:100%;margin-top:5px" placeholder="Enter password">
+    </div>
+    <div class="status" id="loginStatus">
+        Enter credentials to access system
+    </div>
+    <div style="text-align:center;margin-top:20px">
+        <button onclick="login()">[ LOGIN ]</button>
+    </div>
+    <div style="margin-top:30px;padding-top:20px;border-top:1px solid #0f0;font-size:11px;color:#0a0">
+        <div style="margin-bottom:5px"><strong>Available Access Levels:</strong></div>
+        <div>🔴 Admin: Full Access (All Files & Folders)</div>
+        <div>🟣 Researcher: Research Data Access</div>
+        <div>🔵 User: Standard Access (Limited)</div>
+        <div>🟡 Guest: View Only (120s Session)</div>
+        <div style="margin-top:10px;color:#666;font-size:10px">
+            * Guest/User accounts rotate on each page refresh<br>
+            * Guest sessions expire after 120 seconds
+        </div>
+    </div>
+</div>
+
+<!-- Main Application -->
+<div id="mainApp" style="display:none">
+    <div class="container">
+        <div class="header">
+            <h1>╔═══════════════════════════════════════╗</h1>
+            <h1>║  GITHUB DIRECTORY SCANNER v2.5      ║</h1>
+            <h1>║         [SECURED EDITION]           ║</h1>
+            <h1>╚═══════════════════════════════════════╝</h1>
+            <div class="subtitle">BIOS-STYLE FILE BROWSER WITH PATH-BASED ACCESS CONTROL</div>
+        </div>
+
+        <div class="user-info">
+            <div>
+                <span class="user-badge">Logged in as: <span id="currentUsername"></span></span>
+                <span id="currentUserLevel"></span>
+                <span id="sessionTimer" class="session-timer" style="display:none"></span>
+            </div>
+            <button class="danger" onclick="logout()">[ LOGOUT ]</button>
+        </div>
+
+        <!-- Path Access Rules Display -->
+        <div class="path-rules">
+            <div class="config-title">► PATH ACCESS RULES</div>
+            <div class="rule-item">🔴 Admin: Full access to all paths</div>
+            <div class="rule-item">🟣 Researcher: Access to /data, /research, /datasets paths</div>
+            <div class="rule-item">🔵 User: Access to /user, /public paths + specific files (e.g., LogicGatePuzzle.html)</div>
+            <div class="rule-item">🟡 Guest: Access to /public paths only (120 second session limit)</div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="admin-panel" style="display:none">
+            <div class="admin-title">► ADMIN CONTROL PANEL</div>
+            <div class="input-group">
+                <label>New Username:</label>
+                <input type="text" id="newUsername" placeholder="username">
+            </div>
+            <div class="input-group">
+                <label>New Password:</label>
+                <input type="password" id="newPassword" placeholder="password">
+            </div>
+            <div class="input-group">
+                <label>Access Level:</label>
+                <select id="newUserLevel">
+                    <option value="guest">Guest (View Only - 120s)</option>
+                    <option value="user">User (Standard)</option>
+                    <option value="researcher">Researcher (Data Access)</option>
+                    <option value="admin">Admin (Full Access)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <button onclick="addUser()">[ ADD USER ]</button>
+            </div>
+            <div class="user-list" id="userList"></div>
+        </div>
+
+        <div class="config-section">
+            <div class="config-title">► REPOSITORY CONFIGURATION</div>
+            <div class="input-group">
+                <label>GitHub Owner:</label>
+                <input type="text" id="owner" value="uio00799" placeholder="username">
+            </div>
+            <div class="input-group">
+                <label>Repository:</label>
+                <input type="text" id="repo" value="" placeholder="repository-name">
+            </div>
+            <div class="input-group">
+                <label>Branch:</label>
+                <input type="text" id="branch" value="main" placeholder="main">
+            </div>
+            <div class="input-group">
+                <button onclick="scanRepository()">[ SCAN REPOSITORY ]</button>
+                <button onclick="clearResults()">[ CLEAR ]</button>
+            </div>
+        </div>
+
+        <div class="status" id="status">
+            Ready to scan. Enter repository details and click SCAN REPOSITORY.
+        </div>
+
+        <div id="resultsSection" style="display:none;">
+            <div class="config-section">
+                <div class="config-title">► FILTER OPTIONS</div>
+                <div class="filter-section">
+                    <div class="input-group">
+                        <label>Search Path:</label>
+                        <input type="text" id="searchInput" placeholder="ค้นหาชื่อไฟล์หรือ path" oninput="filterFiles()">
+                    </div>
+                    <div class="input-group">
+                        <label>File Extension:</label>
+                        <select id="extensionFilter" onchange="filterFiles()">
+                            <option value="">All Files</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Type:</label>
+                        <select id="typeFilter" onchange="filterFiles()">
+                            <option value="">All</option>
+                            <option value="blob">Files Only</option>
+                            <option value="tree">Directories Only</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats" id="stats"></div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:50px;">#</th>
+                        <th style="width:80px;">TYPE</th>
+                        <th>PATH</th>
+                        <th style="width:100px;">SIZE</th>
+                        <th style="width:230px;">OPEN (GITHUB / PREVIEW)</th>
+                        <th style="width:150px;">RAW</th>
+                    </tr>
+                    </thead>
+                    <tbody id="fileTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            Press F5 to refresh | ESC to logout | GitHub API Rate Limit: 60 req/hour (unauthenticated)
+        </div>
+    </div>
+</div>
+
+<script>
+// User Database with Rotating Accounts
+const guestAccounts = [
+    { username: 'guest123', password: 'guest123' },
+    { username: 'visitor123', password: 'visitor123' },
+    { username: 'invitee123', password: 'invitee123' },
+    { username: 'patron123', password: 'patron123' },
+    { username: 'client123', password: 'client123' }
+];
+
+const userAccounts = [
+    { username: 'usr_dev01', password: 'D3v@Lab#927' },
+    { username: 'cust_beta02', password: 'Cst!23Acc9' },
+    { username: 'client_node03', password: 'Cl!nt#472a' },
+    { username: 'analyst_user04', password: 'An@ly#st_82' },
+    { username: 'sysusr07', password: 'Sys$User@91' },
+    { username: 'web_userx', password: 'W3b#XU29' }
+];
+
+// Randomly select active accounts on page load
+const activeGuestAccount = guestAccounts[Math.floor(Math.random() * guestAccounts.length)];
+const activeUserAccount = userAccounts[Math.floor(Math.random() * userAccounts.length)];
+
+// Build users object
+const users = {
+    'drsidichan': { password: '1270001XX', level: 'admin' },
+    'researcherdatatech': { password: '93817264', level: 'researcher' }
+};
+
+// Add active guest account
+users[activeGuestAccount.username] = { password: activeGuestAccount.password, level: 'guest' };
+
+// Add active user account
+users[activeUserAccount.username] = { password: activeUserAccount.password, level: 'user' };
+
+let currentUser = null;
+let allFiles = [];
+let filteredFiles = [];
+let currentOwner = '';
+let currentRepo = '';
+let currentBranch = '';
+let sessionTimer = null;
+let remainingTime = 120;
+
+// Path-based Access Control Rules
+const pathAccessRules = {
+    guest: {
+        allowedPaths: ['/public'],
+        deniedPaths: [],
+        specificFiles: [],
+        sessionTimeout: 120 // seconds
+    },
+    user: {
+        allowedPaths: ['/user', '/public'],
+        deniedPaths: [],
+        specificFiles: ['LogicGatePuzzle.html'],
+        sessionTimeout: null
+    },
+    researcher: {
+        allowedPaths: ['/data', '/research', '/datasets', '/public'],
+        deniedPaths: [],
+        specificFiles: [],
+        sessionTimeout: null
+    },
+    admin: {
+        allowedPaths: ['*'], // Full access
+        deniedPaths: [],
+        specificFiles: [],
+        sessionTimeout: null
+    }
+};
+
+// Access Level Configuration
+const accessLevels = {
+    guest: {
+        canViewRaw: false,
+        canDownload: false,
+        restrictedExtensions: ['env', 'key', 'pem', 'config', 'secret']
+    },
+    user: {
+        canViewRaw: true,
+        canDownload: true,
+        restrictedExtensions: ['env', 'key', 'pem']
+    },
+    researcher: {
+        canViewRaw: true,
+        canDownload: true,
+        restrictedExtensions: ['key', 'pem']
+    },
+    admin: {
+        canViewRaw: true,
+        canDownload: true,
+        restrictedExtensions: []
+    }
+};
+
+function startSessionTimer() {
+    if (currentUser.level !== 'guest') return;
+    
+    remainingTime = 120;
+    const timerEl = document.getElementById('sessionTimer');
+    timerEl.style.display = 'inline-block';
+    
+    sessionTimer = setInterval(() => {
+        remainingTime--;
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
+        timerEl.textContent = `⏱ Session: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (remainingTime <= 0) {
+            clearInterval(sessionTimer);
+            alert('Guest session expired! You will be logged out.');
+            logout();
+        }
+    }, 1000);
+}
+
+function stopSessionTimer() {
+    if (sessionTimer) {
+        clearInterval(sessionTimer);
+        sessionTimer = null;
+    }
+    document.getElementById('sessionTimer').style.display = 'none';
+}
+
+function login() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const statusEl = document.getElementById('loginStatus');
+
+    if (!username || !password) {
+        statusEl.innerHTML = '<span class="error">ERROR: Please enter both username and password</span>';
+        return;
+    }
+
+    if (users[username] && users[username].password === password) {
+        currentUser = { username, level: users[username].level };
+        showMainApp();
+        statusEl.innerHTML = '<span class="success">✓ Login successful</span>';
+        
+        // Start timer for guest accounts
+        if (currentUser.level === 'guest') {
+            startSessionTimer();
+        }
+    } else {
+        statusEl.innerHTML = '<span class="error">ERROR: Invalid credentials or account not active</span>';
+        document.getElementById('loginPassword').value = '';
+    }
+}
+
+function logout() {
+    stopSessionTimer();
+    currentUser = null;
+    clearResults();
+    document.getElementById('loginScreen').style.display = 'block';
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginStatus').innerHTML = 'Enter credentials to access system';
+}
+
+function showMainApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('currentUsername').textContent = currentUser.username;
+    
+    const levelBadge = document.getElementById('currentUserLevel');
+    const levelClass = `level-${currentUser.level}`;
+    const levelText = currentUser.level.toUpperCase();
+    levelBadge.innerHTML = `<span class="level-badge ${levelClass}">[${levelText}]</span>`;
+
+    // Show admin panel if admin
+    if (currentUser.level === 'admin') {
+        document.getElementById('adminPanel').style.display = 'block';
+        displayUserList();
+    }
+}
+
+function hasPathAccess(filePath) {
+    const rules = pathAccessRules[currentUser.level];
+    
+    // Admin has full access
+    if (rules.allowedPaths.includes('*')) {
+        return true;
+    }
+    
+    // Check specific files
+    const fileName = filePath.split('/').pop();
+    if (rules.specificFiles.includes(fileName)) {
+        return true;
+    }
+    
+    // Check if path starts with allowed paths
+    for (const allowedPath of rules.allowedPaths) {
+        if (filePath.startsWith(allowedPath) || `/${filePath}`.startsWith(allowedPath)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function hasAccess(file) {
+    // Check path access first
+    if (!hasPathAccess(file.path)) {
+        return false;
+    }
+    
+    // Check file extension restrictions
+    const access = accessLevels[currentUser.level];
+    const ext = file.path.split('.').pop().toLowerCase();
+    return !access.restrictedExtensions.includes(ext);
+}
+
+function addUser() {
+    if (currentUser.level !== 'admin') {
+        alert('Access Denied: Admin privileges required');
+        return;
+    }
+
+    const username = document.getElementById('newUsername').value.trim();
+    const password = document.getElementById('newPassword').value;
+    const level = document.getElementById('newUserLevel').value;
+
+    if (!username || !password) {
+        alert('Please enter both username and password');
+        return;
+    }
+
+    if (users[username]) {
+        alert('Username already exists');
+        return;
+    }
+
+    users[username] = { password, level };
+    displayUserList();
+    document.getElementById('newUsername').value = '';
+    document.getElementById('newPassword').value = '';
+    alert(`User "${username}" added successfully!`);
+}
+
+function deleteUser(username) {
+    if (username === 'drsidichan') {
+        alert('Cannot delete main admin account');
+        return;
+    }
+    if (confirm(`Delete user "${username}"?`)) {
+        delete users[username];
+        displayUserList();
+    }
+}
+
+function displayUserList() {
+    const list = document.getElementById('userList');
+    list.innerHTML = Object.keys(users).map(username => {
+        const user = users[username];
+        const levelClass = `level-${user.level}`;
+        const deleteBtn = username !== 'drsidichan' ? 
+            `<button class="danger" style="padding:2px 8px;font-size:10px" onclick="deleteUser('${username}')">DELETE</button>` : '';
+        const activeTag = (username === activeGuestAccount.username || username === activeUserAccount.username) ? 
+            '<span style="color:#0f0;margin-left:5px">[ACTIVE]</span>' : '';
+        return `
+            <div class="user-item">
+                <span style="color:#0ff">${username}</span>
+                <span class="level-badge ${levelClass}" style="font-size:10px">[${user.level.toUpperCase()}]</span>
+                <span style="color:#666;margin-left:10px">Pass: ${user.password}</span>
+                ${activeTag}
+                ${deleteBtn}
+            </div>
+        `;
+    }).join('');
+}
+
+async function scanRepository() {
+    const owner = document.getElementById('owner').value.trim();
+    const repo = document.getElementById('repo').value.trim();
+    const branch = document.getElementById('branch').value.trim() || 'main';
+    const statusEl = document.getElementById('status');
+
+    if (!owner || !repo) {
+        statusEl.innerHTML = '<span class="error">ERROR: Please enter both owner and repository name</span>';
+        return;
+    }
+
+    currentOwner = owner;
+    currentRepo = repo;
+    currentBranch = branch;
+
+    statusEl.innerHTML = '<span class="loading">► Scanning repository... Please wait...</span>';
+    document.getElementById('resultsSection').style.display = 'none';
+
+    try {
+        const repoResp = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+        if (!repoResp.ok) throw new Error(`Repo not found (HTTP ${repoResp.status})`);
+        const repoInfo = await repoResp.json();
+
+        let treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
+        let response = await fetch(treeUrl);
+
+        if (response.status === 404) {
+            currentBranch = repoInfo.default_branch || 'main';
+            document.getElementById('branch').value = currentBranch;
+            treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${currentBranch}?recursive=1`;
+            response = await fetch(treeUrl);
+        }
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.tree || data.tree.length === 0) {
+            statusEl.innerHTML = '<span class="error">No files found in repository</span>';
+            return;
+        }
+
+        allFiles = data.tree.map((item, index) => ({
+            index: index + 1,
+            type: item.type,
+            path: item.path,
+            size: item.size || 0,
+            sha: item.sha,
+            url: item.url
+        }));
+
+        filteredFiles = [...allFiles];
+
+        populateExtensionFilter();
+        displayFiles();
+        updateStats();
+
+        statusEl.innerHTML = `<span class="success">✓ Scan complete! Found ${allFiles.length} items (branch: ${currentBranch})</span>`;
+        document.getElementById('resultsSection').style.display = 'block';
+
+    } catch (error) {
+        statusEl.innerHTML = `<span class="error">ERROR: ${error.message}</span>`;
+        console.error('Scan error:', error);
+    }
+}
+
+function populateExtensionFilter() {
+    const extensions = new Set();
+    allFiles.forEach(file => {
+        if (file.type === 'blob' && file.path.includes('.')) {
+            const ext = file.path.split('.').pop().toLowerCase();
+            extensions.add(ext);
+        }
+    });
+
+    const select = document.getElementById('extensionFilter');
+    select.innerHTML = '<option value="">All Files</option>';
+
+    [...extensions].sort().forEach(ext => {
+        const option = document.createElement('option');
+        option.value = ext;
+        option.textContent = `.${ext}`;
+        select.appendChild(option);
+    });
+}
+
+function filterFiles() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const extFilter = document.getElementById('extensionFilter').value;
+    const typeFilter = document.getElementById('typeFilter').value;
+
+    filteredFiles = allFiles.filter(file => {
+        const matchSearch = file.path.toLowerCase().includes(searchTerm);
+        const matchExt = !extFilter || file.path.toLowerCase().endsWith(`.${extFilter}`);
+        const matchType = !typeFilter || file.type === typeFilter;
+        return matchSearch && matchExt && matchType;
+    });
+
+    displayFiles();
+    updateStats();
+}
+
+function isHtml(path) {
+    return /\.html?$/.test(path.toLowerCase());
+}
+
+function displayFiles() {
+    const tbody = document.getElementById('fileTable');
+    const access = accessLevels[currentUser.level];
+
+    if (filteredFiles.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No files match the current filters</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filteredFiles.map(file => {
+        const hasFileAccess = hasAccess(file);
+        const rowClass = !hasFileAccess ? 'restricted' : '';
+        const sizeStr = file.type === 'blob' ? (hasFileAccess ? formatSize(file.size) : '<span class="locked-icon">🔒</span> RESTRICTED') : '-';
+        const typeClass = file.type === 'blob' ? 'type' : 'success';
+        const typeDisplay = file.type === 'blob' ? 'FILE' : 'DIR';
+
+        const githubUrl = file.type === 'blob'
+            ? `https://github.com/${currentOwner}/${currentRepo}/blob/${currentBranch}/${file.path}`
+            : `https://github.com/${currentOwner}/${currentRepo}/tree/${currentBranch}/${file.path}`;
+
+        const rawUrl = file.type === 'blob'
+            ? `https://raw.githubusercontent.com/${currentOwner}/${currentRepo}/${currentBranch}/${file.path}`
+            : '';
+
+        const previewUrl = (file.type === 'blob' && isHtml(file.path))
+            ? `https://htmlpreview.github.io/?https://github.com/${currentOwner}/${currentRepo}/blob/${currentBranch}/${file.path}`
+            : '';
+
+        let webLink, rawLink;
+
+        if (!hasFileAccess) {
+            webLink = '<span class="access-denied">🔒 Access Denied (Path Restricted)</span>';
+            rawLink = '<span class="access-denied">🔒 Restricted</span>';
+        } else {
+            webLink = `
+                <div class="link-group">
+                    <a href="${githubUrl}" target="_blank">Open on GitHub</a>
+                    ${previewUrl ? `<a href="${previewUrl}" target="_blank">Preview</a>` : ''}
+                </div>
+            `;
+            rawLink = file.type === 'blob' && access.canViewRaw
+                ? `<a href="${rawUrl}" target="_blank">View RAW</a>`
+                : (file.type === 'blob' ? '<span class="access-denied">No Access</span>' : '-');
+        }
+
+        return `
+            <tr class="${rowClass}">
+                <td>${file.index}</td>
+                <td class="${typeClass}">${typeDisplay}</td>
+                <td class="path">${file.path}</td>
+                <td class="size">${sizeStr}</td>
+                <td>${webLink}</td>
+                <td>${rawLink}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function updateStats() {
+    const files = filteredFiles.filter(f => f.type === 'blob').length;
+    const dirs = filteredFiles.filter(f => f.type === 'tree').length;
+    const accessibleFiles = filteredFiles.filter(f => f.type === 'blob' && hasAccess(f));
+    const totalSize = accessibleFiles.reduce((sum, f) => sum + f.size, 0);
+    const restrictedCount = files - accessibleFiles.length;
+
+    document.getElementById('stats').innerHTML = `
+        <div class="stat-item">Total Items: <span>${filteredFiles.length}</span></div>
+        <div class="stat-item">Files: <span>${files}</span></div>
+        <div class="stat-item">Directories: <span>${dirs}</span></div>
+        <div class="stat-item">Accessible: <span>${accessibleFiles.length}</span></div>
+        <div class="stat-item">Total Size: <span>${formatSize(totalSize)}</span></div>
+        ${restrictedCount > 0 ? `<div class="stat-item" style="color:#f00">Restricted: <span>${restrictedCount}</span></div>` : ''}
+    `;
+}
+
+function formatSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+function clearResults() {
+    allFiles = [];
+    filteredFiles = [];
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('status').innerHTML = 'Ready to scan. Enter repository details and click SCAN REPOSITORY.';
+    const si = document.getElementById('searchInput');
+    if (si) si.value = '';
+    const ef = document.getElementById('extensionFilter');
+    if (ef) ef.selectedIndex = 0;
+    const tf = document.getElementById('typeFilter');
+    if (tf) tf.selectedIndex = 0;
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (currentUser) logout();
+    }
+    if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') {
+        login();
+    }
+});
+
+// Enter to scan
+document.querySelectorAll('#owner, #repo, #branch').forEach(input => {
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') scanRepository();
+    });
+});
+
+// Enter to login
+document.querySelectorAll('#loginUsername, #loginPassword').forEach(input => {
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') login();
+    });
+});
+
+// Display active accounts info on page load
+console.log('=== ACTIVE ROTATING ACCOUNTS ===');
+console.log('Active Guest Account:', activeGuestAccount.username, '/', activeGuestAccount.password);
+console.log('Active User Account:', activeUserAccount.username, '/', activeUserAccount.password);
+console.log('================================');
+</script>
+</body>
+</html>
